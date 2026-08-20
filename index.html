@@ -1121,15 +1121,15 @@
         return `
           <tr>
             <td class="p-2 font-medium">${escapeHTML(d.nombre)}</td>
-            <td class="p-2 text-right">$${d.montoInicial.toFixed(2)}</td>
-            <td class="p-2 text-right text-emerald-400">$${pagado.toFixed(2)}</td>
-            <td class="p-2 text-right font-bold ${restante === 0 ? 'text-slate-500 line-through' : 'text-purple-400'}">
+            <td class="p-2 text-right text-crema">$${d.montoInicial.toFixed(2)}</td>
+            <td class="p-2 text-right text-azulelectrico font-semibold">$${pagado.toFixed(2)}</td>
+            <td class="p-2 text-right font-bold ${restante === 0 ? 'text-azulcielo/40 line-through' : 'text-coral'}">
               $${restante.toFixed(2)}
-              ${sobrepago > 0 ? `<span class="block text-xs font-normal text-amber-400">Sobrepago: $${sobrepago.toFixed(2)}</span>` : ''}
+              ${sobrepago > 0 ? `<span class="block text-xs font-normal text-azulcielo">Sobrepago: $${sobrepago.toFixed(2)}</span>` : ''}
             </td>
             <td class="p-2 text-center flex justify-center gap-1">
-              <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs bg-purple-950 text-purple-300 border border-purple-800 px-2 py-1 rounded hover:bg-purple-900 transition" title="Editar esta deuda">✏️ Editar</button>
-              <button onclick="eliminarDeuda(${d.id})" class="text-slate-400 hover:text-rose-400 p-1 transition" title="Eliminar Deuda">
+              <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs bg-azulcielo/20 text-azulcielo border border-azulcielo/30 px-2 py-1 rounded hover:bg-azulcielo/30 transition" title="Editar esta deuda">✏️ Editar</button>
+              <button onclick="eliminarDeuda(${d.id})" class="text-azulcielo/70 hover:text-coral p-1 transition" title="Eliminar Deuda">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -1147,39 +1147,39 @@
       const balance = ingresosMes - gastosMes;
       const balanceEl = document.getElementById('balanceNeto');
       balanceEl.textContent = `$${balance.toFixed(2)}`;
-      balanceEl.className = `text-2xl font-bold ${balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      balanceEl.className = `text-2xl font-bold ${balance >= 0 ? 'text-azulelectrico' : 'text-coral'}`;
 
       const tabla = document.getElementById('tablaHistorial');
       tabla.innerHTML = filtradasMes.map(t => {
-        let badgeStyle = 'bg-rose-950 text-rose-400 border-rose-800';
+        let badgeStyle = 'bg-coral/20 text-coral border-coral/40';
         let signo = '-';
-        let colorMonto = 'text-rose-400';
+        let colorMonto = 'text-coral';
         const montoNum = parseFloat(t.monto);
 
         if (t.tipo === 'ingreso') {
-          badgeStyle = 'bg-emerald-950 text-emerald-400 border-emerald-800';
+          badgeStyle = 'bg-azulelectrico/20 text-azulcielo border-azulelectrico/50';
           signo = '+';
-          colorMonto = 'text-emerald-400';
+          colorMonto = 'text-azulelectrico';
         } else if (t.tipo === 'ahorro') {
-          badgeStyle = 'bg-amber-950 text-amber-400 border-amber-800';
+          badgeStyle = 'bg-azulcielo/20 text-azulcielo border-azulcielo/40';
           signo = t.categoria === 'Depositar a Ahorro' ? '+' : '-';
-          colorMonto = 'text-amber-400';
+          colorMonto = 'text-azulcielo';
         }
 
         return `
           <tr>
-            <td class="p-2">${escapeHTML(t.fecha)}</td>
+            <td class="p-2 text-crema">${escapeHTML(t.fecha)}</td>
             <td class="p-2"><span class="px-2 py-1 text-xs rounded font-medium border ${badgeStyle}">${escapeHTML(t.tipo)}</span></td>
-            <td class="p-2">${escapeHTML(t.categoria)}</td>
-            <td class="p-2">${escapeHTML(t.descripcion)}</td>
-            <td class="p-2 text-right font-medium ${colorMonto}">${signo}$${montoNum.toFixed(2)}</td>
+            <td class="p-2 text-azulcielo">${escapeHTML(t.categoria)}</td>
+            <td class="p-2 text-crema">${escapeHTML(t.descripcion)}</td>
+            <td class="p-2 text-right font-semibold ${colorMonto}">${signo}$${montoNum.toFixed(2)}</td>
             <td class="p-2 text-center flex justify-center gap-1">
-              <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-blue-400 p-1 transition" title="Editar">
+              <button onclick="editarTransaccion(${t.id})" class="text-azulcielo/70 hover:text-azulcielo p-1 transition" title="Editar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
-              <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-rose-400 p-1 transition" title="Eliminar">
+              <button onclick="eliminarTransaccion(${t.id})" class="text-azulcielo/70 hover:text-coral p-1 transition" title="Eliminar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -1189,8 +1189,8 @@
         `;
       }).join('');
 
-      renderizarDona('graficoIngresos', ingresosPorCat, ['#10b981', '#34d399', '#059669', '#6ee7b7', '#047857'], 'ingresos');
-      renderizarDona('graficoGastos', gastosPorCat, ['#f43f5e', '#3b82f6', '#eab308', '#a855f7', '#14b8a6', '#64748b'], 'gastos');
+      renderizarDona('graficoIngresos', ingresosPorCat, ['#0259DD', '#2b7fff', '#549cff', '#84AFFB', '#b3cdfc'], 'ingresos');
+      renderizarDona('graficoGastos', gastosPorCat, ['#FF6648', '#ff846c', '#ffa290', '#ffc1b4', '#e05337'], 'gastos');
       renderizarBarrasAhorro(fondosAhorroMapa);
     }
 
@@ -1208,13 +1208,13 @@
           labels: labels.length ? labels : ['Sin registros'],
           datasets: [{
             data: data.length ? data : [1],
-            backgroundColor: data.length ? colores : ['#334155'],
+            backgroundColor: data.length ? colores : ['#1e293b'],
             borderWidth: 0
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } } }
+          plugins: { legend: { position: 'bottom', labels: { color: '#84AFFB', boxWidth: 10, font: { size: 10 } } } }
         }
       });
 
@@ -1236,7 +1236,7 @@
           datasets: [{
             label: 'Saldo Acumulado ($)',
             data: data.length ? data : [0],
-            backgroundColor: '#f59e0b',
+            backgroundColor: '#84AFFB',
             borderRadius: 6
           }]
         },
@@ -1245,8 +1245,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+            x: { ticks: { color: '#84AFFB', font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: '#84AFFB', font: { size: 10 } }, grid: { color: 'rgba(132, 175, 251, 0.15)' } }
           }
         }
       });

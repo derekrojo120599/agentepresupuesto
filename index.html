@@ -3,30 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>Control de Presupuesto Mensual - Cloud</title>
+  <title>Presupuesto Mensual</title>
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#0259DD">
+  <meta name="theme-color" content="#020617">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
   <style>
     :root {
       --scrollbar-track: #020617;
       --scrollbar-thumb: #0259DD;
+      --app-bg: #020617;
     }
     html.light {
       --scrollbar-track: #f1f5f9;
       --scrollbar-thumb: #94a3b8;
+      --app-bg: #f8fafc;
     }
     html {
+      background-color: var(--app-bg);
       scrollbar-width: thin;
       scrollbar-color: rgba(132, 175, 251, 0.4) var(--scrollbar-track);
       -webkit-tap-highlight-color: transparent;
-      padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      padding-left: env(safe-area-inset-left, 0px);
-      padding-right: env(safe-area-inset-right, 0px);
+      overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    body {
+      background-color: var(--app-bg);
+      overscroll-behavior: none;
+      touch-action: manipulation;
+      padding-top: max(12px, env(safe-area-inset-top, 0px));
+      padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+      padding-left: max(12px, env(safe-area-inset-left, 0px));
+      padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+    /* Inputs permiten interacción y selección */
+    input, select, textarea {
+      -webkit-user-select: text !important;
+      user-select: text !important;
     }
     body::-webkit-scrollbar {
       width: 6px;
@@ -43,7 +63,6 @@
       background: rgba(2, 89, 221, 0.35);
       color: #FFE1D7;
     }
-    /* Prevenir zoom no deseado en inputs de iOS (fuente mínima 16px en mobile) */
     @media screen and (max-width: 640px) {
       input, select, textarea {
         font-size: 16px !important;
@@ -71,7 +90,6 @@
       from { opacity: 0; transform: translateY(100%); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* Ocultar scrollbar horizontal en chips */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -113,7 +131,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 min-h-screen p-3 sm:p-5 md:p-8 pb-24 sm:pb-8 relative transition-colors duration-300 antialiased font-sans select-none sm:select-auto">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-[100dvh] pb-24 sm:pb-8 relative transition-colors duration-300 antialiased font-sans">
 
   <!-- Toast Container Flotante para notificaciones -->
   <div id="toastContainer" class="fixed top-3 sm:top-4 right-3 sm:right-4 left-3 sm:left-auto z-50 flex flex-col gap-2 max-w-sm w-auto sm:w-full pointer-events-none"></div>
@@ -724,15 +742,22 @@
     function aplicarTema(modo) {
       const html = document.documentElement;
       const icono = document.getElementById('iconoTema');
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      const metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+
       if (modo === 'dark') {
         html.classList.add('dark');
         html.classList.remove('light');
         if (icono) icono.textContent = '🌙';
+        if (metaTheme) metaTheme.setAttribute('content', '#020617');
+        if (metaStatus) metaStatus.setAttribute('content', 'black-translucent');
         localStorage.setItem('tema_presupuesto', 'dark');
       } else {
         html.classList.remove('dark');
         html.classList.add('light');
         if (icono) icono.textContent = '☀️';
+        if (metaTheme) metaTheme.setAttribute('content', '#f8fafc');
+        if (metaStatus) metaStatus.setAttribute('content', 'default');
         localStorage.setItem('tema_presupuesto', 'light');
       }
       if (sesionInicializada) {
@@ -2219,6 +2244,13 @@
         }
       });
     }
+
+    // Prevenir menú contextual de navegador en toques largos sobre botones y tarjetas
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('button, select, canvas, .chip-tipo, [onclick]')) {
+        e.preventDefault();
+      }
+    });
 
     // ---------- Inicialización & SW ----------
 

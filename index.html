@@ -325,65 +325,7 @@
         </div>
       </div>
 
-      <!-- Visualizaciones y Gráficos (Con Pestañas interactivas en Mobile) -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
-            <span>📈</span> Gráficos Financieros
-          </h2>
-
-          <!-- Selector de pestañas para Mobile -->
-          <div class="flex sm:hidden p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-azulcielo/20 text-xs font-bold w-full justify-between">
-            <button id="tabIngresos" onclick="cambiarTabGrafico('ingresos')" class="flex-1 py-1.5 rounded-lg bg-azulelectrico text-white shadow-sm transition">Ingresos</button>
-            <button id="tabGastos" onclick="cambiarTabGrafico('gastos')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Gastos</button>
-            <button id="tabAhorros" onclick="cambiarTabGrafico('ahorros')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Ahorros</button>
-          </div>
-        </div>
-
-        <!-- Contenedor de gráficos -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Gráfico Ingresos -->
-          <div id="contenedorGraficoIngresos" class="p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/15 pb-2.5">
-              <span class="text-xs font-black text-azulelectrico flex items-center gap-1.5 uppercase tracking-wide">
-                <span>🟢</span> Fuentes de Ingreso
-              </span>
-              <span id="totalGraficoIngresos" class="text-xs font-bold text-slate-800 dark:text-crema bg-slate-100 dark:bg-slate-950 px-2.5 py-0.5 rounded-lg border border-slate-200/60 dark:border-azulcielo/20">$0.00</span>
-            </div>
-            <div class="w-full h-[230px] relative flex items-center justify-center">
-              <canvas id="graficoIngresos"></canvas>
-            </div>
-          </div>
-
-          <!-- Gráfico Gastos -->
-          <div id="contenedorGraficoGastos" class="hidden sm:flex p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 bg-white dark:bg-slate-900 shadow-sm flex-col justify-between space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/15 pb-2.5">
-              <span class="text-xs font-black text-coral flex items-center gap-1.5 uppercase tracking-wide">
-                <span>🔴</span> Distribución de Gastos
-              </span>
-              <span id="totalGraficoGastos" class="text-xs font-bold text-slate-800 dark:text-crema bg-slate-100 dark:bg-slate-950 px-2.5 py-0.5 rounded-lg border border-slate-200/60 dark:border-azulcielo/20">$0.00</span>
-            </div>
-            <div class="w-full h-[230px] relative flex items-center justify-center">
-              <canvas id="graficoGastos"></canvas>
-            </div>
-          </div>
-
-          <!-- Gráfico Ahorros -->
-          <div id="contenedorGraficoAhorros" class="hidden sm:flex p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 bg-white dark:bg-slate-900 shadow-sm flex-col justify-between space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/15 pb-2.5">
-              <span class="text-xs font-black text-azulcielo-dark dark:text-azulcielo flex items-center gap-1.5 uppercase tracking-wide">
-                <span>🟡</span> Fondos de Ahorro
-              </span>
-              <span id="totalGraficoAhorros" class="text-xs font-bold text-slate-800 dark:text-crema bg-slate-100 dark:bg-slate-950 px-2.5 py-0.5 rounded-lg border border-slate-200/60 dark:border-azulcielo/20">$0.00</span>
-            </div>
-            <div class="w-full h-[230px] relative flex items-center justify-center">
-              <canvas id="graficoAhorros"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN: Estadísticas Financieras (Gráfico Multilínea + Desglose de Categorías) -->
+      <!-- SECCIÓN PRINCIPAL: Estadísticas Financieras (Gráfico Multilínea + Desglose de Categorías) -->
       <div id="seccionEstadisticasFinancieras" class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-5">
         <!-- Cabecera de Estadísticas y Selector de Métrica Activa -->
         <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-3.5 border-b border-slate-100 dark:border-azulcielo/20 pb-4">
@@ -1362,9 +1304,6 @@
     let metasAhorro = [];
     let filtroTipoActual = '';
 
-    let graficoGastosChart = null;
-    let graficoIngresosChart = null;
-    let graficoAhorrosChart = null;
     let graficoMultilineaChart = null;
     let activeEstadisticaMetrica = 'all';
     let ultimasFiltradasMes = [];
@@ -1834,9 +1773,6 @@
 
       if (tabName === 'resumen') {
         setTimeout(() => {
-          if (graficoIngresosChart) graficoIngresosChart.resize();
-          if (graficoGastosChart) graficoGastosChart.resize();
-          if (graficoAhorrosChart) graficoAhorrosChart.resize();
           if (graficoMultilineaChart) graficoMultilineaChart.resize();
         }, 50);
       }
@@ -1859,34 +1795,6 @@
         const m = document.getElementById('monto');
         if (m) m.focus();
       }, 150);
-    }
-
-    // ---------- Pestañas de Gráficos (Mobile) ----------
-
-    function cambiarTabGrafico(tab) {
-      const gIng = document.getElementById('contenedorGraficoIngresos');
-      const gGas = document.getElementById('contenedorGraficoGastos');
-      const gAho = document.getElementById('contenedorGraficoAhorros');
-
-      const tIng = document.getElementById('tabIngresos');
-      const tGas = document.getElementById('tabGastos');
-      const tAho = document.getElementById('tabAhorros');
-
-      const claseActiva = 'flex-1 py-1.5 rounded-lg bg-azulelectrico text-white shadow-sm transition';
-      const claseInactiva = 'flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition';
-
-      tIng.className = tab === 'ingresos' ? claseActiva : claseInactiva;
-      tGas.className = tab === 'gastos' ? claseActiva : claseInactiva;
-      tAho.className = tab === 'ahorros' ? claseActiva : claseInactiva;
-
-      gIng.classList.toggle('hidden', tab !== 'ingresos');
-      gIng.classList.toggle('flex', tab === 'ingresos');
-
-      gGas.classList.toggle('hidden', tab !== 'gastos');
-      gGas.classList.toggle('flex', tab === 'gastos');
-
-      gAho.classList.toggle('hidden', tab !== 'ahorros');
-      gAho.classList.toggle('flex', tab === 'ahorros');
     }
 
     // ---------- Categorías & Selectores ----------
@@ -2718,14 +2626,12 @@
       let ingresosMes = 0, gastosMes = 0;
       let countIngresos = 0, countGastos = 0;
       const gastosPorCat = {};
-      const ingresosPorCat = {};
 
       filtradasMes.forEach(t => {
         const montoNum = parseFloat(t.monto);
         if (t.tipo === 'ingreso') {
           ingresosMes += montoNum;
           countIngresos++;
-          ingresosPorCat[t.categoria] = (ingresosPorCat[t.categoria] || 0) + montoNum;
         } else if (t.tipo === 'gasto') {
           gastosMes += montoNum;
           countGastos++;
@@ -2860,259 +2766,8 @@
 
       renderizarSeccionPresupuestos(gastosPorCat);
       renderizarMetasAhorro(fondosAhorroMapa);
-      renderizarGraficos(ingresosPorCat, gastosPorCat, fondosAhorroMapa);
       renderizarEstadisticasFinancieras(filtradasMes, fondosAhorroMapa);
       renderizarHistorialFiltrado();
-    }
-
-    // ---------- Gráficos ----------
-
-    function renderizarGraficos(ingresosPorCat, gastosPorCat, fondosMapa) {
-      const esOscuro = document.documentElement.classList.contains('dark');
-      const colorTexto = esOscuro ? '#84AFFB' : '#475569';
-      const colorTitulo = esOscuro ? '#FFE1D7' : '#0f172a';
-      const colorGrid = esOscuro ? 'rgba(132, 175, 251, 0.12)' : 'rgba(148, 163, 184, 0.18)';
-      const colorVacio = esOscuro ? '#1e293b' : '#e2e8f0';
-
-      const tooltipTheme = {
-        backgroundColor: esOscuro ? '#0f172a' : '#ffffff',
-        titleColor: esOscuro ? '#FFE1D7' : '#0f172a',
-        bodyColor: esOscuro ? '#84AFFB' : '#0259DD',
-        borderColor: esOscuro ? 'rgba(132, 175, 251, 0.25)' : 'rgba(2, 89, 221, 0.2)',
-        borderWidth: 1,
-        padding: 10,
-        cornerRadius: 12,
-        boxPadding: 4,
-        usePointStyle: true,
-        titleFont: { size: 11, weight: 'bold', family: 'system-ui, sans-serif' },
-        bodyFont: { size: 11, weight: '600', family: 'system-ui, sans-serif' }
-      };
-
-      // 1. Ingresos: ordenar descendente por monto
-      const ctxIng = document.getElementById('graficoIngresos').getContext('2d');
-      const entriesIng = Object.entries(ingresosPorCat || {})
-        .filter(([_, m]) => typeof m === 'number' && m > 0)
-        .sort((a, b) => b[1] - a[1]);
-
-      const labelsIng = entriesIng.map(e => e[0]);
-      const dataIng = entriesIng.map(e => e[1]);
-      const totalIng = dataIng.reduce((a, b) => a + b, 0);
-
-      const elTotalIng = document.getElementById('totalGraficoIngresos');
-      if (elTotalIng) {
-        elTotalIng.textContent = `$${totalIng.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-
-      const coloresIng = ['#0259DD', '#2563eb', '#3b82f6', '#60a5fa', '#84AFFB', '#93c5fd', '#bfdbfe'];
-
-      if (graficoIngresosChart) graficoIngresosChart.destroy();
-      graficoIngresosChart = new Chart(ctxIng, {
-        type: 'doughnut',
-        data: {
-          labels: labelsIng.length ? labelsIng : ['Sin ingresos registrados'],
-          datasets: [{
-            data: dataIng.length ? dataIng : [1],
-            backgroundColor: dataIng.length ? coloresIng.slice(0, dataIng.length) : [colorVacio],
-            borderWidth: 0,
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '62%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              align: 'center',
-              labels: {
-                color: colorTexto,
-                boxWidth: 8,
-                boxHeight: 8,
-                usePointStyle: true,
-                pointStyle: 'circle',
-                padding: 10,
-                font: { size: 10, weight: '600', family: 'system-ui, sans-serif' },
-                generateLabels: (chart) => {
-                  if (!labelsIng.length) return [];
-                  return labelsIng.map((label, i) => {
-                    const val = dataIng[i] || 0;
-                    const pct = totalIng > 0 ? Math.round((val / totalIng) * 100) : 0;
-                    const nombreCorto = label.length > 15 ? label.slice(0, 14) + '…' : label;
-                    return {
-                      text: `${nombreCorto} (${pct}%)`,
-                      fillStyle: coloresIng[i % coloresIng.length],
-                      strokeStyle: 'transparent',
-                      hidden: false,
-                      index: i,
-                      pointStyle: 'circle'
-                    };
-                  });
-                }
-              }
-            },
-            tooltip: {
-              ...tooltipTheme,
-              callbacks: {
-                label: (ctx) => {
-                  if (!labelsIng.length) return ' Sin datos';
-                  const val = Number(ctx.raw || 0);
-                  const pct = totalIng > 0 ? ((val / totalIng) * 100).toFixed(1) : '0.0';
-                  return ` Monto: $${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-
-      // 2. Gastos: ordenar descendente por monto
-      const ctxGas = document.getElementById('graficoGastos').getContext('2d');
-      const entriesGas = Object.entries(gastosPorCat || {})
-        .filter(([_, m]) => typeof m === 'number' && m > 0)
-        .sort((a, b) => b[1] - a[1]);
-
-      const labelsGas = entriesGas.map(e => e[0]);
-      const dataGas = entriesGas.map(e => e[1]);
-      const totalGas = dataGas.reduce((a, b) => a + b, 0);
-
-      const elTotalGas = document.getElementById('totalGraficoGastos');
-      if (elTotalGas) {
-        elTotalGas.textContent = `$${totalGas.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-
-      const coloresGas = ['#FF6648', '#ea580c', '#f97316', '#fb923c', '#fdba74', '#fed7aa', '#e05337'];
-
-      if (graficoGastosChart) graficoGastosChart.destroy();
-      graficoGastosChart = new Chart(ctxGas, {
-        type: 'doughnut',
-        data: {
-          labels: labelsGas.length ? labelsGas : ['Sin gastos registrados'],
-          datasets: [{
-            data: dataGas.length ? dataGas : [1],
-            backgroundColor: dataGas.length ? coloresGas.slice(0, dataGas.length) : [colorVacio],
-            borderWidth: 0,
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '62%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              align: 'center',
-              labels: {
-                color: colorTexto,
-                boxWidth: 8,
-                boxHeight: 8,
-                usePointStyle: true,
-                pointStyle: 'circle',
-                padding: 10,
-                font: { size: 10, weight: '600', family: 'system-ui, sans-serif' },
-                generateLabels: (chart) => {
-                  if (!labelsGas.length) return [];
-                  return labelsGas.map((label, i) => {
-                    const val = dataGas[i] || 0;
-                    const pct = totalGas > 0 ? Math.round((val / totalGas) * 100) : 0;
-                    const nombreCorto = label.length > 15 ? label.slice(0, 14) + '…' : label;
-                    return {
-                      text: `${nombreCorto} (${pct}%)`,
-                      fillStyle: coloresGas[i % coloresGas.length],
-                      strokeStyle: 'transparent',
-                      hidden: false,
-                      index: i,
-                      pointStyle: 'circle'
-                    };
-                  });
-                }
-              }
-            },
-            tooltip: {
-              ...tooltipTheme,
-              callbacks: {
-                label: (ctx) => {
-                  if (!labelsGas.length) return ' Sin datos';
-                  const val = Number(ctx.raw || 0);
-                  const pct = totalGas > 0 ? ((val / totalGas) * 100).toFixed(1) : '0.0';
-                  return ` Gasto: $${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-
-      // 3. Ahorros: ordenar descendente por saldo
-      const ctxAho = document.getElementById('graficoAhorros').getContext('2d');
-      const entriesAho = Object.entries(fondosMapa || {}).sort((a, b) => b[1] - a[1]);
-
-      const labelsAho = entriesAho.map(e => e[0]);
-      const dataAho = entriesAho.map(e => e[1]);
-      const totalAhoPositivo = dataAho.filter(v => v > 0).reduce((a, b) => a + b, 0);
-
-      const elTotalAho = document.getElementById('totalGraficoAhorros');
-      if (elTotalAho) {
-        elTotalAho.textContent = `$${totalAhoPositivo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-
-      if (graficoAhorrosChart) graficoAhorrosChart.destroy();
-      graficoAhorrosChart = new Chart(ctxAho, {
-        type: 'bar',
-        data: {
-          labels: labelsAho.length ? labelsAho : ['Sin Fondos'],
-          datasets: [{
-            label: 'Saldo Acumulado',
-            data: dataAho.length ? dataAho : [0],
-            backgroundColor: dataAho.length 
-              ? dataAho.map(v => v >= 0 ? (esOscuro ? '#84AFFB' : '#0259DD') : '#FF6648')
-              : [esOscuro ? '#84AFFB' : '#0259DD'],
-            borderRadius: 8,
-            maxBarThickness: 40
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              ...tooltipTheme,
-              callbacks: {
-                title: (items) => items[0]?.label || 'Fondo',
-                label: (ctx) => ` Saldo: $${Number(ctx.raw || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-              }
-            }
-          },
-          scales: {
-            x: {
-              ticks: {
-                color: colorTexto,
-                font: { size: 10, weight: 'bold', family: 'system-ui, sans-serif' },
-                maxRotation: 20,
-                minRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 6,
-                callback: function(val) {
-                  const rawLabel = this.getLabelForValue(val) || '';
-                  return rawLabel.length > 12 ? rawLabel.slice(0, 11) + '…' : rawLabel;
-                }
-              },
-              grid: { display: false }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: {
-                color: colorTexto,
-                font: { size: 9.5, weight: '600', family: 'system-ui, sans-serif' },
-                callback: (value) => '$' + Number(value).toLocaleString('en-US')
-              },
-              grid: { color: colorGrid }
-            }
-          }
-        }
-      });
     }
 
     // ---------- Estadísticas Financieras: Multilínea y Desglose ----------

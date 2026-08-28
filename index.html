@@ -2,7 +2,7 @@
 <html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
   <title>Control de Presupuesto Mensual - Cloud</title>
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0259DD">
@@ -22,11 +22,15 @@
     html {
       scrollbar-width: thin;
       scrollbar-color: rgba(132, 175, 251, 0.4) var(--scrollbar-track);
-      transition: background-color 0.3s ease, color 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
     }
     body::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
     body::-webkit-scrollbar-track {
       background: var(--scrollbar-track);
@@ -39,7 +43,13 @@
       background: rgba(2, 89, 221, 0.35);
       color: #FFE1D7;
     }
-    /* Animaciones suaves */
+    /* Prevenir zoom no deseado en inputs de iOS (fuente mínima 16px en mobile) */
+    @media screen and (max-width: 640px) {
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+    }
+    /* Animaciones fluidas */
     .fade-in {
       animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -54,9 +64,20 @@
       from { opacity: 0; transform: translateY(-12px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    /* Estilos para inputs en modo claro y oscuro */
-    .app-input {
-      transition: all 0.2s ease;
+    .slide-up {
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(100%); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Ocultar scrollbar horizontal en chips */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -92,259 +113,249 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 min-h-screen p-3 sm:p-5 md:p-8 relative transition-colors duration-300 antialiased font-sans">
+<body class="bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 min-h-screen p-3 sm:p-5 md:p-8 pb-24 sm:pb-8 relative transition-colors duration-300 antialiased font-sans select-none sm:select-auto">
 
-  <!-- Toast Container Flotante para notificaciones elegantes -->
-  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+  <!-- Toast Container Flotante para notificaciones -->
+  <div id="toastContainer" class="fixed top-3 sm:top-4 right-3 sm:right-4 left-3 sm:left-auto z-50 flex flex-col gap-2 max-w-sm w-auto sm:w-full pointer-events-none"></div>
 
   <!-- Pantalla de autenticación -->
-  <div id="authScreen" class="max-w-md mx-auto mt-16 sm:mt-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-2xl p-6 sm:p-8 space-y-5 shadow-2xl transition-all duration-300">
+  <div id="authScreen" class="max-w-md mx-auto mt-12 sm:mt-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl transition-all duration-300">
     <div class="text-center space-y-1">
-      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico mb-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico mb-2 text-2xl shadow-inner">
+        💰
       </div>
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-crema tracking-tight">Presupuesto Mensual</h1>
-      <p class="text-slate-500 dark:text-azulcielo text-sm">Gestiona tus finanzas personales de forma inteligente</p>
+      <h1 class="text-2xl font-black text-slate-900 dark:text-crema tracking-tight">Presupuesto Mensual</h1>
+      <p class="text-slate-500 dark:text-azulcielo text-xs sm:text-sm">Control inteligente de gastos, metas y deudas</p>
     </div>
 
-    <div id="avisoAuth" class="hidden text-sm p-3.5 rounded-xl border font-medium"></div>
+    <div id="avisoAuth" class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"></div>
 
     <form id="formAuth" class="space-y-4">
       <div>
-        <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1.5">Correo Electrónico</label>
-        <input type="email" id="authEmail" required autocomplete="email" placeholder="tu@correo.com" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+        <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Correo Electrónico</label>
+        <input type="email" id="authEmail" required autocomplete="email" placeholder="tu@correo.com" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1.5">Contraseña</label>
-        <input type="password" id="authPassword" required minlength="6" autocomplete="current-password" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+        <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Contraseña</label>
+        <input type="password" id="authPassword" required minlength="6" autocomplete="current-password" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
       </div>
       <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
-        <button type="submit" id="btnIngresar" class="flex-1 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-azulelectrico/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">Ingresar</button>
-        <button type="button" id="btnCrearCuenta" class="flex-1 bg-coral hover:bg-coral-hover text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-coral/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">Crear cuenta</button>
+        <button type="submit" id="btnIngresar" class="w-full sm:flex-1 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-azulelectrico/25 transition active:scale-[0.98] disabled:opacity-50">Ingresar</button>
+        <button type="button" id="btnCrearCuenta" class="w-full sm:flex-1 bg-coral hover:bg-coral-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-coral/25 transition active:scale-[0.98] disabled:opacity-50">Crear cuenta</button>
       </div>
     </form>
   </div>
 
   <!-- Contenedor Principal de la App -->
-  <div id="appContainer" class="max-w-7xl mx-auto space-y-6 hidden fade-in">
+  <div id="appContainer" class="max-w-7xl mx-auto space-y-5 sm:space-y-6 hidden fade-in">
 
-    <!-- Encabezado Principal -->
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900/90 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico flex items-center justify-center font-bold text-xl shadow-inner">
-          💰
+    <!-- Encabezado Principal Mobile-First -->
+    <header class="bg-white dark:bg-slate-900/90 backdrop-blur-md p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico flex items-center justify-center font-bold text-lg shrink-0">
+            💰
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-crema truncate tracking-tight">Presupuesto</h1>
+            <p class="text-[11px] text-slate-500 dark:text-azulcielo truncate">
+              <span id="usuarioEmail" class="font-semibold text-slate-700 dark:text-crema"></span>
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-crema tracking-tight">Presupuesto Mensual</h1>
-          <p class="text-xs text-slate-500 dark:text-azulcielo flex items-center gap-1.5 flex-wrap">
-            <span>Sesión: <strong id="usuarioEmail" class="text-slate-700 dark:text-crema font-semibold"></strong></span>
-            <span>•</span>
-            <button type="button" onclick="cerrarSesion()" class="text-coral hover:underline font-semibold transition">Cerrar sesión</button>
-          </p>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <!-- Toggle Tema -->
+          <button id="btnToggleTema" onclick="alternarTema()" title="Cambiar tema" class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm">
+            <span id="iconoTema">🌙</span>
+          </button>
+          <!-- Cerrar sesión -->
+          <button type="button" onclick="cerrarSesion()" class="text-xs font-bold text-coral bg-coral/10 hover:bg-coral hover:text-white border border-coral/30 px-3 py-2 rounded-xl transition active:scale-95">
+            Salir
+          </button>
         </div>
       </div>
 
-      <!-- Controles de cabecera: Indicador, Modo Claro/Oscuro y Selector de Mes -->
-      <div class="flex items-center gap-2.5 flex-wrap self-end sm:self-auto">
-        <!-- Indicador de conexión -->
-        <span id="indicadorConexion" class="hidden text-xs font-bold px-2.5 py-1.5 rounded-lg border flex items-center gap-1.5"></span>
-
-        <!-- Toggle Modo Claro / Oscuro -->
-        <button id="btnToggleTema" onclick="alternarTema()" title="Cambiar modo claro / oscuro" class="p-2.5 rounded-xl border border-slate-300 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition hover:scale-105 active:scale-95 shadow-sm">
-          <span id="iconoTema">🌙</span>
-        </button>
-
-        <!-- Selector de Mes -->
-        <div class="relative flex items-center">
-          <input type="month" id="mesFiltro" class="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 text-slate-900 dark:text-crema px-3 py-2 rounded-xl font-medium cursor-pointer focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition text-xs sm:text-sm shadow-sm">
+      <!-- Barra de controles: Selector de mes e indicador de conexión -->
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-azulcielo/15">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-500 dark:text-azulcielo">Periodo:</span>
+          <input type="month" id="mesFiltro" class="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 text-slate-900 dark:text-crema px-3 py-1.5 rounded-xl font-bold cursor-pointer focus:border-azulelectrico focus:outline-none transition text-xs shadow-sm">
         </div>
+        <span id="indicadorConexion" class="hidden text-[11px] font-bold px-2 py-1 rounded-lg border"></span>
       </div>
     </header>
 
-    <!-- Aviso de estado global (para errores o info importantes) -->
-    <div id="avisoEstado" class="hidden text-sm p-3.5 rounded-xl border font-medium"></div>
+    <!-- Aviso de estado global -->
+    <div id="avisoEstado" class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"></div>
 
-    <!-- 1. Tarjetas de Resumen Financiero -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
-      <!-- Ingresos -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm hover:shadow-md transition group">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-semibold text-slate-500 dark:text-azulcielo">Ingresos del Mes</span>
-          <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs">▲</span>
+    <!-- 1. Resumen de Métricas Financieras (Layout adaptable 2 columnas en mobile) -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
+      <!-- Balance Neto (Ocupa 2 cols en mobile para protagonismo) -->
+      <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-gradient-to-br from-azulelectrico/10 to-transparent dark:from-azulelectrico/20 dark:to-slate-900 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-azulelectrico/30 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] sm:text-xs font-bold text-azulelectrico uppercase tracking-wider">Balance Neto</span>
+          <span class="text-xs">⚖️</span>
         </div>
-        <p id="totalIngresos" class="text-2xl sm:text-3xl font-extrabold text-azulelectrico tracking-tight">$0.00</p>
-        <p id="subIngresos" class="text-[11px] text-slate-400 dark:text-slate-400 mt-1">0 movimientos registrados</p>
+        <p id="balanceNeto" class="text-2xl sm:text-3xl font-black tracking-tight">$0.00</p>
+        <p id="tasaAhorro" class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1">Ahorro: 0%</p>
+      </div>
+
+      <!-- Ingresos -->
+      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ingresos</span>
+          <span class="text-emerald-500 font-bold text-xs">▲</span>
+        </div>
+        <p id="totalIngresos" class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</p>
+        <p id="subIngresos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
       </div>
 
       <!-- Gastos -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm hover:shadow-md transition group">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-semibold text-slate-500 dark:text-azulcielo">Gastos del Mes</span>
-          <span class="p-1.5 rounded-lg bg-coral/10 text-coral text-xs">▼</span>
+      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Gastos</span>
+          <span class="text-coral font-bold text-xs">▼</span>
         </div>
-        <p id="totalGastos" class="text-2xl sm:text-3xl font-extrabold text-coral tracking-tight">$0.00</p>
-        <p id="subGastos" class="text-[11px] text-slate-400 dark:text-slate-400 mt-1">0 movimientos registrados</p>
+        <p id="totalGastos" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
+        <p id="subGastos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
       </div>
 
       <!-- Ahorro Total -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm hover:shadow-md transition group">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-semibold text-slate-500 dark:text-azulcielo">Ahorro Acumulado</span>
-          <span class="p-1.5 rounded-lg bg-azulcielo/10 text-azulcielo text-xs">🏦</span>
+      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ahorro Total</span>
+          <span class="text-xs">🏦</span>
         </div>
-        <p id="totalAhorro" class="text-2xl sm:text-3xl font-extrabold text-azulcielo-dark dark:text-azulcielo tracking-tight">$0.00</p>
-        <p id="subAhorro" class="text-[11px] text-slate-400 dark:text-slate-400 mt-1">Total en fondos activos</p>
+        <p id="totalAhorro" class="text-xl sm:text-2xl font-black text-azulcielo-dark dark:text-azulcielo tracking-tight">$0.00</p>
+        <p id="subAhorro" class="text-[10px] text-slate-400 mt-0.5">En fondos</p>
       </div>
 
       <!-- Deuda Pendiente -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm hover:shadow-md transition group">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-semibold text-slate-500 dark:text-azulcielo">Deuda Pendiente</span>
-          <span class="p-1.5 rounded-lg bg-coral/10 text-coral text-xs">⚠️</span>
+      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Deuda Total</span>
+          <span class="text-xs">💳</span>
         </div>
-        <p id="totalDeudas" class="text-2xl sm:text-3xl font-extrabold text-coral tracking-tight">$0.00</p>
-        <p id="subDeudas" class="text-[11px] text-slate-400 dark:text-slate-400 mt-1">Por liquidar</p>
-      </div>
-
-      <!-- Balance Neto -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm hover:shadow-md transition group">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-semibold text-slate-500 dark:text-azulcielo">Balance Neto (Mes)</span>
-          <span id="badgeBalance" class="p-1.5 rounded-lg bg-azulelectrico/10 text-azulelectrico text-xs">⚖️</span>
-        </div>
-        <p id="balanceNeto" class="text-2xl sm:text-3xl font-extrabold text-azulelectrico tracking-tight">$0.00</p>
-        <p id="tasaAhorro" class="text-[11px] font-semibold text-azulcielo-dark dark:text-azulcielo mt-1">Tasa de Ahorro: 0%</p>
+        <p id="totalDeudas" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
+        <p id="subDeudas" class="text-[10px] text-slate-400 mt-0.5">Por pagar</p>
       </div>
     </div>
 
-    <!-- 2. Sección de Presupuestos Límites por Categoría & Alertas -->
-    <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="p-2 rounded-xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico text-lg">
-            📊
-          </div>
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 dark:text-crema tracking-tight">Presupuestos por Categoría (Límites Mensuales)</h2>
-            <p class="text-xs text-slate-500 dark:text-azulcielo">Monitorea tus gastos máximos fijados para este mes</p>
-          </div>
+    <!-- 2. Sección Presupuestos Límites Mensuales -->
+    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5">
+      <div class="flex justify-between items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-base sm:text-lg">📊</span>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema truncate">Límites de Presupuesto</h2>
         </div>
-        <button onclick="mostrarModalPresupuestos()" class="self-start sm:self-auto bg-azulelectrico/10 dark:bg-azulelectrico/20 hover:bg-azulelectrico hover:text-white text-azulelectrico dark:text-azulcielo text-xs px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 border border-azulelectrico/30">
-          <span>⚙️</span> Configurar Límites
+        <button onclick="mostrarModalPresupuestos()" class="bg-azulelectrico/10 dark:bg-azulelectrico/20 hover:bg-azulelectrico hover:text-white text-azulelectrico dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulelectrico/30 active:scale-95 shrink-0">
+          ⚙️ Ajustar
         </button>
       </div>
 
-      <!-- Contenedor de Alertas de Presupuesto Excedido -->
+      <!-- Alertas dinámicas -->
       <div id="contenedorAlertasPresupuesto" class="hidden space-y-2"></div>
 
-      <!-- Grid de Tarjetas de Presupuesto de Categorías -->
-      <div id="gridPresupuestos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-        <!-- Render dinámico aquí -->
-      </div>
+      <!-- Grid de Presupuestos -->
+      <div id="gridPresupuestos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
     </div>
 
-    <!-- 3. Metas de Ahorro con progreso visual -->
-    <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="p-2 rounded-xl bg-azulcielo/10 dark:bg-azulcielo/20 text-azulcielo text-lg">
-            🎯
-          </div>
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 dark:text-crema tracking-tight">Metas de Ahorro</h2>
-            <p class="text-xs text-slate-500 dark:text-azulcielo">Define objetivos y observa tu avance acumulado</p>
-          </div>
+    <!-- 3. Metas de Ahorro -->
+    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5">
+      <div class="flex justify-between items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-base sm:text-lg">🎯</span>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema truncate">Metas de Ahorro</h2>
         </div>
-        <button onclick="mostrarModalMetaAhorro()" class="self-start sm:self-auto bg-azulcielo/15 dark:bg-azulcielo/20 hover:bg-azulcielo hover:text-slate-950 text-azulcielo-dark dark:text-azulcielo text-xs px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 border border-azulcielo/30">
-          <span>+</span> Nueva Meta
+        <button onclick="mostrarModalMetaAhorro()" class="bg-azulcielo/15 dark:bg-azulcielo/20 hover:bg-azulcielo hover:text-slate-950 text-azulcielo-dark dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulcielo/30 active:scale-95 shrink-0">
+          + Nueva
         </button>
       </div>
 
-      <!-- Grid de Metas de Ahorro -->
-      <div id="gridMetasAhorro" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Render dinámico de metas -->
-      </div>
+      <!-- Grid de Metas -->
+      <div id="gridMetasAhorro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
     </div>
 
-    <!-- 4. Registro de Movimientos y Control de Deudas -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- 4. Registro y Control de Deudas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
 
       <!-- Formulario de Registro Principal -->
-      <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+      <div id="seccionRegistrar" class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
             <span>✍️</span> Registrar Movimiento
           </h2>
-          <span class="text-[11px] font-semibold text-azulelectrico bg-azulelectrico/10 px-2 py-0.5 rounded-full">Nuevo</span>
+          <span class="text-[10px] font-bold text-azulelectrico bg-azulelectrico/10 px-2 py-0.5 rounded-full">Nuevo</span>
         </div>
 
         <form id="formMovimiento" class="space-y-3.5">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Tipo de Operación</label>
-            <select id="tipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Tipo de Operación</label>
+            <select id="tipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm">
               <option value="ingreso">🟢 Ingreso</option>
               <option value="gasto" selected>🔴 Gasto</option>
               <option value="ahorro">🟡 Ahorro (Fondo)</option>
             </select>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
-              <input type="number" id="monto" step="0.01" min="0.01" required placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+              <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
+              <input type="number" id="monto" step="0.01" min="0.01" required placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
-              <input type="date" id="fecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-xs font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+              <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
+              <input type="date" id="fecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Categoría / Acción</label>
-            <select id="categoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition"></select>
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Categoría</label>
+            <select id="categoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
           </div>
 
           <!-- Selector dinámico de Deudas -->
           <div id="contenedorDeudaSelect" class="hidden">
-            <label class="block text-xs text-coral font-bold mb-1">Seleccionar Deuda a Pagar</label>
-            <select id="deudaObjetivo" class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition"></select>
+            <label class="block text-xs text-coral font-bold mb-1">Deuda a Pagar</label>
+            <select id="deudaObjetivo" class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-coral focus:outline-none transition text-sm"></select>
           </div>
 
-          <!-- Selector dinámico de Metas de Ahorro (cuando es tipo Ahorro) -->
+          <!-- Selector dinámico de Metas de Ahorro -->
           <div id="contenedorMetaAhorroSelect" class="hidden">
-            <label class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1">Asociar a Meta de Ahorro (Opcional)</label>
-            <select id="metaAhorroSelect" class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition"></select>
+            <label class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1">Meta Asociada (Opcional)</label>
+            <select id="metaAhorroSelect" class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Descripción / Concepto</label>
-            <input type="text" id="descripcion" placeholder="Ej: Supermercado, Factura Luz, Salario" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Descripción / Concepto</label>
+            <input type="text" id="descripcion" placeholder="Ej: Supermercado, Alquiler..." required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
           </div>
 
-          <button type="submit" class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold p-3 rounded-xl shadow-lg shadow-azulelectrico/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="submit" class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold p-3 rounded-2xl shadow-lg shadow-azulelectrico/20 transition active:scale-[0.98] disabled:opacity-50">
             Guardar Movimiento
           </button>
         </form>
       </div>
 
-      <!-- Control de Deudas -->
-      <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4 lg:col-span-2 flex flex-col justify-between">
+      <!-- Control de Deudas (Adaptive: Cards en mobile, Tabla en desktop) -->
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4 lg:col-span-2 flex flex-col justify-between">
         <div>
-          <div class="flex justify-between items-center border-b border-slate-200 dark:border-azulcielo/20 pb-3 mb-4">
+          <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3 mb-3">
             <div class="flex items-center gap-2">
-              <span class="text-lg">💳</span>
-              <h2 class="text-lg font-bold text-coral tracking-tight">Control de Deudas y Acreedores</h2>
+              <span class="text-base sm:text-lg">💳</span>
+              <h2 class="text-sm sm:text-base font-bold text-coral">Control de Deudas</h2>
             </div>
-            <button onclick="mostrarModalDeuda()" class="bg-coral hover:bg-coral-hover text-white text-xs px-3.5 py-2 rounded-xl font-bold shadow-md shadow-coral/20 transition hover:scale-105 active:scale-95">+ Nueva Deuda</button>
+            <button onclick="mostrarModalDeuda()" class="bg-coral hover:bg-coral-hover text-white text-xs px-3 py-1.5 rounded-xl font-bold shadow-md shadow-coral/20 transition active:scale-95">+ Deuda</button>
           </div>
-          <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
+
+          <!-- Vista Desktop: Tabla -->
+          <div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
             <table class="w-full text-left text-sm">
               <thead class="bg-slate-100/75 dark:bg-slate-950/70 text-slate-600 dark:text-azulcielo text-xs uppercase font-bold">
                 <tr>
-                  <th class="p-3">Acreedor / Concepto</th>
-                  <th class="p-3 text-right">Monto Inicial</th>
+                  <th class="p-3">Acreedor</th>
+                  <th class="p-3 text-right">Inicial</th>
                   <th class="p-3 text-right">Abonado</th>
                   <th class="p-3 text-right">Saldo Restante</th>
                   <th class="p-3 text-center">Acciones</th>
@@ -353,116 +364,112 @@
               <tbody id="tablaDeudas" class="divide-y divide-slate-200 dark:divide-azulcielo/10"></tbody>
             </table>
           </div>
+
+          <!-- Vista Mobile: Tarjetas táctiles -->
+          <div id="listaDeudasMobile" class="sm:hidden space-y-2.5">
+            <!-- Render dinámico mobile -->
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- 5. Visualizaciones y Gráficos -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Gráfico Ingresos -->
-      <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col items-center justify-between">
-        <h2 class="text-base font-bold border-b border-slate-200 dark:border-azulcielo/20 pb-2 w-full text-azulelectrico flex items-center justify-between">
-          <span>Fuentes de Ingresos</span>
-          <span class="text-xs text-slate-400">Distribución</span>
+    <!-- 5. Visualizaciones y Gráficos (Con Pestañas interactivas en Mobile) -->
+    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+          <span>📈</span> Gráficos Financieros
         </h2>
-        <div class="w-full max-w-[220px] my-auto py-2">
-          <canvas id="graficoIngresos"></canvas>
+
+        <!-- Selector de pestañas para Mobile -->
+        <div class="flex sm:hidden p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-azulcielo/20 text-xs font-bold w-full justify-between">
+          <button id="tabIngresos" onclick="cambiarTabGrafico('ingresos')" class="flex-1 py-1.5 rounded-lg bg-azulelectrico text-white shadow-sm transition">Ingresos</button>
+          <button id="tabGastos" onclick="cambiarTabGrafico('gastos')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Gastos</button>
+          <button id="tabAhorros" onclick="cambiarTabGrafico('ahorros')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Ahorros</button>
         </div>
       </div>
 
-      <!-- Gráfico Gastos -->
-      <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col items-center justify-between">
-        <h2 class="text-base font-bold border-b border-slate-200 dark:border-azulcielo/20 pb-2 w-full text-coral flex items-center justify-between">
-          <span>Distribución de Gastos</span>
-          <span class="text-xs text-slate-400">Por Categoría</span>
-        </h2>
-        <div class="w-full max-w-[220px] my-auto py-2">
-          <canvas id="graficoGastos"></canvas>
+      <!-- Contenedor de gráficos -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Gráfico Ingresos -->
+        <div id="contenedorGraficoIngresos" class="p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex flex-col items-center justify-between">
+          <p class="text-xs font-bold text-azulelectrico uppercase mb-2">Fuentes de Ingreso</p>
+          <div class="w-full max-w-[200px] h-[200px] flex items-center justify-center">
+            <canvas id="graficoIngresos"></canvas>
+          </div>
         </div>
-      </div>
 
-      <!-- Gráfico Ahorros -->
-      <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col items-center justify-between">
-        <h2 class="text-base font-bold border-b border-slate-200 dark:border-azulcielo/20 pb-2 w-full text-azulcielo-dark dark:text-azulcielo flex items-center justify-between">
-          <span>Fondos de Ahorro</span>
-          <span class="text-xs text-slate-400">Saldos</span>
-        </h2>
-        <div class="w-full h-full min-h-[220px] flex items-center py-2">
-          <canvas id="graficoAhorros"></canvas>
+        <!-- Gráfico Gastos -->
+        <div id="contenedorGraficoGastos" class="hidden sm:flex p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex-col items-center justify-between">
+          <p class="text-xs font-bold text-coral uppercase mb-2">Distribución de Gastos</p>
+          <div class="w-full max-w-[200px] h-[200px] flex items-center justify-center">
+            <canvas id="graficoGastos"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico Ahorros -->
+        <div id="contenedorGraficoAhorros" class="hidden sm:flex p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex-col items-center justify-between">
+          <p class="text-xs font-bold text-azulcielo-dark dark:text-azulcielo uppercase mb-2">Fondos de Ahorro</p>
+          <div class="w-full h-[200px] flex items-center justify-center">
+            <canvas id="graficoAhorros"></canvas>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 6. Historial de Transacciones con Filtros Avanzados -->
-    <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-200 dark:border-azulcielo/20 pb-3">
+    <!-- 6. Historial de Transacciones con Chips de Filtro (Sin barra de texto) -->
+    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-crema tracking-tight flex items-center gap-2">
-            <span>📜</span> Historial de Transacciones
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+            <span>📜</span> Historial de Movimientos
           </h2>
-          <p id="conteoFiltradas" class="text-xs text-slate-500 dark:text-azulcielo">Mostrando 0 movimientos</p>
+          <p id="conteoFiltradas" class="text-[11px] text-slate-500 dark:text-azulcielo">0 movimientos</p>
         </div>
-
-        <!-- Botón para mostrar / ocultar panel de filtros -->
-        <button id="btnToggleFiltros" onclick="alternarPanelFiltros()" class="self-start sm:self-auto bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-azulcielo text-xs px-3.5 py-2 rounded-xl font-bold border border-slate-300 dark:border-azulcielo/30 transition flex items-center gap-1.5 shadow-sm">
-          <span>🔍</span> <span id="textoBtnFiltros">Filtros Avanzados</span>
-        </button>
+        <div id="resumenMontoFiltrado" class="text-xs font-black text-azulelectrico self-start sm:self-auto bg-azulelectrico/10 px-2.5 py-1 rounded-xl"></div>
       </div>
 
-      <!-- Panel de Filtros Avanzados (Plegable) -->
-      <div id="panelFiltros" class="hidden bg-slate-50 dark:bg-slate-950/70 p-4 rounded-xl border border-slate-200 dark:border-azulcielo/20 space-y-3.5 fade-in">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <!-- Búsqueda por texto -->
-          <div class="lg:col-span-2">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Buscar por concepto o palabra</label>
-            <input type="text" id="filtroTexto" placeholder="Ej: Tarjeta, Netflix, Salario..." class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-lg text-slate-900 dark:text-crema text-xs focus:border-azulelectrico focus:outline-none transition">
-          </div>
+      <!-- Filtros Inmersivos por Chips Táctiles (Sin barra de búsqueda) -->
+      <div class="space-y-2.5">
+        <!-- Chips de Tipo de Operación -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+          <button onclick="seleccionarChipTipo('')" id="chipTipoTodos" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-white shadow-sm transition shrink-0">
+            Todos
+          </button>
+          <button onclick="seleccionarChipTipo('gasto')" id="chipTipoGasto" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
+            🔴 Gastos
+          </button>
+          <button onclick="seleccionarChipTipo('ingreso')" id="chipTipoIngreso" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
+            🟢 Ingresos
+          </button>
+          <button onclick="seleccionarChipTipo('ahorro')" id="chipTipoAhorro" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
+            🟡 Ahorros
+          </button>
+        </div>
 
-          <!-- Filtro por Tipo -->
+        <!-- Filtros secundarios: Categoría y Alcance -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Tipo de Operación</label>
-            <select id="filtroTipo" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-lg text-slate-900 dark:text-crema text-xs focus:border-azulelectrico focus:outline-none transition">
-              <option value="">Todos los tipos</option>
-              <option value="ingreso">🟢 Ingresos</option>
-              <option value="gasto">🔴 Gastos</option>
-              <option value="ahorro">🟡 Ahorros</option>
-            </select>
-          </div>
-
-          <!-- Filtro por Categoría -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Categoría</label>
-            <select id="filtroCategoria" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-lg text-slate-900 dark:text-crema text-xs focus:border-azulelectrico focus:outline-none transition">
+            <select id="filtroCategoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
               <option value="">Todas las categorías</option>
             </select>
           </div>
-
-          <!-- Rango Temporal -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Alcance</label>
-            <select id="filtroAlcance" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-lg text-slate-900 dark:text-crema text-xs focus:border-azulelectrico focus:outline-none transition">
-              <option value="mes" selected>Solo mes seleccionado</option>
-              <option value="todo">Histórico completo (Todo)</option>
+            <select id="filtroAlcance" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
+              <option value="mes" selected>Este mes</option>
+              <option value="todo">Histórico completo</option>
             </select>
           </div>
-        </div>
-
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200 dark:border-azulcielo/15">
-          <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-azulcielo">
-            <span>Monto min: <input type="number" id="filtroMontoMin" placeholder="0" min="0" class="w-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 px-2 py-1 rounded text-slate-900 dark:text-crema ml-1 text-xs"></span>
-            <span>Monto max: <input type="number" id="filtroMontoMax" placeholder="∞" min="0" class="w-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 px-2 py-1 rounded text-slate-900 dark:text-crema ml-1 text-xs"></span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="limpiarFiltros()" class="text-xs text-slate-500 hover:text-coral transition font-semibold underline">Limpiar filtros</button>
-            <span id="resumenMontoFiltrado" class="text-xs font-bold text-azulelectrico bg-azulelectrico/10 px-2.5 py-1 rounded-lg"></span>
+          <div class="col-span-2 sm:col-span-1 flex items-center justify-end">
+            <button onclick="limpiarFiltros()" class="text-[11px] font-bold text-slate-500 dark:text-azulcielo hover:text-coral transition">
+              Restablecer filtros
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Tabla del Historial -->
-      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
+      <!-- Vista Desktop: Tabla -->
+      <div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-100/75 dark:bg-slate-950/70 text-slate-600 dark:text-azulcielo text-xs uppercase font-bold">
             <tr>
@@ -477,220 +484,219 @@
           <tbody id="tablaHistorial" class="divide-y divide-slate-200 dark:divide-azulcielo/10"></tbody>
         </table>
       </div>
+
+      <!-- Vista Mobile: Lista de Tarjetas táctiles fluidas -->
+      <div id="listaHistorialMobile" class="sm:hidden space-y-2.5">
+        <!-- Render dinámico mobile -->
+      </div>
     </div>
 
   </div>
 
-  <!-- MODALES -->
+  <!-- Botón Flotante de Acción Rápida (FAB) en Mobile para Registrar Movimiento -->
+  <button onclick="abrirRegistroMobile()" class="sm:hidden fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-azulelectrico text-white text-2xl font-black shadow-2xl flex items-center justify-center active:scale-90 transition border-2 border-white/20">
+    +
+  </button>
 
-  <!-- Modal Configurar Presupuestos Límite -->
-  <div id="modalPresupuestos" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 fade-in">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">⚙️</span>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-crema">Límites de Presupuesto Mensual</h3>
-        </div>
-        <button onclick="ocultarModalPresupuestos()" class="text-slate-400 hover:text-coral transition font-bold text-lg">✕</button>
+  <!-- MODALES ADAPTABLES (Bottom Sheet en Mobile, Modal centrado en Desktop) -->
+
+  <!-- Modal Configurar Presupuestos -->
+  <div id="modalPresupuestos" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-lg space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto slide-up sm:slide-none">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+          <span>⚙️</span> Límites de Presupuesto
+        </h3>
+        <button onclick="ocultarModalPresupuestos()" class="p-2 text-slate-400 hover:text-coral transition font-bold text-base">✕</button>
       </div>
-      <p class="text-xs text-slate-500 dark:text-azulcielo">Establece el gasto máximo mensual deseado para cada categoría. Deja en 0 o vacío para no aplicar límite.</p>
+      <p class="text-xs text-slate-500 dark:text-azulcielo">Establece el gasto máximo mensual por categoría. Deja en 0 para no limitar.</p>
       
-      <form id="formConfigPresupuestos" class="space-y-3 pt-2">
-        <div id="contenedorInputsPresupuesto" class="space-y-2.5">
-          <!-- Generado dinámicamente -->
-        </div>
-        <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-azulcielo/20">
-          <button type="button" onclick="ocultarModalPresupuestos()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-azulelectrico hover:bg-azulelectrico-hover text-white rounded-xl text-xs font-bold transition shadow-lg shadow-azulelectrico/20">Guardar Presupuestos</button>
+      <form id="formConfigPresupuestos" class="space-y-3 pt-1">
+        <div id="contenedorInputsPresupuesto" class="space-y-2.5"></div>
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
+          <button type="button" onclick="ocultarModalPresupuestos()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
+          <button type="submit" class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white rounded-xl text-xs font-bold transition shadow-md">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal Crear/Editar Meta de Ahorro -->
-  <div id="modalMetaAhorro" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 fade-in">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <h3 id="tituloModalMeta" class="text-lg font-bold text-azulcielo-dark dark:text-azulcielo flex items-center gap-2">
-          <span>🎯</span> Nueva Meta de Ahorro
+  <!-- Modal Meta de Ahorro -->
+  <div id="modalMetaAhorro" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h3 id="tituloModalMeta" class="text-base sm:text-lg font-bold text-azulcielo-dark dark:text-azulcielo flex items-center gap-2">
+          <span>🎯</span> Nueva Meta
         </h3>
-        <button onclick="ocultarModalMetaAhorro()" class="text-slate-400 hover:text-coral transition font-bold text-lg">✕</button>
+        <button onclick="ocultarModalMetaAhorro()" class="p-2 text-slate-400 hover:text-coral transition font-bold text-base">✕</button>
       </div>
 
-      <form id="formMetaAhorro" class="space-y-4">
+      <form id="formMetaAhorro" class="space-y-3.5">
         <input type="hidden" id="metaId">
-        
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Nombre del Objetivo</label>
-          <input type="text" id="metaNombre" placeholder="Ej: Fondo de Emergencia, Vacaciones, Laptop" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Nombre del Objetivo</label>
+          <input type="text" id="metaNombre" placeholder="Ej: Fondo Emergencia, Vacaciones" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Monto Objetivo ($)</label>
-            <input type="number" id="metaMonto" step="0.01" min="1" placeholder="1000.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto Objetivo ($)</label>
+            <input type="number" id="metaMonto" step="0.01" min="1" placeholder="1000.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold text-sm focus:border-azulelectrico focus:outline-none transition">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Ícono</label>
-            <select id="metaIcono" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-lg focus:border-azulelectrico focus:outline-none transition">
-              <option value="🛡️">🛡️ Fondo Emergencia</option>
-              <option value="🏖️">🏖️ Vacaciones</option>
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Ícono</label>
+            <select id="metaIcono" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
+              <option value="🛡️">🛡️ Emergencia</option>
+              <option value="🏖️">🏖️ Viaje</option>
               <option value="💻">💻 Tecnología</option>
-              <option value="🚗">🚗 Vehículo</option>
-              <option value="🏠">🏠 Hogar</option>
-              <option value="🎓">🎓 Educación</option>
-              <option value="💍">💍 Boda / Especial</option>
-              <option value="💰">💰 Ahorro Libre</option>
+              <option value="🚗">🚗 Auto</option>
+              <option value="🏠">🏠 Casa</option>
+              <option value="💰">💰 Libre</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Fecha Límite (Opcional)</label>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Fecha Límite (Opcional)</label>
           <input type="date" id="metaFechaLimite" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-xs focus:border-azulelectrico focus:outline-none transition">
         </div>
 
-        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-azulcielo/20">
-          <button type="button" onclick="ocultarModalMetaAhorro()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-azulcielo hover:bg-azulcielo-dark text-slate-950 font-bold rounded-xl text-xs transition shadow-md shadow-azulcielo/20">Guardar Meta</button>
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
+          <button type="button" onclick="ocultarModalMetaAhorro()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
+          <button type="submit" class="flex-1 py-3 bg-azulcielo hover:bg-azulcielo-dark text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Guardar Meta</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal Crear Deuda -->
-  <div id="modalDeuda" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 fade-in">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <h3 class="text-lg font-bold text-coral flex items-center gap-2">
-          <span>💳</span> Registrar Deuda o Acreedor
+  <div id="modalDeuda" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h3 class="text-base sm:text-lg font-bold text-coral flex items-center gap-2">
+          <span>💳</span> Registrar Deuda
         </h3>
-        <button onclick="ocultarModalDeuda()" class="text-slate-400 hover:text-coral transition font-bold text-lg">✕</button>
+        <button onclick="ocultarModalDeuda()" class="p-2 text-slate-400 hover:text-coral transition font-bold text-base">✕</button>
       </div>
 
-      <form id="formNuevaDeuda" class="space-y-4">
+      <form id="formNuevaDeuda" class="space-y-3.5">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Acreedor / Nombre de la Deuda</label>
-          <input type="text" id="deudaNombre" placeholder="Ej: Tarjeta Crédito, Préstamo Familiar" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Acreedor / Concepto</label>
+          <input type="text" id="deudaNombre" placeholder="Ej: Tarjeta Crédito, Préstamo" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Monto Inicial ($)</label>
-          <input type="number" id="deudaMontoInicial" step="0.01" min="0.01" placeholder="0.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto Inicial ($)</label>
+          <input type="number" id="deudaMontoInicial" step="0.01" min="0.01" placeholder="0.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
-        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-azulcielo/20">
-          <button type="button" onclick="ocultarModalDeuda()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-coral hover:bg-coral-hover text-white rounded-xl text-xs font-bold transition shadow-lg shadow-coral/20 disabled:opacity-50">Guardar Deuda</button>
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
+          <button type="button" onclick="ocultarModalDeuda()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
+          <button type="submit" class="flex-1 py-3 bg-coral hover:bg-coral-hover text-white font-bold rounded-xl text-xs transition shadow-md">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal Editar deuda existente -->
-  <div id="modalIncrementoDeuda" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 fade-in">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <h3 class="text-lg font-bold text-coral flex items-center gap-2">
+  <!-- Modal Editar Deuda -->
+  <div id="modalIncrementoDeuda" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h3 class="text-base sm:text-lg font-bold text-coral flex items-center gap-2">
           <span>✏️</span> Editar Deuda
         </h3>
-        <button onclick="ocultarModalIncremento()" class="text-slate-400 hover:text-coral transition font-bold text-lg">✕</button>
+        <button onclick="ocultarModalIncremento()" class="p-2 text-slate-400 hover:text-coral transition font-bold text-base">✕</button>
       </div>
 
-      <form id="formIncrementoDeuda" class="space-y-4">
+      <form id="formIncrementoDeuda" class="space-y-3.5">
         <input type="hidden" id="incrementoDeudaId">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Nombre de la deuda</label>
-          <input type="text" id="incrementoNombre" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Nombre</label>
+          <input type="text" id="incrementoNombre" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Monto acumulado total ($)</label>
-          <input type="number" id="incrementoMonto" step="0.01" min="0" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
-          <p class="text-[11px] text-slate-500 dark:text-azulcielo/70 mt-1">Este es el monto total original de la deuda (no el saldo restante).</p>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto acumulado total ($)</label>
+          <input type="number" id="incrementoMonto" step="0.01" min="0" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
-        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-azulcielo/20">
-          <button type="button" onclick="ocultarModalIncremento()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-coral hover:bg-coral-hover text-white rounded-xl text-xs font-bold transition shadow-lg shadow-coral/20 disabled:opacity-50">Guardar cambios</button>
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
+          <button type="button" onclick="ocultarModalIncremento()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
+          <button type="submit" class="flex-1 py-3 bg-coral hover:bg-coral-hover text-white font-bold rounded-xl text-xs transition shadow-md">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal Editar Movimiento -->
-  <div id="modalEditarMovimiento" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 fade-in">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-200 dark:border-azulcielo/20 pb-3">
-        <h3 class="text-lg font-bold text-azulelectrico flex items-center gap-2">
+  <div id="modalEditarMovimiento" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h3 class="text-base sm:text-lg font-bold text-azulelectrico flex items-center gap-2">
           <span>✏️</span> Editar Movimiento
         </h3>
-        <button onclick="ocultarModalEditarMovimiento()" class="text-slate-400 hover:text-coral transition font-bold text-lg">✕</button>
+        <button onclick="ocultarModalEditarMovimiento()" class="p-2 text-slate-400 hover:text-coral transition font-bold text-base">✕</button>
       </div>
 
       <form id="formEditarMovimiento" class="space-y-3.5">
         <input type="hidden" id="editId">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Tipo de Operación</label>
-          <select id="editTipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Tipo</label>
+          <select id="editTipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm">
             <option value="ingreso">🟢 Ingreso</option>
             <option value="gasto">🔴 Gasto</option>
             <option value="ahorro">🟡 Ahorro</option>
           </select>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
-            <input type="number" id="editMonto" step="0.01" min="0.01" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
+            <input type="number" id="editMonto" step="0.01" min="0.01" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
-            <input type="date" id="editFecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-xs font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+            <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
+            <input type="date" id="editFecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Categoría / Acción</label>
-          <select id="editCategoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition"></select>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Categoría</label>
+          <select id="editCategoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
         </div>
         <div id="editContenedorDeudaSelect" class="hidden">
-          <label class="block text-xs text-coral font-bold mb-1">Seleccionar Deuda a Pagar</label>
-          <select id="editDeudaObjetivo" class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-medium focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition"></select>
+          <label class="block text-xs text-coral font-bold mb-1">Deuda a Pagar</label>
+          <select id="editDeudaObjetivo" class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-coral focus:outline-none transition text-sm"></select>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 dark:text-azulcielo mb-1">Descripción</label>
-          <input type="text" id="editDescripcion" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Descripción</label>
+          <input type="text" id="editDescripcion" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
-        <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-azulcielo/20">
-          <button type="button" onclick="ocultarModalEditarMovimiento()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-azulelectrico hover:bg-azulelectrico-hover text-white rounded-xl text-xs font-bold transition shadow-lg shadow-azulelectrico/20 disabled:opacity-50">Guardar cambios</button>
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
+          <button type="button" onclick="ocultarModalEditarMovimiento()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
+          <button type="submit" class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- SCRIPT PRINCIPAL -->
+  <!-- SCRIPT DE LA APLICACIÓN -->
   <script>
-    // ⚙️ CONFIGURACIÓN DE SUPABASE
     const SUPABASE_URL = 'https://xqkbactszenwuxjeymuq.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_7Umv6z1GcKuL5KzPGfIG2w_3hFPivbA';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Estado principal de datos
     let transacciones = [];
     let deudas = [];
-    let presupuestos = {}; // { 'Comida': 300, 'Ocio': 150, ... }
-    let metasAhorro = [];  // [ { id, nombre, objetivo, icono, fechaLimite } ]
+    let presupuestos = {};
+    let metasAhorro = [];
+    let filtroTipoActual = '';
 
-    // Gráficos Chart.js
     let graficoGastosChart = null;
     let graficoIngresosChart = null;
     let graficoAhorrosChart = null;
 
-    // Catálogo de categorías base
     const categoriasMap = {
       ingreso: ['Cliente / Proyecto', 'Sueldo / Salario', 'Ventas', 'Inversión', 'Otros Ingresos'],
       gasto: ['Comida', 'Ocio', 'Pago de Deuda', 'Emergencia', 'Servicios', 'Herramientas / Software', 'Transporte', 'Salud', 'Educación', 'Otros Gastos'],
       ahorro: ['Depositar a Ahorro', 'Retirar / Usar Ahorro']
     };
 
-    // Elementos del DOM
     const tipoSelect = document.getElementById('tipo');
     const categoriaSelect = document.getElementById('categoria');
     const contenedorDeudaSelect = document.getElementById('contenedorDeudaSelect');
@@ -708,11 +714,8 @@
     function inicializarTema() {
       const temaGuardado = localStorage.getItem('tema_presupuesto');
       const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      
       if (temaGuardado === 'light') {
         aplicarTema('light');
-      } else if (temaGuardado === 'dark' || prefiereOscuro) {
-        aplicarTema('dark');
       } else {
         aplicarTema('dark');
       }
@@ -732,7 +735,6 @@
         if (icono) icono.textContent = '☀️';
         localStorage.setItem('tema_presupuesto', 'light');
       }
-      // Si la app está cargada, actualiza los gráficos con los colores de tema adecuados
       if (sesionInicializada) {
         actualizarInterfaz();
       }
@@ -744,9 +746,9 @@
       mostrarToast(esOscuro ? 'Modo Claro activado' : 'Modo Oscuro activado', 'info');
     }
 
-    // ---------- Toasts & Notificaciones Visuales ----------
+    // ---------- Toasts ----------
 
-    function mostrarToast(mensaje, tipo = 'info', duracion = 3500) {
+    function mostrarToast(mensaje, tipo = 'info', duracion = 3200) {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
       
@@ -764,13 +766,13 @@
         warning: '⚠'
       };
 
-      toast.className = `p-3.5 rounded-xl shadow-xl text-xs font-semibold flex items-center justify-between gap-3 pointer-events-auto border toast-enter ${estilos[tipo] || estilos.info}`;
+      toast.className = `p-3.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center justify-between gap-3 pointer-events-auto border toast-enter ${estilos[tipo] || estilos.info}`;
       toast.innerHTML = `
-        <div class="flex items-center gap-2">
-          <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-[10px]">${iconos[tipo] || '•'}</span>
+        <div class="flex items-center gap-2.5">
+          <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">${iconos[tipo] || '•'}</span>
           <span>${escapeHTML(mensaje)}</span>
         </div>
-        <button type="button" class="text-white/70 hover:text-white font-bold ml-2 text-sm leading-none" onclick="this.parentElement.remove()">✕</button>
+        <button type="button" class="text-white/70 hover:text-white font-bold text-sm" onclick="this.parentElement.remove()">✕</button>
       `;
 
       container.appendChild(toast);
@@ -790,7 +792,7 @@
         info: 'bg-azulcielo/10 border-azulcielo text-azulcielo-dark dark:text-azulcielo',
         ok: 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400'
       };
-      avisoAuth.className = `text-sm p-3.5 rounded-xl border ${estilos[tipo]}`;
+      avisoAuth.className = `text-xs sm:text-sm p-3.5 rounded-2xl border ${estilos[tipo]}`;
       avisoAuth.textContent = mensaje;
       avisoAuth.classList.remove('hidden');
     }
@@ -801,7 +803,7 @@
         info: 'bg-azulcielo/15 border-azulcielo text-azulcielo-dark dark:text-azulcielo',
         ok: 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400'
       };
-      avisoEstado.className = `text-sm p-3.5 rounded-xl border font-medium ${estilos[tipo]}`;
+      avisoEstado.className = `text-xs sm:text-sm p-3.5 rounded-2xl border font-medium ${estilos[tipo]}`;
       avisoEstado.textContent = mensaje;
       avisoEstado.classList.remove('hidden');
       if (tipo !== 'error') {
@@ -831,7 +833,7 @@
             ? 'Correo o contraseña incorrectos.'
             : 'Error al iniciar sesión: ' + error.message, 'error');
         } else {
-          mostrarToast('¡Bienvenido de vuelta!', 'success');
+          mostrarToast('¡Sesión iniciada!', 'success');
         }
       } finally {
         btn.disabled = false; btnCrear.disabled = false;
@@ -850,13 +852,13 @@
         const password = document.getElementById('authPassword').value;
 
         if (!email || password.length < 6) {
-          mostrarAvisoAuth('Ingresa un correo válido y una contraseña de al menos 6 caracteres.', 'error');
+          mostrarAvisoAuth('Ingresa un correo y contraseña de mín. 6 caracteres.', 'error');
           return;
         }
 
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) {
-          mostrarAvisoAuth('Error al crear la cuenta: ' + error.message, 'error');
+          mostrarAvisoAuth('Error: ' + error.message, 'error');
           return;
         }
 
@@ -864,7 +866,7 @@
           mostrarAvisoAuth('Cuenta creada correctamente.', 'ok');
           mostrarToast('Cuenta creada con éxito', 'success');
         } else {
-          mostrarAvisoAuth('Cuenta creada. Revisa tu correo para confirmar antes de ingresar.', 'info');
+          mostrarAvisoAuth('Revisa tu correo para confirmar antes de ingresar.', 'info');
         }
       } finally {
         btn.disabled = false; btnCrear.disabled = false;
@@ -892,7 +894,6 @@
         .on('postgres_changes', { event: '*', schema: 'public', table: 'deudas' }, cargarDatosCloud)
         .subscribe((status) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-            console.warn('Canal Realtime desconectado, reintentando en 3s...', status);
             supabaseClient.removeChannel(canalRealtime);
             canalRealtime = null;
             setTimeout(() => { if (usuarioActualId) suscribirRealtime(); }, 3000);
@@ -905,17 +906,6 @@
         cargarDatosCloud();
       }
     });
-    window.addEventListener('focus', () => {
-      if (usuarioActualId && navigator.onLine) {
-        cargarDatosCloud();
-      }
-    });
-
-    setInterval(() => {
-      if (document.visibilityState === 'visible' && usuarioActualId && navigator.onLine) {
-        cargarDatosCloud();
-      }
-    }, 30000);
 
     supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
@@ -926,7 +916,6 @@
         document.getElementById('avisoAuth').classList.add('hidden');
         usuarioActualId = session.user.id;
 
-        // Carga configuración local de presupuestos y metas de ahorro del usuario
         cargarPresupuestosYMetasLocales();
 
         if (!sesionInicializada) {
@@ -951,7 +940,7 @@
       }
     });
 
-    // ---------- Modo Offline: Cache + Cola ----------
+    // ---------- Modo Offline ----------
 
     function claveCache() { return `presupuesto_cache_${usuarioActualId}`; }
     function claveCola() { return `presupuesto_cola_${usuarioActualId}`; }
@@ -977,10 +966,7 @@
       if (!usuarioActualId) return;
       try {
         const crudo = localStorage.getItem(claveCache());
-        if (!crudo) {
-          mostrarAviso('Sin conexión y sin datos guardados en este dispositivo todavía.', 'error');
-          return;
-        }
+        if (!crudo) return;
         const cache = JSON.parse(crudo);
         transacciones = cache.transacciones || [];
         deudas = cache.deudas || [];
@@ -988,7 +974,6 @@
         metasAhorro = cache.metasAhorro || [];
         actualizarOpcionesCategoria();
         actualizarInterfaz();
-        mostrarAviso('Sin conexión. Mostrando los últimos datos guardados en este dispositivo.', 'info');
       } catch (err) {
         console.error('No se pudo leer la caché local:', err);
       }
@@ -999,11 +984,10 @@
       try {
         const pCrudo = localStorage.getItem(clavePresupuestos());
         presupuestos = pCrudo ? JSON.parse(pCrudo) : {};
-        
         const mCrudo = localStorage.getItem(claveMetas());
         metasAhorro = mCrudo ? JSON.parse(mCrudo) : [];
       } catch (e) {
-        console.warn('Error cargando preferencias de presupuestos/metas:', e);
+        console.warn(e);
       }
     }
 
@@ -1021,11 +1005,7 @@
 
     function obtenerCola() {
       if (!usuarioActualId) return [];
-      try {
-        return JSON.parse(localStorage.getItem(claveCola()) || '[]');
-      } catch {
-        return [];
-      }
+      try { return JSON.parse(localStorage.getItem(claveCola()) || '[]'); } catch { return []; }
     }
 
     function guardarCola(cola) {
@@ -1040,25 +1020,17 @@
       actualizarIndicadorConexion();
     }
 
-    function aplicarCambioLocalDeuda(id, cambios) {
-      const idx = deudas.findIndex(d => d.id === id);
-      if (idx === -1) return;
-      if (cambios.nombre !== undefined) deudas[idx].nombre = cambios.nombre;
-      if (cambios.monto_inicial !== undefined) deudas[idx].montoInicial = cambios.monto_inicial;
-      guardarCacheLocal();
-    }
-
     function actualizarIndicadorConexion() {
       const el = document.getElementById('indicadorConexion');
       const pendientes = obtenerCola().length;
 
       if (!navigator.onLine) {
-        el.textContent = pendientes > 0 ? `🔴 Sin conexión · ${pendientes} pendiente(s)` : '🔴 Sin conexión';
-        el.className = 'text-xs font-bold px-2.5 py-1.5 rounded-lg border bg-coral/15 border-coral text-coral';
+        el.textContent = pendientes > 0 ? `🔴 Offline · ${pendientes} pend.` : '🔴 Offline';
+        el.className = 'text-[11px] font-bold px-2 py-0.5 rounded-lg border bg-coral/15 border-coral text-coral';
         el.classList.remove('hidden');
       } else if (pendientes > 0) {
-        el.textContent = `🟡 Sincronizando ${pendientes} cambio(s)...`;
-        el.className = 'text-xs font-bold px-2.5 py-1.5 rounded-lg border bg-azulcielo/20 border-azulcielo text-azulcielo-dark dark:text-azulcielo';
+        el.textContent = `🟡 Sincronizando ${pendientes}...`;
+        el.className = 'text-[11px] font-bold px-2 py-0.5 rounded-lg border bg-azulcielo/20 border-azulcielo text-azulcielo-dark dark:text-azulcielo';
         el.classList.remove('hidden');
       } else {
         el.classList.add('hidden');
@@ -1090,14 +1062,13 @@
           cola = cola.filter(o => o !== op);
           guardarCola(cola);
         } catch (err) {
-          console.error('Error sincronizando operación pendiente:', op, err);
-          mostrarToast('Algunos cambios se sincronizarán más tarde', 'warning');
+          console.error(err);
           actualizarIndicadorConexion();
           return;
         }
       }
 
-      mostrarToast('Todos los cambios sincronizados con la nube', 'success');
+      mostrarToast('Cambios sincronizados con la nube', 'success');
       actualizarIndicadorConexion();
       await cargarDatosCloud();
       suscribirRealtime();
@@ -1109,7 +1080,7 @@
     });
     window.addEventListener('offline', () => {
       actualizarIndicadorConexion();
-      mostrarToast('Modo offline: los cambios se guardan localmente', 'info');
+      mostrarToast('Modo offline activo', 'info');
     });
 
     // ---------- Utilidades ----------
@@ -1134,7 +1105,41 @@
       btn.textContent = btn.dataset.textoOriginal || btn.textContent;
     }
 
-    // ---------- Categorías & Selector dinámico ----------
+    function abrirRegistroMobile() {
+      const seccion = document.getElementById('seccionRegistrar');
+      seccion.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('monto').focus();
+    }
+
+    // ---------- Pestañas de Gráficos (Mobile) ----------
+
+    function cambiarTabGrafico(tab) {
+      const gIng = document.getElementById('contenedorGraficoIngresos');
+      const gGas = document.getElementById('contenedorGraficoGastos');
+      const gAho = document.getElementById('contenedorGraficoAhorros');
+
+      const tIng = document.getElementById('tabIngresos');
+      const tGas = document.getElementById('tabGastos');
+      const tAho = document.getElementById('tabAhorros');
+
+      const claseActiva = 'flex-1 py-1.5 rounded-lg bg-azulelectrico text-white shadow-sm transition';
+      const claseInactiva = 'flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition';
+
+      tIng.className = tab === 'ingresos' ? claseActiva : claseInactiva;
+      tGas.className = tab === 'gastos' ? claseActiva : claseInactiva;
+      tAho.className = tab === 'ahorros' ? claseActiva : claseInactiva;
+
+      gIng.classList.toggle('hidden', tab !== 'ingresos');
+      gIng.classList.toggle('flex', tab === 'ingresos');
+
+      gGas.classList.toggle('hidden', tab !== 'gastos');
+      gGas.classList.toggle('flex', tab === 'gastos');
+
+      gAho.classList.toggle('hidden', tab !== 'ahorros');
+      gAho.classList.toggle('flex', tab === 'ahorros');
+    }
+
+    // ---------- Categorías & Selectores ----------
 
     function actualizarOpcionesCategoria() {
       const tipo = tipoSelect.value;
@@ -1143,7 +1148,6 @@
     }
 
     function evaluarSeleccionesEspeciales() {
-      // Deudas
       if (tipoSelect.value === 'gasto' && categoriaSelect.value === 'Pago de Deuda') {
         contenedorDeudaSelect.classList.remove('hidden');
         actualizarSelectDeudas();
@@ -1151,7 +1155,6 @@
         contenedorDeudaSelect.classList.add('hidden');
       }
 
-      // Metas de ahorro
       if (tipoSelect.value === 'ahorro') {
         contenedorMetaAhorroSelect.classList.remove('hidden');
         actualizarSelectMetas();
@@ -1175,12 +1178,9 @@
         metasAhorro.map(m => `<option value="${escapeHTML(m.nombre)}">${escapeHTML(m.icono || '🎯')} ${escapeHTML(m.nombre)} (Meta: $${m.objetivo.toFixed(2)})</option>`).join('');
     }
 
-    // Al seleccionar una meta, autocompleta la descripción
     metaAhorroSelect.addEventListener('change', () => {
       const val = metaAhorroSelect.value;
-      if (val) {
-        document.getElementById('descripcion').value = val;
-      }
+      if (val) document.getElementById('descripcion').value = val;
     });
 
     const hoy = new Date();
@@ -1195,19 +1195,12 @@
     document.getElementById('mesFiltro').addEventListener('change', actualizarInterfaz);
 
     // Eventos de filtros
-    document.getElementById('filtroTexto').addEventListener('input', renderizarHistorialFiltrado);
-    document.getElementById('filtroTipo').addEventListener('change', () => {
-      actualizarOpcionesFiltroCategoria();
-      renderizarHistorialFiltrado();
-    });
     document.getElementById('filtroCategoria').addEventListener('change', renderizarHistorialFiltrado);
     document.getElementById('filtroAlcance').addEventListener('change', renderizarHistorialFiltrado);
-    document.getElementById('filtroMontoMin').addEventListener('input', renderizarHistorialFiltrado);
-    document.getElementById('filtroMontoMax').addEventListener('input', renderizarHistorialFiltrado);
 
     actualizarOpcionesCategoria();
 
-    // ---------- Gestión de Modales ----------
+    // ---------- Modales ----------
 
     function mostrarModalDeuda() { document.getElementById('modalDeuda').classList.remove('hidden'); }
     function ocultarModalDeuda() { document.getElementById('modalDeuda').classList.add('hidden'); }
@@ -1239,17 +1232,20 @@
           document.getElementById('metaMonto').value = m.objetivo;
           document.getElementById('metaIcono').value = m.icono || '🎯';
           document.getElementById('metaFechaLimite').value = m.fechaLimite || '';
-          document.getElementById('tituloModalMeta').innerHTML = '<span>✏️</span> Editar Meta de Ahorro';
+          document.getElementById('tituloModalMeta').innerHTML = '<span>✏️</span> Editar Meta';
         }
       } else {
         document.getElementById('metaId').value = '';
-        document.getElementById('tituloModalMeta').innerHTML = '<span>🎯</span> Nueva Meta de Ahorro';
+        document.getElementById('tituloModalMeta').innerHTML = '<span>🎯</span> Nueva Meta';
       }
       modal.classList.remove('hidden');
     }
     function ocultarModalMetaAhorro() { document.getElementById('modalMetaAhorro').classList.add('hidden'); }
 
-    // Cerrar modales con tecla ESC
+    function ocultarModalEditarMovimiento() {
+      document.getElementById('modalEditarMovimiento').classList.add('hidden');
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         ocultarModalDeuda();
@@ -1273,8 +1269,7 @@
         .select('*');
 
       if (errTrans || errDeudas) {
-        console.error(errTrans || errDeudas);
-        mostrarAviso('Error al sincronizar con Supabase. Mostrando datos locales.', 'error');
+        mostrarAviso('Mostrando datos almacenados localmente.', 'info');
         return;
       }
 
@@ -1292,20 +1287,18 @@
       actualizarInterfaz();
     }
 
-    // ---------- Módulo 1: Presupuestos Límite por Categoría ----------
+    // ---------- Módulo: Presupuestos ----------
 
     function renderizarInputsPresupuesto() {
       const contenedor = document.getElementById('contenedorInputsPresupuesto');
-      const categoriasGasto = categoriasMap.gasto;
-
-      contenedor.innerHTML = categoriasGasto.map(cat => {
+      contenedor.innerHTML = categoriasMap.gasto.map(cat => {
         const limiteActual = presupuestos[cat] || '';
         return `
           <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/20">
-            <span class="text-xs font-semibold text-slate-700 dark:text-crema flex-1">${escapeHTML(cat)}</span>
-            <div class="flex items-center gap-1.5 w-36">
+            <span class="text-xs font-bold text-slate-700 dark:text-crema truncate">${escapeHTML(cat)}</span>
+            <div class="flex items-center gap-1.5 w-32 shrink-0">
               <span class="text-xs text-slate-400 font-bold">$</span>
-              <input type="number" step="1" min="0" data-categoria="${escapeHTML(cat)}" value="${limiteActual}" placeholder="Sin límite" class="input-presupuesto w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 p-1.5 rounded-lg text-slate-900 dark:text-crema text-xs font-bold text-right focus:border-azulelectrico focus:outline-none">
+              <input type="number" step="1" min="0" data-categoria="${escapeHTML(cat)}" value="${limiteActual}" placeholder="Sin límite" class="input-presupuesto w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-lg text-slate-900 dark:text-crema text-xs font-bold text-right focus:border-azulelectrico focus:outline-none">
             </div>
           </div>
         `;
@@ -1320,15 +1313,13 @@
       inputs.forEach(inp => {
         const cat = inp.dataset.categoria;
         const val = parseFloat(inp.value);
-        if (!isNaN(val) && val > 0) {
-          presupuestos[cat] = val;
-        }
+        if (!isNaN(val) && val > 0) presupuestos[cat] = val;
       });
 
       guardarPresupuestosLocales();
       ocultarModalPresupuestos();
       actualizarInterfaz();
-      mostrarToast('Presupuestos actualizados con éxito', 'success');
+      mostrarToast('Presupuestos guardados', 'success');
     });
 
     function renderizarSeccionPresupuestos(gastosPorCat) {
@@ -1339,10 +1330,10 @@
       if (!categoriasConPresupuesto.length) {
         contenedorAlertas.classList.add('hidden');
         grid.innerHTML = `
-          <div class="col-span-full text-center py-6 border border-dashed border-slate-300 dark:border-azulcielo/30 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-950/40">
-            <p class="text-slate-500 dark:text-azulcielo text-sm mb-2">No has configurado límites de gasto mensual.</p>
-            <button onclick="mostrarModalPresupuestos()" class="text-xs bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold px-4 py-2 rounded-xl transition shadow-md">
-              Establecer presupuestos por categoría
+          <div class="col-span-full text-center py-5 border border-dashed border-slate-300 dark:border-azulcielo/30 rounded-2xl p-5 bg-slate-50/50 dark:bg-slate-950/40">
+            <p class="text-slate-500 dark:text-azulcielo text-xs mb-2">No has fijado límites de gasto mensual.</p>
+            <button onclick="mostrarModalPresupuestos()" class="text-xs bg-azulelectrico text-white font-bold px-3.5 py-1.5 rounded-xl transition shadow-md">
+              Definir límites
             </button>
           </div>
         `;
@@ -1365,40 +1356,35 @@
         if (excedido) {
           colorBarra = 'bg-coral';
           colorTexto = 'text-coral';
-          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-coral/20 text-coral animate-pulse">¡Excedido!</span>';
-          
+          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-coral/20 text-coral animate-pulse">Excedido</span>';
           alertasHTML += `
-            <div class="p-3 rounded-xl bg-coral/15 border border-coral text-coral text-xs font-semibold flex items-center justify-between gap-2">
-              <span>⚠️ <strong>Alerta:</strong> Has superado el presupuesto de <strong>${escapeHTML(cat)}</strong> por <strong>$${(gastado - limite).toFixed(2)}</strong>.</span>
-              <span class="text-[11px] underline cursor-pointer" onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')">Ver gastos</span>
+            <div class="p-3 rounded-2xl bg-coral/15 border border-coral text-coral text-xs font-bold flex items-center justify-between gap-2">
+              <span>⚠️ <strong>${escapeHTML(cat)}</strong> excedió su límite por <strong>$${(gastado - limite).toFixed(2)}</strong>.</span>
+              <button onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')" class="text-[11px] underline shrink-0">Ver</button>
             </div>
           `;
         } else if (porcentaje >= 80) {
           colorBarra = 'bg-amber-500';
           colorTexto = 'text-amber-500';
-          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">Al 80%+</span>';
+          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">80%+</span>';
         }
 
         return `
-          <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-azulcielo/20 space-y-2.5 shadow-sm">
+          <div class="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 space-y-2 shadow-sm">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-800 dark:text-crema">${escapeHTML(cat)}</span>
+              <span class="text-xs font-bold text-slate-800 dark:text-crema truncate">${escapeHTML(cat)}</span>
               ${badgeEstado}
             </div>
-            
             <div class="flex items-baseline justify-between text-xs">
-              <span class="font-extrabold ${colorTexto}">$${gastado.toFixed(2)}</span>
-              <span class="text-slate-400 dark:text-slate-500 font-semibold">Límite: $${limite.toFixed(2)}</span>
+              <span class="font-black ${colorTexto}">$${gastado.toFixed(2)}</span>
+              <span class="text-slate-400 font-semibold text-[11px]">Máx: $${limite.toFixed(2)}</span>
             </div>
-
-            <!-- Barra de progreso -->
-            <div class="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+            <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
               <div class="${colorBarra} h-full rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
             </div>
-
-            <div class="flex justify-between text-[11px] text-slate-500 dark:text-azulcielo font-medium">
-              <span>${porcentaje.toFixed(0)}% consumido</span>
-              <span>${excedido ? `Exceso: $${(gastado - limite).toFixed(2)}` : `Quedan: $${restante.toFixed(2)}`}</span>
+            <div class="flex justify-between text-[10px] text-slate-500 dark:text-azulcielo font-semibold">
+              <span>${porcentaje.toFixed(0)}% usado</span>
+              <span>${excedido ? `+$${(gastado - limite).toFixed(2)}` : `-$${restante.toFixed(2)}`}</span>
             </div>
           </div>
         `;
@@ -1412,7 +1398,7 @@
       }
     }
 
-    // ---------- Módulo 2: Metas de Ahorro ----------
+    // ---------- Módulo: Metas de Ahorro ----------
 
     document.getElementById('formMetaAhorro').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -1423,37 +1409,26 @@
       const fechaLimite = document.getElementById('metaFechaLimite').value;
 
       if (!nombre || isNaN(objetivo) || objetivo <= 0) {
-        mostrarToast('Ingresa un nombre y monto objetivo válidos', 'error');
+        mostrarToast('Ingresa un nombre y monto válido', 'error');
         return;
       }
 
       if (id) {
-        // Editar existente
         const idx = metasAhorro.findIndex(m => m.id === id);
-        if (idx !== -1) {
-          metasAhorro[idx] = { ...metasAhorro[idx], nombre, objetivo, icono, fechaLimite };
-        }
+        if (idx !== -1) metasAhorro[idx] = { ...metasAhorro[idx], nombre, objetivo, icono, fechaLimite };
       } else {
-        // Crear nueva
-        metasAhorro.push({
-          id: 'meta_' + Date.now(),
-          nombre,
-          objetivo,
-          icono,
-          fechaLimite,
-          creadoEn: Date.now()
-        });
+        metasAhorro.push({ id: 'meta_' + Date.now(), nombre, objetivo, icono, fechaLimite, creadoEn: Date.now() });
       }
 
       guardarMetasLocales();
       ocultarModalMetaAhorro();
       actualizarSelectMetas();
       actualizarInterfaz();
-      mostrarToast('Meta de ahorro guardada con éxito', 'success');
+      mostrarToast('Meta de ahorro guardada', 'success');
     });
 
     function eliminarMetaAhorro(metaId) {
-      if (!confirm('¿Eliminar esta meta de ahorro? Los fondos ya registrados en transacciones no se borrarán.')) return;
+      if (!confirm('¿Eliminar esta meta? Los fondos registrados en transacciones no se borrarán.')) return;
       metasAhorro = metasAhorro.filter(m => m.id !== metaId);
       guardarMetasLocales();
       actualizarSelectMetas();
@@ -1468,19 +1443,17 @@
       document.getElementById('descripcion').value = nombreMeta;
       evaluarSeleccionesEspeciales();
       if (metaAhorroSelect) metaAhorroSelect.value = nombreMeta;
-      document.getElementById('monto').focus();
-      document.getElementById('formMovimiento').scrollIntoView({ behavior: 'smooth' });
+      abrirRegistroMobile();
     }
 
     function renderizarMetasAhorro(fondosMapa) {
       const grid = document.getElementById('gridMetasAhorro');
-
       if (!metasAhorro.length) {
         grid.innerHTML = `
-          <div class="col-span-full text-center py-6 border border-dashed border-slate-300 dark:border-azulcielo/30 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-950/40">
-            <p class="text-slate-500 dark:text-azulcielo text-sm mb-2">Aún no has creado metas de ahorro personalizadas.</p>
-            <button onclick="mostrarModalMetaAhorro()" class="text-xs bg-azulcielo hover:bg-azulcielo-dark text-slate-950 font-bold px-4 py-2 rounded-xl transition shadow-md">
-              Crear mi primera meta
+          <div class="col-span-full text-center py-5 border border-dashed border-slate-300 dark:border-azulcielo/30 rounded-2xl p-5 bg-slate-50/50 dark:bg-slate-950/40">
+            <p class="text-slate-500 dark:text-azulcielo text-xs mb-2">No has creado metas de ahorro.</p>
+            <button onclick="mostrarModalMetaAhorro()" class="text-xs bg-azulcielo text-slate-950 font-bold px-3.5 py-1.5 rounded-xl transition shadow-md">
+              Crear meta
             </button>
           </div>
         `;
@@ -1490,38 +1463,36 @@
       grid.innerHTML = metasAhorro.map(meta => {
         const acumulado = Math.max(0, fondosMapa[meta.nombre] || 0);
         const porcentaje = Math.min(100, (acumulado / meta.objetivo) * 100);
-        const restante = Math.max(0, meta.objetivo - acumulado);
         const completada = acumulado >= meta.objetivo;
 
         return `
-          <div class="bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 space-y-3 shadow-sm hover:shadow-md transition">
+          <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-azulcielo/20 space-y-2.5 shadow-sm">
             <div class="flex items-start justify-between gap-2">
-              <div class="flex items-center gap-2.5">
-                <span class="text-2xl p-2 rounded-xl bg-azulcielo/15 text-azulcielo">${meta.icono || '🎯'}</span>
-                <div>
-                  <h3 class="font-bold text-slate-900 dark:text-crema text-sm">${escapeHTML(meta.nombre)}</h3>
-                  ${meta.fechaLimite ? `<p class="text-[10px] text-slate-400">Meta: ${escapeHTML(meta.fechaLimite)}</p>` : ''}
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="text-xl p-2 rounded-xl bg-azulcielo/15 text-azulcielo shrink-0">${meta.icono || '🎯'}</span>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-slate-900 dark:text-crema text-xs sm:text-sm truncate">${escapeHTML(meta.nombre)}</h3>
+                  ${meta.fechaLimite ? `<p class="text-[10px] text-slate-400 truncate">Límite: ${escapeHTML(meta.fechaLimite)}</p>` : ''}
                 </div>
               </div>
-              <div class="flex items-center gap-1">
-                <button onclick="mostrarModalMetaAhorro('${meta.id}')" class="text-slate-400 hover:text-azulcielo p-1 text-xs" title="Editar meta">✏️</button>
-                <button onclick="eliminarMetaAhorro('${meta.id}')" class="text-slate-400 hover:text-coral p-1 text-xs" title="Eliminar meta">🗑️</button>
+              <div class="flex items-center gap-1 shrink-0">
+                <button onclick="mostrarModalMetaAhorro('${meta.id}')" class="text-slate-400 hover:text-azulcielo p-1 text-xs">✏️</button>
+                <button onclick="eliminarMetaAhorro('${meta.id}')" class="text-slate-400 hover:text-coral p-1 text-xs">🗑️</button>
               </div>
             </div>
 
-            <div class="flex items-baseline justify-between text-xs pt-1">
-              <span class="font-extrabold text-azulcielo-dark dark:text-azulcielo text-base">$${acumulado.toFixed(2)}</span>
-              <span class="text-slate-400 text-xs font-semibold">Obj: $${meta.objetivo.toFixed(2)}</span>
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="font-black text-azulcielo-dark dark:text-azulcielo text-sm">$${acumulado.toFixed(2)}</span>
+              <span class="text-slate-400 text-[11px] font-semibold">Obj: $${meta.objetivo.toFixed(2)}</span>
             </div>
 
-            <!-- Barra de avance -->
-            <div class="w-full bg-slate-200 dark:bg-slate-800 h-3 rounded-full overflow-hidden p-0.5">
-              <div class="${completada ? 'bg-emerald-500' : 'bg-azulelectrico'} h-full rounded-full transition-all duration-700" style="width: ${porcentaje}%"></div>
+            <div class="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+              <div class="${completada ? 'bg-emerald-500' : 'bg-azulelectrico'} h-full rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
             </div>
 
             <div class="flex items-center justify-between text-[11px] pt-1">
-              <span class="font-bold ${completada ? 'text-emerald-500' : 'text-slate-500 dark:text-azulcielo'}">
-                ${completada ? '🎉 ¡Meta Alcanzada!' : `${porcentaje.toFixed(1)}% completado`}
+              <span class="font-bold ${completada ? 'text-emerald-500' : 'text-slate-500 dark:text-azulcielo'} text-[10px]">
+                ${completada ? '🎉 ¡Completada!' : `${porcentaje.toFixed(0)}%`}
               </span>
               <button onclick="depositarEnMetaRapido('${escapeHTML(meta.nombre)}')" class="text-xs bg-azulcielo/20 hover:bg-azulcielo hover:text-slate-950 text-azulcielo-dark dark:text-azulcielo px-2.5 py-1 rounded-lg font-bold transition">
                 + Abonar
@@ -1532,28 +1503,35 @@
       }).join('');
     }
 
-    // ---------- Módulo 3: Filtros Avanzados para Historial ----------
+    // ---------- Filtros por Chips Táctiles (Sin barra de texto) ----------
 
-    function alternarPanelFiltros() {
-      const panel = document.getElementById('panelFiltros');
-      const texto = document.getElementById('textoBtnFiltros');
-      const oculto = panel.classList.contains('hidden');
-      if (oculto) {
-        panel.classList.remove('hidden');
-        texto.textContent = 'Ocultar Filtros';
-      } else {
-        panel.classList.add('hidden');
-        texto.textContent = 'Filtros Avanzados';
-      }
+    function seleccionarChipTipo(tipo) {
+      filtroTipoActual = tipo;
+      
+      const chips = {
+        '': document.getElementById('chipTipoTodos'),
+        'gasto': document.getElementById('chipTipoGasto'),
+        'ingreso': document.getElementById('chipTipoIngreso'),
+        'ahorro': document.getElementById('chipTipoAhorro')
+      };
+
+      const claseActiva = 'chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-white shadow-sm transition shrink-0';
+      const claseInactiva = 'chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0';
+
+      Object.keys(chips).forEach(k => {
+        chips[k].className = k === tipo ? claseActiva : claseInactiva;
+      });
+
+      actualizarOpcionesFiltroCategoria();
+      renderizarHistorialFiltrado();
     }
 
     function actualizarOpcionesFiltroCategoria() {
       const select = document.getElementById('filtroCategoria');
-      const tipo = document.getElementById('filtroTipo').value;
       let opciones = '<option value="">Todas las categorías</option>';
 
-      if (tipo && categoriasMap[tipo]) {
-        categoriasMap[tipo].forEach(c => {
+      if (filtroTipoActual && categoriasMap[filtroTipoActual]) {
+        categoriasMap[filtroTipoActual].forEach(c => {
           opciones += `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`;
         });
       } else {
@@ -1567,88 +1545,53 @@
 
     function filtrarPorCategoriaRapido(cat) {
       document.getElementById('filtroCategoria').value = cat;
-      const panel = document.getElementById('panelFiltros');
-      if (panel.classList.contains('hidden')) alternarPanelFiltros();
       renderizarHistorialFiltrado();
-      document.getElementById('tablaHistorial').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('listaHistorialMobile').scrollIntoView({ behavior: 'smooth' });
     }
 
     function limpiarFiltros() {
-      document.getElementById('filtroTexto').value = '';
-      document.getElementById('filtroTipo').value = '';
+      seleccionarChipTipo('');
       document.getElementById('filtroCategoria').value = '';
       document.getElementById('filtroAlcance').value = 'mes';
-      document.getElementById('filtroMontoMin').value = '';
-      document.getElementById('filtroMontoMax').value = '';
-      actualizarOpcionesFiltroCategoria();
       renderizarHistorialFiltrado();
       mostrarToast('Filtros restablecidos', 'info');
     }
 
     function renderizarHistorialFiltrado() {
       const mesSeleccionado = document.getElementById('mesFiltro').value;
-      const texto = (document.getElementById('filtroTexto').value || '').toLowerCase().trim();
-      const tipo = document.getElementById('filtroTipo').value;
       const categoria = document.getElementById('filtroCategoria').value;
       const alcance = document.getElementById('filtroAlcance').value;
-      const montoMin = parseFloat(document.getElementById('filtroMontoMin').value);
-      const montoMax = parseFloat(document.getElementById('filtroMontoMax').value);
 
       const filtradas = transacciones.filter(t => {
-        // Filtro de alcance temporal
-        if (alcance === 'mes' && !t.fecha.startsWith(mesSeleccionado)) {
-          return false;
-        }
-
-        // Filtro por tipo
-        if (tipo && t.tipo !== tipo) return false;
-
-        // Filtro por categoría
+        if (alcance === 'mes' && !t.fecha.startsWith(mesSeleccionado)) return false;
+        if (filtroTipoActual && t.tipo !== filtroTipoActual) return false;
         if (categoria && t.categoria !== categoria) return false;
-
-        // Filtro por montos
-        const montoNum = parseFloat(t.monto);
-        if (!isNaN(montoMin) && montoNum < montoMin) return false;
-        if (!isNaN(montoMax) && montoNum > montoMax) return false;
-
-        // Filtro de búsqueda por texto
-        if (texto) {
-          const coincideDesc = (t.descripcion || '').toLowerCase().includes(texto);
-          const coincideCat = (t.categoria || '').toLowerCase().includes(texto);
-          const coincideTipo = (t.tipo || '').toLowerCase().includes(texto);
-          if (!coincideDesc && !coincideCat && !coincideTipo) return false;
-        }
-
         return true;
       });
 
-      // Actualiza conteo y resumen
-      const conteoEl = document.getElementById('conteoFiltradas');
-      conteoEl.textContent = `Mostrando ${filtradas.length} de ${transacciones.length} movimientos`;
+      document.getElementById('conteoFiltradas').textContent = `${filtradas.length} de ${transacciones.length} movimiento(s)`;
 
-      let totalSumaFiltrada = 0;
+      let totalFlujo = 0;
       filtradas.forEach(t => {
         const m = parseFloat(t.monto);
-        if (t.tipo === 'ingreso') totalSumaFiltrada += m;
-        else if (t.tipo === 'gasto') totalSumaFiltrada -= m;
+        if (t.tipo === 'ingreso') totalFlujo += m;
+        else if (t.tipo === 'gasto') totalFlujo -= m;
       });
 
-      const resumenEl = document.getElementById('resumenMontoFiltrado');
-      resumenEl.textContent = `Flujo neto filtrado: $${totalSumaFiltrada.toFixed(2)}`;
+      document.getElementById('resumenMontoFiltrado').textContent = `Neto: $${totalFlujo.toFixed(2)}`;
 
-      const tabla = document.getElementById('tablaHistorial');
+      const tablaDesktop = document.getElementById('tablaHistorial');
+      const listaMobile = document.getElementById('listaHistorialMobile');
+
       if (!filtradas.length) {
-        tabla.innerHTML = `
-          <tr>
-            <td colspan="6" class="p-8 text-center text-slate-400 text-sm">
-              No se encontraron transacciones con los filtros aplicados.
-            </td>
-          </tr>
-        `;
+        const vacioHTML = `<div class="p-6 text-center text-slate-400 text-xs">No hay movimientos en este filtro.</div>`;
+        tablaDesktop.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">No hay movimientos.</td></tr>`;
+        listaMobile.innerHTML = vacioHTML;
         return;
       }
 
-      tabla.innerHTML = filtradas.map(t => {
+      // Render Desktop Tabla
+      tablaDesktop.innerHTML = filtradas.map(t => {
         let badgeStyle = 'bg-coral/15 text-coral border-coral/30';
         let signo = '-';
         let colorMonto = 'text-coral';
@@ -1667,25 +1610,57 @@
         return `
           <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
             <td class="p-3 font-medium text-slate-700 dark:text-crema text-xs">${escapeHTML(t.fecha)}</td>
-            <td class="p-3"><span class="px-2.5 py-1 text-xs rounded-lg font-bold border ${badgeStyle}">${escapeHTML(t.tipo.toUpperCase())}</span></td>
+            <td class="p-3"><span class="px-2 py-0.5 text-xs rounded-lg font-bold border ${badgeStyle}">${escapeHTML(t.tipo.toUpperCase())}</span></td>
             <td class="p-3 text-slate-600 dark:text-azulcielo font-semibold text-xs">${escapeHTML(t.categoria)}</td>
             <td class="p-3 text-slate-900 dark:text-crema font-medium text-xs">${escapeHTML(t.descripcion)}</td>
             <td class="p-3 text-right font-extrabold text-sm ${colorMonto}">${signo}$${montoNum.toFixed(2)}</td>
             <td class="p-3 text-center">
-              <div class="flex items-center justify-center gap-1.5">
-                <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5 rounded-lg hover:bg-azulelectrico/10 transition" title="Editar">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1.5 rounded-lg hover:bg-coral/10 transition" title="Eliminar">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1" title="Editar">✏️</button>
+                <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1" title="Eliminar">🗑️</button>
               </div>
             </td>
           </tr>
+        `;
+      }).join('');
+
+      // Render Mobile Tarjetas Táctiles
+      listaMobile.innerHTML = filtradas.map(t => {
+        let signo = '-';
+        let colorMonto = 'text-coral';
+        let iconTipo = '🔴';
+        const montoNum = parseFloat(t.monto);
+
+        if (t.tipo === 'ingreso') {
+          signo = '+';
+          colorMonto = 'text-emerald-600 dark:text-emerald-400';
+          iconTipo = '🟢';
+        } else if (t.tipo === 'ahorro') {
+          signo = t.categoria === 'Depositar a Ahorro' ? '+' : '-';
+          colorMonto = 'text-azulcielo-dark dark:text-azulcielo';
+          iconTipo = '🟡';
+        }
+
+        return `
+          <div class="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 flex items-center justify-between gap-2.5 active:scale-[0.99] transition">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="text-lg shrink-0">${iconTipo}</span>
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-slate-900 dark:text-crema truncate">${escapeHTML(t.descripcion)}</p>
+                <p class="text-[10px] text-slate-400 dark:text-azulcielo/70 flex items-center gap-1.5">
+                  <span>${escapeHTML(t.categoria)}</span>
+                  <span>•</span>
+                  <span>${escapeHTML(t.fecha)}</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-sm font-black ${colorMonto}">${signo}$${montoNum.toFixed(2)}</span>
+              <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5" title="Editar">✏️</button>
+              <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1.5" title="Eliminar">🗑️</button>
+            </div>
+          </div>
         `;
       }).join('');
     }
@@ -1715,7 +1690,7 @@
           ocultarModalDeuda();
           actualizarOpcionesCategoria();
           actualizarInterfaz();
-          mostrarToast('Deuda guardada localmente (offline)', 'info');
+          mostrarToast('Deuda guardada offline', 'info');
           return;
         }
 
@@ -1730,15 +1705,14 @@
         }
 
         if (error) {
-          console.error(error);
-          mostrarToast('Error al guardar la deuda', 'error');
+          mostrarToast('Error al guardar deuda', 'error');
           return;
         }
 
         form.reset();
         ocultarModalDeuda();
         await cargarDatosCloud();
-        mostrarToast('Deuda registrada exitosamente', 'success');
+        mostrarToast('Deuda registrada', 'success');
       } finally {
         desbloquearBoton(btn);
       }
@@ -1761,40 +1735,42 @@
         const val = parseFloat(document.getElementById('incrementoMonto').value);
 
         if (!nombre || isNaN(val) || val < 0) {
-          mostrarToast('Ingresa un nombre y monto válido', 'error');
+          mostrarToast('Monto inválido', 'error');
           return;
         }
 
-        const cambios = { nombre: nombre, monto_inicial: val };
+        const cambios = { nombre, monto_inicial: val };
 
         if (!navigator.onLine) {
-          aplicarCambioLocalDeuda(id, cambios);
+          const idx = deudas.findIndex(d => d.id === id);
+          if (idx !== -1) {
+            deudas[idx].nombre = nombre;
+            deudas[idx].montoInicial = val;
+          }
           encolarOperacion('update', 'deudas', cambios, id);
+          guardarCacheLocal();
           ocultarModalIncremento();
           actualizarInterfaz();
-          mostrarToast('Deuda actualizada localmente (offline)', 'info');
+          mostrarToast('Deuda actualizada offline', 'info');
           return;
         }
 
         const { error } = await supabaseClient.from('deudas').update(cambios).eq('id', id);
         if (error) {
-          console.error(error);
-          mostrarToast('Error al actualizar la deuda', 'error');
+          mostrarToast('Error al actualizar', 'error');
           return;
         }
 
         ocultarModalIncremento();
         await cargarDatosCloud();
-        mostrarToast('Deuda actualizada correctamente', 'success');
+        mostrarToast('Deuda actualizada', 'success');
       } finally {
         desbloquearBoton(btn);
       }
     }
 
     async function eliminarDeuda(id) {
-      if (!confirm('¿Eliminar esta deuda? También se eliminarán los pagos asociados en el historial.')) {
-        return;
-      }
+      if (!confirm('¿Eliminar esta deuda y sus pagos asociados?')) return;
 
       if (!navigator.onLine) {
         transacciones = transacciones.filter(t => t.deuda_id !== id);
@@ -1803,19 +1779,14 @@
         encolarOperacion('delete', 'deudas', null, id);
         guardarCacheLocal();
         actualizarInterfaz();
-        mostrarToast('Deuda eliminada localmente (offline)', 'info');
+        mostrarToast('Deuda eliminada offline', 'info');
         return;
       }
 
       await supabaseClient.from('transacciones').delete().eq('deuda_id', id);
-      const { error } = await supabaseClient.from('deudas').delete().eq('id', id);
-      if (error) {
-        mostrarToast('Error al eliminar la deuda', 'error');
-        return;
-      }
-
+      await supabaseClient.from('deudas').delete().eq('id', id);
       await cargarDatosCloud();
-      mostrarToast('Deuda y pagos asociados eliminados', 'success');
+      mostrarToast('Deuda eliminada', 'success');
     }
 
     // ---------- Transacciones CRUD ----------
@@ -1830,7 +1801,7 @@
         const monto = parseFloat(document.getElementById('monto').value);
 
         if (esPagoDeuda && (!deudaObjetivoSelect.value || deudaObjetivoSelect.value === '')) {
-          mostrarToast('Selecciona una deuda válida para el pago', 'error');
+          mostrarToast('Selecciona una deuda válida', 'error');
           return;
         }
 
@@ -1857,14 +1828,13 @@
           document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
           actualizarOpcionesCategoria();
           actualizarInterfaz();
-          mostrarToast('Movimiento guardado localmente (offline)', 'info');
+          mostrarToast('Guardado localmente', 'info');
           return;
         }
 
         const { error } = await supabaseClient.from('transacciones').insert([nueva]);
         if (error) {
-          console.error(error);
-          mostrarToast('Error al guardar el movimiento', 'error');
+          mostrarToast('Error al guardar', 'error');
           return;
         }
 
@@ -1872,35 +1842,30 @@
         document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
         actualizarOpcionesCategoria();
         await cargarDatosCloud();
-        mostrarToast('Movimiento registrado con éxito', 'success');
+        mostrarToast('Movimiento registrado', 'success');
       } finally {
         desbloquearBoton(btn);
       }
     }
 
     async function eliminarTransaccion(id) {
-      if (!confirm('¿Eliminar esta transacción? Esta acción no se puede deshacer.')) return;
+      if (!confirm('¿Eliminar esta transacción?')) return;
 
       if (!navigator.onLine) {
         transacciones = transacciones.filter(t => t.id !== id);
         encolarOperacion('delete', 'transacciones', null, id);
         guardarCacheLocal();
         actualizarInterfaz();
-        mostrarToast('Transacción eliminada localmente (offline)', 'info');
+        mostrarToast('Eliminado offline', 'info');
         return;
       }
 
-      const { error } = await supabaseClient.from('transacciones').delete().eq('id', id);
-      if (error) {
-        mostrarToast('Error al eliminar la transacción', 'error');
-        return;
-      }
-
+      await supabaseClient.from('transacciones').delete().eq('id', id);
       await cargarDatosCloud();
       mostrarToast('Transacción eliminada', 'success');
     }
 
-    // ---------- Edición de Movimientos ----------
+    // ---------- Edición ----------
 
     const editTipoSelect = document.getElementById('editTipo');
     const editCategoriaSelect = document.getElementById('editCategoria');
@@ -1921,7 +1886,7 @@
         editContenedorDeudaSelect.classList.remove('hidden');
         editDeudaObjetivoSelect.innerHTML = deudas.length
           ? deudas.map(d => `<option value="${d.id}">${escapeHTML(d.nombre)}</option>`).join('')
-          : '<option value="">No hay deudas registradas</option>';
+          : '<option value="">Sin deudas</option>';
         if (deudaIdActual) editDeudaObjetivoSelect.value = deudaIdActual;
       } else {
         editContenedorDeudaSelect.classList.add('hidden');
@@ -1947,10 +1912,6 @@
       document.getElementById('modalEditarMovimiento').classList.remove('hidden');
     }
 
-    function ocultarModalEditarMovimiento() {
-      document.getElementById('modalEditarMovimiento').classList.add('hidden');
-    }
-
     async function confirmarEditarMovimiento(e) {
       e.preventDefault();
       const form = e.target;
@@ -1961,19 +1922,14 @@
         const esPagoDeuda = editTipoSelect.value === 'gasto' && editCategoriaSelect.value === 'Pago de Deuda';
         const monto = parseFloat(document.getElementById('editMonto').value);
 
-        if (esPagoDeuda && (!editDeudaObjetivoSelect.value || editDeudaObjetivoSelect.value === '')) {
-          mostrarToast('Selecciona una deuda válida', 'error');
-          return;
-        }
-
         if (isNaN(monto) || monto <= 0) {
-          mostrarToast('Ingresa un monto válido', 'error');
+          mostrarToast('Monto inválido', 'error');
           return;
         }
 
         const cambios = {
           tipo: editTipoSelect.value,
-          monto: monto,
+          monto,
           categoria: editCategoriaSelect.value,
           deuda_id: esPagoDeuda ? parseInt(editDeudaObjetivoSelect.value) : null,
           descripcion: document.getElementById('editDescripcion').value.trim(),
@@ -1987,20 +1943,14 @@
           guardarCacheLocal();
           ocultarModalEditarMovimiento();
           actualizarInterfaz();
-          mostrarToast('Movimiento actualizado localmente (offline)', 'info');
+          mostrarToast('Actualizado offline', 'info');
           return;
         }
 
-        const { error } = await supabaseClient.from('transacciones').update(cambios).eq('id', id);
-        if (error) {
-          console.error(error);
-          mostrarToast('Error al actualizar el movimiento', 'error');
-          return;
-        }
-
+        await supabaseClient.from('transacciones').update(cambios).eq('id', id);
         ocultarModalEditarMovimiento();
         await cargarDatosCloud();
-        mostrarToast('Movimiento actualizado correctamente', 'success');
+        mostrarToast('Movimiento actualizado', 'success');
       } finally {
         desbloquearBoton(btn);
       }
@@ -2008,7 +1958,7 @@
 
     document.getElementById('formEditarMovimiento').addEventListener('submit', confirmarEditarMovimiento);
 
-    // ---------- Actualización Principal de la Interfaz ----------
+    // ---------- Actualización de la Interfaz ----------
 
     function actualizarInterfaz() {
       const mesSeleccionado = document.getElementById('mesFiltro').value;
@@ -2032,7 +1982,6 @@
         }
       });
 
-      // Fondos de ahorro acumulados (histórico total)
       let ahorroAcumuladoTotal = 0;
       const fondosAhorroMapa = {};
 
@@ -2052,7 +2001,6 @@
         }
       });
 
-      // Pagos a deudas
       const pagosMap = {};
       transacciones.forEach(t => {
         const montoNum = parseFloat(t.monto);
@@ -2061,22 +2009,18 @@
         }
       });
 
-      // Render de tabla de deudas
       let totalDeudaPendiente = 0;
       const tablaDeudas = document.getElementById('tablaDeudas');
+      const listaDeudasMobile = document.getElementById('listaDeudasMobile');
+
       if (!deudas.length) {
-        tablaDeudas.innerHTML = `
-          <tr>
-            <td colspan="5" class="p-6 text-center text-slate-400 text-xs">
-              No tienes deudas registradas. ¡Excelente!
-            </td>
-          </tr>
-        `;
+        tablaDeudas.innerHTML = `<tr><td colspan="5" class="p-5 text-center text-slate-400 text-xs">Sin deudas registradas.</td></tr>`;
+        listaDeudasMobile.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-azulcielo/20 rounded-2xl">Sin deudas registradas.</div>`;
       } else {
+        // Desktop
         tablaDeudas.innerHTML = deudas.map(d => {
           const pagado = pagosMap[d.id] || 0;
           const restante = Math.max(0, d.montoInicial - pagado);
-          const sobrepago = pagado > d.montoInicial ? (pagado - d.montoInicial) : 0;
           totalDeudaPendiente += restante;
           const pagadoPct = Math.min(100, (pagado / d.montoInicial) * 100);
 
@@ -2085,43 +2029,61 @@
               <td class="p-3 font-semibold text-slate-800 dark:text-crema">
                 <div class="flex items-center gap-2">
                   <span>${escapeHTML(d.nombre)}</span>
-                  ${restante === 0 ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">Liquidada</span>' : ''}
+                  ${restante === 0 ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600">Liquidada</span>' : ''}
                 </div>
-                <!-- Mini barra de progreso de pago -->
-                <div class="w-28 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5">
+                <div class="w-24 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
                   <div class="bg-azulelectrico h-full rounded-full" style="width: ${pagadoPct}%"></div>
                 </div>
               </td>
-              <td class="p-3 text-right font-medium text-slate-600 dark:text-crema">$${d.montoInicial.toFixed(2)}</td>
+              <td class="p-3 text-right font-medium">$${d.montoInicial.toFixed(2)}</td>
               <td class="p-3 text-right text-azulelectrico font-bold">$${pagado.toFixed(2)}</td>
-              <td class="p-3 text-right font-extrabold ${restante === 0 ? 'text-slate-400 line-through' : 'text-coral'}">
-                $${restante.toFixed(2)}
-                ${sobrepago > 0 ? `<span class="block text-[10px] font-normal text-azulcielo">Sobrepago: $${sobrepago.toFixed(2)}</span>` : ''}
-              </td>
+              <td class="p-3 text-right font-black ${restante === 0 ? 'text-slate-400 line-through' : 'text-coral'}">$${restante.toFixed(2)}</td>
               <td class="p-3 text-center">
                 <div class="flex justify-center items-center gap-1">
-                  <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs bg-slate-200 dark:bg-azulcielo/20 text-slate-700 dark:text-azulcielo border border-slate-300 dark:border-azulcielo/30 px-2 py-1 rounded-lg hover:bg-slate-300 dark:hover:bg-azulcielo/30 transition font-bold" title="Editar deuda">✏️ Editar</button>
-                  <button onclick="eliminarDeuda(${d.id})" class="text-slate-400 hover:text-coral p-1 rounded-lg hover:bg-coral/10 transition" title="Eliminar Deuda">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs p-1">✏️</button>
+                  <button onclick="eliminarDeuda(${d.id})" class="text-slate-400 hover:text-coral p-1">🗑️</button>
                 </div>
               </td>
             </tr>
           `;
         }).join('');
+
+        // Mobile
+        listaDeudasMobile.innerHTML = deudas.map(d => {
+          const pagado = pagosMap[d.id] || 0;
+          const restante = Math.max(0, d.montoInicial - pagado);
+          const pagadoPct = Math.min(100, (pagado / d.montoInicial) * 100);
+
+          return `
+            <div class="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-900 dark:text-crema">${escapeHTML(d.nombre)}</span>
+                <div class="flex items-center gap-1">
+                  <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs p-1">✏️</button>
+                  <button onclick="eliminarDeuda(${d.id})" class="text-xs p-1 text-coral">🗑️</button>
+                </div>
+              </div>
+              <div class="flex justify-between text-xs font-semibold">
+                <span class="text-azulelectrico">Abonado: $${pagado.toFixed(2)}</span>
+                <span class="${restante === 0 ? 'text-emerald-500' : 'text-coral'} font-bold">Resta: $${restante.toFixed(2)}</span>
+              </div>
+              <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-azulelectrico h-full rounded-full" style="width: ${pagadoPct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
-      // Actualizar Totales del Dashboard
+      // Totales
       document.getElementById('totalIngresos').textContent = `$${ingresosMes.toFixed(2)}`;
-      document.getElementById('subIngresos').textContent = `${countIngresos} movimiento(s)`;
+      document.getElementById('subIngresos').textContent = `${countIngresos} mov.`;
 
       document.getElementById('totalGastos').textContent = `$${gastosMes.toFixed(2)}`;
-      document.getElementById('subGastos').textContent = `${countGastos} movimiento(s)`;
+      document.getElementById('subGastos').textContent = `${countGastos} mov.`;
 
       document.getElementById('totalAhorro').textContent = `$${ahorroAcumuladoTotal.toFixed(2)}`;
-      document.getElementById('subAhorro').textContent = `${Object.keys(fondosAhorroMapa).length} fondo(s) de ahorro`;
+      document.getElementById('subAhorro').textContent = `${Object.keys(fondosAhorroMapa).length} fondo(s)`;
 
       document.getElementById('totalDeudas').textContent = `$${totalDeudaPendiente.toFixed(2)}`;
       document.getElementById('subDeudas').textContent = `${deudas.length} acreedor(es)`;
@@ -2129,26 +2091,18 @@
       const balance = ingresosMes - gastosMes;
       const balanceEl = document.getElementById('balanceNeto');
       balanceEl.textContent = `$${balance.toFixed(2)}`;
-      balanceEl.className = `text-2xl sm:text-3xl font-extrabold tracking-tight ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-coral'}`;
+      balanceEl.className = `text-2xl sm:text-3xl font-black tracking-tight ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-coral'}`;
 
-      // Tasa de ahorro del mes
       const tasaAhorro = ingresosMes > 0 ? Math.max(0, ((ingresosMes - gastosMes) / ingresosMes) * 100) : 0;
-      document.getElementById('tasaAhorro').textContent = `Tasa de Ahorro: ${tasaAhorro.toFixed(0)}%`;
+      document.getElementById('tasaAhorro').textContent = `Ahorro: ${tasaAhorro.toFixed(0)}%`;
 
-      // Render de Presupuestos Límites
       renderizarSeccionPresupuestos(gastosPorCat);
-
-      // Render de Metas de Ahorro
       renderizarMetasAhorro(fondosAhorroMapa);
-
-      // Render de Gráficos
       renderizarGraficos(ingresosPorCat, gastosPorCat, fondosAhorroMapa);
-
-      // Render de Historial Filtrado
       renderizarHistorialFiltrado();
     }
 
-    // ---------- Renderizado de Gráficos (Chart.js) ----------
+    // ---------- Gráficos ----------
 
     function renderizarGraficos(ingresosPorCat, gastosPorCat, fondosMapa) {
       const esOscuro = document.documentElement.classList.contains('dark');
@@ -2156,7 +2110,7 @@
       const colorGrid = esOscuro ? 'rgba(132, 175, 251, 0.15)' : 'rgba(148, 163, 184, 0.2)';
       const colorVacio = esOscuro ? '#1e293b' : '#e2e8f0';
 
-      // Dona Ingresos
+      // Ingresos
       const ctxIng = document.getElementById('graficoIngresos').getContext('2d');
       const labelsIng = Object.keys(ingresosPorCat);
       const dataIng = Object.values(ingresosPorCat);
@@ -2169,19 +2123,19 @@
           datasets: [{
             data: dataIng.length ? dataIng : [1],
             backgroundColor: dataIng.length ? ['#0259DD', '#2b7fff', '#549cff', '#84AFFB', '#b3cdfc'] : [colorVacio],
-            borderWidth: 0,
-            hoverOffset: 4
+            borderWidth: 0
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { color: colorTexto, boxWidth: 10, font: { size: 11, weight: '600' } } }
+            legend: { position: 'bottom', labels: { color: colorTexto, boxWidth: 8, font: { size: 10, weight: 'bold' } } }
           }
         }
       });
 
-      // Dona Gastos
+      // Gastos
       const ctxGas = document.getElementById('graficoGastos').getContext('2d');
       const labelsGas = Object.keys(gastosPorCat);
       const dataGas = Object.values(gastosPorCat);
@@ -2193,20 +2147,20 @@
           labels: labelsGas.length ? labelsGas : ['Sin gastos'],
           datasets: [{
             data: dataGas.length ? dataGas : [1],
-            backgroundColor: dataGas.length ? ['#FF6648', '#ff846c', '#ffa290', '#ffc1b4', '#e05337', '#b83b22'] : [colorVacio],
-            borderWidth: 0,
-            hoverOffset: 4
+            backgroundColor: dataGas.length ? ['#FF6648', '#ff846c', '#ffa290', '#ffc1b4', '#e05337'] : [colorVacio],
+            borderWidth: 0
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { color: colorTexto, boxWidth: 10, font: { size: 11, weight: '600' } } }
+            legend: { position: 'bottom', labels: { color: colorTexto, boxWidth: 8, font: { size: 10, weight: 'bold' } } }
           }
         }
       });
 
-      // Barras Ahorros
+      // Ahorros
       const ctxAho = document.getElementById('graficoAhorros').getContext('2d');
       const labelsAho = Object.keys(fondosMapa);
       const dataAho = Object.values(fondosMapa);
@@ -2220,46 +2174,29 @@
             label: 'Saldo ($)',
             data: dataAho.length ? dataAho : [0],
             backgroundColor: esOscuro ? '#84AFFB' : '#0259DD',
-            borderRadius: 8
+            borderRadius: 6
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: colorTexto, font: { size: 10, weight: '600' } }, grid: { display: false } },
-            y: { ticks: { color: colorTexto, font: { size: 10 } }, grid: { color: colorGrid } }
+            x: { ticks: { color: colorTexto, font: { size: 10, weight: 'bold' } }, grid: { display: false } },
+            y: { ticks: { color: colorTexto, font: { size: 9 } }, grid: { color: colorGrid } }
           }
         }
       });
     }
 
-    // ---------- Inicialización ----------
+    // ---------- Inicialización & SW ----------
 
     inicializarTema();
     actualizarIndicadorConexion();
 
-    // ---------- Service Worker ----------
     if ('serviceWorker' in navigator) {
-      let recargaEnCurso = false;
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then((registro) => {
-          registro.update();
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (recargaEnCurso) return;
-            recargaEnCurso = true;
-            window.location.reload();
-          });
-        }).catch((err) => console.warn('SW error:', err));
-      });
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.getRegistration().then((reg) => reg && reg.update());
-        }
+        navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW err:', err));
       });
     }
   </script>

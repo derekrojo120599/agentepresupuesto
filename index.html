@@ -1985,7 +1985,16 @@
       let ahorroAcumuladoTotal = 0;
       const fondosAhorroMapa = {};
 
-      transacciones.forEach(t => {
+      // 1. Inicializar fondos con las metas en su orden de creación (de izquierda a derecha)
+      metasAhorro.forEach(m => {
+        if (m.nombre) fondosAhorroMapa[m.nombre.trim()] = 0;
+      });
+
+      // 2. Procesar transacciones en orden cronológico (de la más antigua a la más reciente)
+      // para que las barras y fondos aparezcan de izquierda a derecha en orden temporal
+      const transaccionesCronologicas = [...transacciones].sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+
+      transaccionesCronologicas.forEach(t => {
         const montoNum = parseFloat(t.monto);
         if (t.tipo === 'ahorro') {
           const fondoNombre = (t.descripcion || 'Ahorro General').trim();

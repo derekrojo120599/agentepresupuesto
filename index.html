@@ -1989,14 +1989,16 @@
         const montoNum = parseFloat(t.monto);
         if (t.tipo === 'ahorro') {
           const fondoNombre = (t.descripcion || 'Ahorro General').trim();
-          if (!fondosAhorroMapa[fondoNombre]) fondosAhorroMapa[fondoNombre] = 0;
+          if (fondosAhorroMapa[fondoNombre] === undefined) fondosAhorroMapa[fondoNombre] = 0;
 
-          if (t.categoria === 'Depositar a Ahorro') {
-            ahorroAcumuladoTotal += montoNum;
-            fondosAhorroMapa[fondoNombre] += montoNum;
-          } else if (t.categoria === 'Retirar / Usar Ahorro') {
+          const cat = (t.categoria || '').toLowerCase().trim();
+          if (cat.includes('retirar') || cat.includes('usar') || cat.includes('retiro') || cat.includes('gasto')) {
             ahorroAcumuladoTotal -= montoNum;
             fondosAhorroMapa[fondoNombre] -= montoNum;
+          } else {
+            // 'Depositar a Ahorro', 'Abono', o cualquier depósito suma al fondo
+            ahorroAcumuladoTotal += montoNum;
+            fondosAhorroMapa[fondoNombre] += montoNum;
           }
         }
       });
@@ -2160,7 +2162,7 @@
         }
       });
 
-      // Ahorros
+      // Ahorros (Barras con escala base 0 correcta y tooltips formateados)
       const ctxAho = document.getElementById('graficoAhorros').getContext('2d');
       const labelsAho = Object.keys(fondosMapa);
       const dataAho = Object.values(fondosMapa);
@@ -2173,17 +2175,37 @@
           datasets: [{
             label: 'Saldo ($)',
             data: dataAho.length ? dataAho : [0],
-            backgroundColor: esOscuro ? '#84AFFB' : '#0259DD',
-            borderRadius: 6
+            backgroundColor: dataAho.length 
+              ? dataAho.map(v => v >= 0 ? (esOscuro ? '#84AFFB' : '#0259DD') : '#FF6648')
+              : [esOscuro ? '#84AFFB' : '#0259DD'],
+            borderRadius: 8
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `Saldo acumulado: $${Number(ctx.raw || 0).toFixed(2)}`
+              }
+            }
+          },
           scales: {
-            x: { ticks: { color: colorTexto, font: { size: 10, weight: 'bold' } }, grid: { display: false } },
-            y: { ticks: { color: colorTexto, font: { size: 9 } }, grid: { color: colorGrid } }
+            x: {
+              ticks: { color: colorTexto, font: { size: 10, weight: 'bold' } },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: colorTexto,
+                font: { size: 9 },
+                callback: (value) => '$' + value
+              },
+              grid: { color: colorGrid }
+            }
           }
         }
       });

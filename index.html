@@ -267,6 +267,10 @@
           <span>💳</span>
           <span>Deudas</span>
         </button>
+        <button id="navTabConfiguracion" onclick="cambiarPestana('configuracion')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
+          <span>⚙️</span>
+          <span>Configuración</span>
+        </button>
       </div>
     </nav>
 
@@ -590,6 +594,54 @@
       </div>
     </div>
 
+    <!-- PESTAÑA 7: Configuración de Categorías -->
+    <div id="tabContentConfiguracion" class="hidden fade-in space-y-4 sm:space-y-6">
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+        <!-- Cabecera -->
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-4">
+          <div>
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+              <span>⚙️</span> Gestión de Categorías
+            </h2>
+            <p class="text-[11px] text-slate-500 dark:text-azulcielo mt-0.5">Añade, edita o elimina las categorías personalizadas de tus movimientos</p>
+          </div>
+
+          <button onclick="abrirModalCrearCategoria()" class="bg-azulelectrico hover:bg-azulelectrico-hover text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-md shadow-azulelectrico/20 transition active:scale-95 flex items-center gap-1.5 self-start sm:self-auto shrink-0 cursor-pointer">
+            <span>+</span> Nueva Categoría
+          </button>
+        </div>
+
+        <!-- Filtros de Tipo de Categoría -->
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <button onclick="filtrarTipoConfigCategorias('gasto')" id="btnConfigCatGasto" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-coral text-white shadow-sm cursor-pointer">
+            <span>🔴 Gastos</span>
+            <span id="conteoCatGasto" class="text-[10px] opacity-90 font-normal">(0)</span>
+          </button>
+          <button onclick="filtrarTipoConfigCategorias('ingreso')" id="btnConfigCatIngreso" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
+            <span>🟢 Ingresos</span>
+            <span id="conteoCatIngreso" class="text-[10px] opacity-90 font-normal">(0)</span>
+          </button>
+          <button onclick="filtrarTipoConfigCategorias('ahorro')" id="btnConfigCatAhorro" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
+            <span>🟡 Ahorros</span>
+            <span id="conteoCatAhorro" class="text-[10px] opacity-90 font-normal">(0)</span>
+          </button>
+        </div>
+
+        <!-- Grid de Categorías -->
+        <div id="gridConfigCategorias" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+          <!-- Render dinámico -->
+        </div>
+
+        <!-- Pie: Restablecer por defecto -->
+        <div class="pt-4 border-t border-slate-100 dark:border-azulcielo/15 flex items-center justify-between">
+          <p class="text-[11px] text-slate-400 dark:text-azulcielo/70">¿Deseas restaurar la lista original?</p>
+          <button onclick="restablecerCategoriasPorDefecto()" class="text-xs font-bold text-slate-500 dark:text-azulcielo hover:text-coral transition flex items-center gap-1 cursor-pointer">
+            <span>🔄</span> Restablecer por defecto
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Botón Flotante de Acción Rápida (FAB) en Mobile para Registrar Movimiento -->
@@ -773,6 +825,79 @@
     </div>
   </div>
 
+  <!-- Modal Crear / Editar Categoría -->
+  <div id="modalCategoria" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+        <h3 id="tituloModalCategoria" class="text-base sm:text-lg font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+          <span>🏷️</span> Nueva Categoría
+        </h3>
+        <button type="button" onclick="ocultarModalCategoria()" class="p-2 text-slate-400 hover:text-coral transition font-bold text-base cursor-pointer">✕</button>
+      </div>
+
+      <form id="formCategoria" class="space-y-3.5">
+        <input type="hidden" id="catEditNombreOriginal">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Nombre de la Categoría</label>
+          <input type="text" id="catNombre" placeholder="Ej: Mascotas, Gimnasio, Freelance" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Tipo de Operación</label>
+          <select id="catTipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm">
+            <option value="gasto">🔴 Gasto</option>
+            <option value="ingreso">🟢 Ingreso</option>
+            <option value="ahorro">🟡 Ahorro</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Ícono / Emoji</label>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="text" id="catIcono" value="🏷️" required maxlength="4" class="w-14 text-center text-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:outline-none transition">
+            <span class="text-xs text-slate-400 dark:text-azulcielo">Elige un emoji rápido o escribe el tuyo:</span>
+          </div>
+
+          <!-- Selector rápido de emojis -->
+          <div class="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-azulcielo/20 max-h-28 overflow-y-auto no-scrollbar">
+            <button type="button" onclick="seleccionarEmojiCat('🍔')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🍔</button>
+            <button type="button" onclick="seleccionarEmojiCat('🍕')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🍕</button>
+            <button type="button" onclick="seleccionarEmojiCat('☕')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">☕</button>
+            <button type="button" onclick="seleccionarEmojiCat('🛒')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🛒</button>
+            <button type="button" onclick="seleccionarEmojiCat('🚗')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🚗</button>
+            <button type="button" onclick="seleccionarEmojiCat('🏠')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🏠</button>
+            <button type="button" onclick="seleccionarEmojiCat('💡')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">💡</button>
+            <button type="button" onclick="seleccionarEmojiCat('🎮')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🎮</button>
+            <button type="button" onclick="seleccionarEmojiCat('🏥')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🏥</button>
+            <button type="button" onclick="seleccionarEmojiCat('📚')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">📚</button>
+            <button type="button" onclick="seleccionarEmojiCat('💼')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">💼</button>
+            <button type="button" onclick="seleccionarEmojiCat('💵')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">💵</button>
+            <button type="button" onclick="seleccionarEmojiCat('📈')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">📈</button>
+            <button type="button" onclick="seleccionarEmojiCat('📊')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">📊</button>
+            <button type="button" onclick="seleccionarEmojiCat('💰')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">💰</button>
+            <button type="button" onclick="seleccionarEmojiCat('🚨')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🚨</button>
+            <button type="button" onclick="seleccionarEmojiCat('💳')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">💳</button>
+            <button type="button" onclick="seleccionarEmojiCat('💻')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">💻</button>
+            <button type="button" onclick="seleccionarEmojiCat('✈️')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">✈️</button>
+            <button type="button" onclick="seleccionarEmojiCat('🛠️')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🛠️</button>
+            <button type="button" onclick="seleccionarEmojiCat('🎁')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🎁</button>
+            <button type="button" onclick="seleccionarEmojiCat('🐾')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🐾</button>
+            <button type="button" onclick="seleccionarEmojiCat('🏋️')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🏋️</button>
+            <button type="button" onclick="seleccionarEmojiCat('👕')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">👕</button>
+            <button type="button" onclick="seleccionarEmojiCat('🏖️')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🏖️</button>
+            <button type="button" onclick="seleccionarEmojiCat('🛡️')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-lg transition cursor-pointer">🛡️</button>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
+          <button type="button" onclick="ocultarModalCategoria()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition cursor-pointer">Cancelar</button>
+          <button type="submit" class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer">Guardar Categoría</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- SCRIPT DE LA APLICACIÓN -->
   <script>
     // =========================================================================
@@ -796,7 +921,8 @@
       metaIcono: { title: 'Ícono del Objetivo', icon: '🎨' },
       editTipo: { title: 'Tipo de Operación', icon: '🔄' },
       editCategoria: { title: 'Seleccionar Categoría', icon: '🏷️' },
-      editDeudaObjetivo: { title: 'Deuda a Pagar', icon: '💳' }
+      editDeudaObjetivo: { title: 'Deuda a Pagar', icon: '💳' },
+      catTipo: { title: 'Tipo de Operación', icon: '🔄' }
     };
 
     let activeCustomSelect = null;
@@ -1308,8 +1434,15 @@
     let activeEstadisticaMetrica = 'all';
     let ultimasFiltradasMes = [];
     let ultimosFondosAhorroMapa = {};
+    let tipoConfigCategoriaActual = 'gasto';
 
-    const categoriaIconosMap = {
+    const CATEGORIAS_DEFAULT = {
+      ingreso: ['Cliente / Proyecto', 'Sueldo / Salario', 'Ventas', 'Inversión', 'Otros Ingresos'],
+      gasto: ['Comida', 'Ocio', 'Pago de Deuda', 'Emergencia', 'Servicios', 'Herramientas / Software', 'Transporte', 'Salud', 'Educación', 'Otros Gastos'],
+      ahorro: ['Depositar a Ahorro', 'Retirar / Usar Ahorro']
+    };
+
+    const CATEGORIA_ICONOS_DEFAULT = {
       'Cliente / Proyecto': '💼',
       'Sueldo / Salario': '💵',
       'Ventas': '📈',
@@ -1330,11 +1463,42 @@
       'Ahorro General': '🪙'
     };
 
+    const categoriaIconosMap = { ...CATEGORIA_ICONOS_DEFAULT };
     const categoriasMap = {
-      ingreso: ['Cliente / Proyecto', 'Sueldo / Salario', 'Ventas', 'Inversión', 'Otros Ingresos'],
-      gasto: ['Comida', 'Ocio', 'Pago de Deuda', 'Emergencia', 'Servicios', 'Herramientas / Software', 'Transporte', 'Salud', 'Educación', 'Otros Gastos'],
-      ahorro: ['Depositar a Ahorro', 'Retirar / Usar Ahorro']
+      ingreso: [...CATEGORIAS_DEFAULT.ingreso],
+      gasto: [...CATEGORIAS_DEFAULT.gasto],
+      ahorro: [...CATEGORIAS_DEFAULT.ahorro]
     };
+
+    function cargarCategoriasGuardadas() {
+      try {
+        const catsGuardadas = localStorage.getItem('categorias_presupuesto_app');
+        if (catsGuardadas) {
+          const parsed = JSON.parse(catsGuardadas);
+          if (parsed && typeof parsed === 'object') {
+            if (Array.isArray(parsed.ingreso) && parsed.ingreso.length) categoriasMap.ingreso = parsed.ingreso;
+            if (Array.isArray(parsed.gasto) && parsed.gasto.length) categoriasMap.gasto = parsed.gasto;
+            if (Array.isArray(parsed.ahorro) && parsed.ahorro.length) categoriasMap.ahorro = parsed.ahorro;
+          }
+        }
+        const iconosGuardados = localStorage.getItem('categoria_iconos_presupuesto_app');
+        if (iconosGuardados) {
+          const parsedIconos = JSON.parse(iconosGuardados);
+          if (parsedIconos && typeof parsedIconos === 'object') {
+            Object.assign(categoriaIconosMap, parsedIconos);
+          }
+        }
+      } catch (err) {
+        console.warn('Error al cargar categorías de storage:', err);
+      }
+    }
+
+    function guardarCategoriasEnStorage() {
+      localStorage.setItem('categorias_presupuesto_app', JSON.stringify(categoriasMap));
+      localStorage.setItem('categoria_iconos_presupuesto_app', JSON.stringify(categoriaIconosMap));
+    }
+
+    cargarCategoriasGuardadas();
 
     const tipoSelect = document.getElementById('tipo');
     const categoriaSelect = document.getElementById('categoria');
@@ -1754,7 +1918,7 @@
       pestanaActual = tabName;
       localStorage.setItem('pestana_activa_presupuesto', tabName);
 
-      const pestanas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas'];
+      const pestanas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas', 'configuracion'];
       pestanas.forEach(p => {
         const idContent = `tabContent${p.charAt(0).toUpperCase() + p.slice(1)}`;
         const idNav = `navTab${p.charAt(0).toUpperCase() + p.slice(1)}`;
@@ -1775,12 +1939,14 @@
         setTimeout(() => {
           if (graficoMultilineaChart) graficoMultilineaChart.resize();
         }, 50);
+      } else if (tabName === 'configuracion') {
+        renderizarConfiguracionCategorias();
       }
     }
 
     function inicializarPestanas() {
       const guardada = localStorage.getItem('pestana_activa_presupuesto');
-      const pestanasValidas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas'];
+      const pestanasValidas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas', 'configuracion'];
       if (guardada && pestanasValidas.includes(guardada)) {
         cambiarPestana(guardada);
       } else {
@@ -1850,6 +2016,7 @@
     document.getElementById('formMovimiento').addEventListener('submit', agregarTransaccion);
     document.getElementById('formNuevaDeuda').addEventListener('submit', crearDeuda);
     document.getElementById('formIncrementoDeuda').addEventListener('submit', confirmarIncrementoDeuda);
+    document.getElementById('formCategoria').addEventListener('submit', guardarFormCategoria);
     document.getElementById('mesFiltro').addEventListener('change', actualizarInterfaz);
 
     // Eventos de filtros
@@ -1904,6 +2071,32 @@
       document.getElementById('modalEditarMovimiento').classList.add('hidden');
     }
 
+    function abrirModalCrearCategoria() {
+      document.getElementById('catEditNombreOriginal').value = '';
+      document.getElementById('catNombre').value = '';
+      document.getElementById('catIcono').value = '🏷️';
+      document.getElementById('catTipo').value = tipoConfigCategoriaActual;
+      document.getElementById('tituloModalCategoria').innerHTML = '<span>🏷️</span> Nueva Categoría';
+      document.getElementById('modalCategoria').classList.remove('hidden');
+    }
+
+    function abrirModalEditarCategoria(tipo, nombre) {
+      document.getElementById('catEditNombreOriginal').value = nombre;
+      document.getElementById('catNombre').value = nombre;
+      document.getElementById('catIcono').value = categoriaIconosMap[nombre] || '🏷️';
+      document.getElementById('catTipo').value = tipo;
+      document.getElementById('tituloModalCategoria').innerHTML = '<span>✏️</span> Editar Categoría';
+      document.getElementById('modalCategoria').classList.remove('hidden');
+    }
+
+    function ocultarModalCategoria() {
+      document.getElementById('modalCategoria').classList.add('hidden');
+    }
+
+    function seleccionarEmojiCat(emoji) {
+      document.getElementById('catIcono').value = emoji;
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         ocultarModalDeuda();
@@ -1911,6 +2104,7 @@
         ocultarModalEditarMovimiento();
         ocultarModalPresupuestos();
         ocultarModalMetaAhorro();
+        ocultarModalCategoria();
       }
     });
 
@@ -2159,6 +2353,233 @@
           </div>
         `;
       }).join('');
+    }
+
+    // ---------- Módulo: Configuración de Categorías ----------
+
+    function filtrarTipoConfigCategorias(tipo) {
+      tipoConfigCategoriaActual = tipo;
+      renderizarConfiguracionCategorias();
+    }
+
+    function actualizarBotonesTipoConfig() {
+      const btnGasto = document.getElementById('btnConfigCatGasto');
+      const btnIngreso = document.getElementById('btnConfigCatIngreso');
+      const btnAhorro = document.getElementById('btnConfigCatAhorro');
+      if (!btnGasto || !btnIngreso || !btnAhorro) return;
+
+      const baseInactive = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer';
+
+      btnGasto.className = tipoConfigCategoriaActual === 'gasto'
+        ? 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-coral text-white shadow-sm cursor-pointer'
+        : baseInactive;
+
+      btnIngreso.className = tipoConfigCategoriaActual === 'ingreso'
+        ? 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-emerald-600 text-white shadow-sm cursor-pointer'
+        : baseInactive;
+
+      btnAhorro.className = tipoConfigCategoriaActual === 'ahorro'
+        ? 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-amber-500 text-white shadow-sm cursor-pointer'
+        : baseInactive;
+
+      const cGas = document.getElementById('conteoCatGasto');
+      const cIng = document.getElementById('conteoCatIngreso');
+      const cAho = document.getElementById('conteoCatAhorro');
+      if (cGas) cGas.textContent = `(${(categoriasMap.gasto || []).length})`;
+      if (cIng) cIng.textContent = `(${(categoriasMap.ingreso || []).length})`;
+      if (cAho) cAho.textContent = `(${(categoriasMap.ahorro || []).length})`;
+    }
+
+    function renderizarConfiguracionCategorias() {
+      actualizarBotonesTipoConfig();
+      const grid = document.getElementById('gridConfigCategorias');
+      if (!grid) return;
+
+      const lista = categoriasMap[tipoConfigCategoriaActual] || [];
+
+      if (!lista.length) {
+        grid.innerHTML = `
+          <div class="col-span-full p-8 text-center text-slate-400 dark:text-azulcielo text-xs border border-dashed border-slate-200 dark:border-azulcielo/20 rounded-2xl space-y-2">
+            <p class="text-xl">🏷️</p>
+            <p class="font-bold">No hay categorías configuradas en este tipo</p>
+            <button onclick="abrirModalCrearCategoria()" class="text-azulelectrico font-bold underline">Crear la primera</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Contar movimientos por categoría
+      const conteoMovimientos = {};
+      transacciones.forEach(t => {
+        if (t.tipo === tipoConfigCategoriaActual && t.categoria) {
+          conteoMovimientos[t.categoria] = (conteoMovimientos[t.categoria] || 0) + 1;
+        }
+      });
+
+      const tipoBadgeColor = tipoConfigCategoriaActual === 'gasto'
+        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+        : (tipoConfigCategoriaActual === 'ingreso'
+          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20');
+
+      const tipoNombre = tipoConfigCategoriaActual === 'gasto' ? 'Gasto' : (tipoConfigCategoriaActual === 'ingreso' ? 'Ingreso' : 'Ahorro');
+
+      grid.innerHTML = lista.map(cat => {
+        const icono = categoriaIconosMap[cat] || '🏷️';
+        const movs = conteoMovimientos[cat] || 0;
+        const catEscaped = escapeHTML(cat);
+
+        return `
+          <div class="p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200/80 dark:border-azulcielo/20 flex flex-col justify-between space-y-3 hover:border-azulelectrico/40 transition">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/20 flex items-center justify-center text-lg shrink-0 shadow-sm">
+                  ${escapeHTML(icono)}
+                </span>
+                <div class="min-w-0">
+                  <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-crema truncate">${catEscaped}</h4>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${tipoBadgeColor}">${tipoNombre}</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1 shrink-0">
+                <button onclick="abrirModalEditarCategoria('${tipoConfigCategoriaActual}', '${catEscaped}')" class="p-1.5 rounded-lg text-slate-500 hover:text-azulelectrico hover:bg-white dark:hover:bg-slate-900 border border-transparent hover:border-slate-200 dark:hover:border-azulcielo/20 transition text-xs cursor-pointer" title="Editar">
+                  ✏️
+                </button>
+                <button onclick="eliminarCategoriaConfig('${tipoConfigCategoriaActual}', '${catEscaped}')" class="p-1.5 rounded-lg text-slate-400 hover:text-coral hover:bg-white dark:hover:bg-slate-900 border border-transparent hover:border-slate-200 dark:hover:border-azulcielo/20 transition text-xs cursor-pointer" title="Eliminar">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <div class="text-[10px] text-slate-400 dark:text-azulcielo flex items-center justify-between pt-1 border-t border-slate-100 dark:border-azulcielo/10">
+              <span>Uso en historial:</span>
+              <span class="font-bold text-slate-700 dark:text-slate-300">${movs} movimiento(s)</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function guardarFormCategoria(e) {
+      e.preventDefault();
+      const nombreOriginal = document.getElementById('catEditNombreOriginal').value.trim();
+      const nuevoNombre = document.getElementById('catNombre').value.trim();
+      const nuevoTipo = document.getElementById('catTipo').value;
+      const nuevoIcono = document.getElementById('catIcono').value.trim() || '🏷️';
+
+      if (!nuevoNombre) {
+        mostrarToast('Ingresa un nombre para la categoría', 'error');
+        return;
+      }
+
+      // Si es edición
+      if (nombreOriginal) {
+        const lista = categoriasMap[nuevoTipo] || [];
+        const index = lista.indexOf(nombreOriginal);
+        if (index !== -1) {
+          lista[index] = nuevoNombre;
+        } else {
+          lista.push(nuevoNombre);
+        }
+        categoriaIconosMap[nuevoNombre] = nuevoIcono;
+
+        // Actualizar transacciones existentes si cambió de nombre
+        if (nombreOriginal !== nuevoNombre) {
+          transacciones.forEach(t => {
+            if (t.tipo === nuevoTipo && t.categoria === nombreOriginal) {
+              t.categoria = nuevoNombre;
+            }
+          });
+          // Actualizar presupuestos si existía
+          if (presupuestos[nombreOriginal] !== undefined) {
+            presupuestos[nuevoNombre] = presupuestos[nombreOriginal];
+            delete presupuestos[nombreOriginal];
+            guardarPresupuestosLocales();
+          }
+        }
+        mostrarToast('Categoría actualizada', 'success');
+      } else {
+        // Creación
+        if (!categoriasMap[nuevoTipo]) categoriasMap[nuevoTipo] = [];
+        if (categoriasMap[nuevoTipo].includes(nuevoNombre)) {
+          mostrarToast('Ya existe una categoría con este nombre', 'error');
+          return;
+        }
+        categoriasMap[nuevoTipo].push(nuevoNombre);
+        categoriaIconosMap[nuevoNombre] = nuevoIcono;
+        tipoConfigCategoriaActual = nuevoTipo;
+        mostrarToast('Categoría creada', 'success');
+      }
+
+      guardarCategoriasEnStorage();
+      guardarCacheLocal();
+      actualizarOpcionesCategoria();
+      actualizarOpcionesFiltroCategoria();
+      actualizarInterfaz();
+      renderizarConfiguracionCategorias();
+      ocultarModalCategoria();
+    }
+
+    function eliminarCategoriaConfig(tipo, nombre) {
+      const lista = categoriasMap[tipo] || [];
+      if (lista.length <= 1) {
+        mostrarToast('Debe existir al menos una categoría en este tipo', 'error');
+        return;
+      }
+
+      const conteoUso = transacciones.filter(t => t.tipo === tipo && t.categoria === nombre).length;
+      let mensaje = `¿Eliminar la categoría "${nombre}"?`;
+      if (conteoUso > 0) {
+        const fallback = tipo === 'gasto' ? 'Otros Gastos' : (tipo === 'ingreso' ? 'Otros Ingresos' : 'Depositar a Ahorro');
+        mensaje += `\nTiene ${conteoUso} movimiento(s) asociado(s) que se reasignarán a "${fallback}".`;
+      }
+
+      if (!confirm(mensaje)) return;
+
+      const idx = lista.indexOf(nombre);
+      if (idx !== -1) lista.splice(idx, 1);
+
+      // Reasignar transacciones si usaban esta categoría
+      if (conteoUso > 0) {
+        const fallback = tipo === 'gasto' ? 'Otros Gastos' : (tipo === 'ingreso' ? 'Otros Ingresos' : 'Depositar a Ahorro');
+        if (!lista.includes(fallback)) lista.push(fallback);
+        transacciones.forEach(t => {
+          if (t.tipo === tipo && t.categoria === nombre) {
+            t.categoria = fallback;
+          }
+        });
+      }
+
+      if (presupuestos[nombre] !== undefined) {
+        delete presupuestos[nombre];
+        guardarPresupuestosLocales();
+      }
+
+      guardarCategoriasEnStorage();
+      guardarCacheLocal();
+      actualizarOpcionesCategoria();
+      actualizarOpcionesFiltroCategoria();
+      actualizarInterfaz();
+      renderizarConfiguracionCategorias();
+      mostrarToast('Categoría eliminada', 'info');
+    }
+
+    function restablecerCategoriasPorDefecto() {
+      if (!confirm('¿Estás seguro de restablecer todas las categorías a sus valores por defecto?')) return;
+
+      categoriasMap.ingreso = [...CATEGORIAS_DEFAULT.ingreso];
+      categoriasMap.gasto = [...CATEGORIAS_DEFAULT.gasto];
+      categoriasMap.ahorro = [...CATEGORIAS_DEFAULT.ahorro];
+      Object.assign(categoriaIconosMap, CATEGORIA_ICONOS_DEFAULT);
+
+      guardarCategoriasEnStorage();
+      guardarCacheLocal();
+      actualizarOpcionesCategoria();
+      actualizarOpcionesFiltroCategoria();
+      actualizarInterfaz();
+      renderizarConfiguracionCategorias();
+      mostrarToast('Categorías restablecidas por defecto', 'info');
     }
 
     // ---------- Filtros por Chips Táctiles (Sin barra de texto) ----------

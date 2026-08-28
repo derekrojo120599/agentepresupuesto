@@ -3,7 +3,7 @@
 // Los DATOS (transacciones, deudas) se manejan aparte con localStorage,
 // ver la lógica de caché/cola dentro de index.html.
 
-const CACHE_NAME = 'presupuesto-shell-v14';
+const CACHE_NAME = 'presupuesto-shell-v15';
 
 const ARCHIVOS_CASCARON = [
   './',

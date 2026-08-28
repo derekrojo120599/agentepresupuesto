@@ -221,305 +221,341 @@
     <!-- Aviso de estado global -->
     <div id="avisoEstado" class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"></div>
 
-    <!-- 1. Resumen de Métricas Financieras (Layout adaptable 2 columnas en mobile) -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
-      <!-- Balance Neto (Ocupa 2 cols en mobile para protagonismo) -->
-      <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-gradient-to-br from-azulelectrico/10 to-transparent dark:from-azulelectrico/20 dark:to-slate-900 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-azulelectrico/30 shadow-sm flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[11px] sm:text-xs font-bold text-azulelectrico uppercase tracking-wider">Balance Neto</span>
-          <span class="text-xs">⚖️</span>
-        </div>
-        <p id="balanceNeto" class="text-2xl sm:text-3xl font-black tracking-tight">$0.00</p>
-        <p id="tasaAhorro" class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1">Ahorro: 0%</p>
-      </div>
-
-      <!-- Ingresos -->
-      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ingresos</span>
-          <span class="text-emerald-500 font-bold text-xs">▲</span>
-        </div>
-        <p id="totalIngresos" class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</p>
-        <p id="subIngresos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
-      </div>
-
-      <!-- Gastos -->
-      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Gastos</span>
-          <span class="text-coral font-bold text-xs">▼</span>
-        </div>
-        <p id="totalGastos" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
-        <p id="subGastos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
-      </div>
-
-      <!-- Ahorro Total -->
-      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ahorro Total</span>
-          <span class="text-xs">🏦</span>
-        </div>
-        <p id="totalAhorro" class="text-xl sm:text-2xl font-black text-azulcielo-dark dark:text-azulcielo tracking-tight">$0.00</p>
-        <p id="subAhorro" class="text-[10px] text-slate-400 mt-0.5">En fondos</p>
-      </div>
-
-      <!-- Deuda Pendiente -->
-      <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Deuda Total</span>
-          <span class="text-xs">💳</span>
-        </div>
-        <p id="totalDeudas" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
-        <p id="subDeudas" class="text-[10px] text-slate-400 mt-0.5">Por pagar</p>
-      </div>
-    </div>
-
-    <!-- 2. Sección Presupuestos Límites Mensuales -->
-    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5">
-      <div class="flex justify-between items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
-        <div class="flex items-center gap-2 min-w-0">
-          <span class="text-base sm:text-lg">📊</span>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema truncate">Límites de Presupuesto</h2>
-        </div>
-        <button onclick="mostrarModalPresupuestos()" class="bg-azulelectrico/10 dark:bg-azulelectrico/20 hover:bg-azulelectrico hover:text-white text-azulelectrico dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulelectrico/30 active:scale-95 shrink-0">
-          ⚙️ Ajustar
+    <!-- Barra de Navegación por Pestañas -->
+    <nav class="bg-white dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-1 sm:gap-1.5 min-w-max">
+        <button id="navTabResumen" onclick="cambiarPestana('resumen')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25">
+          <span>📊</span>
+          <span>Resumen</span>
+        </button>
+        <button id="navTabRegistrar" onclick="cambiarPestana('registrar')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
+          <span>✍️</span>
+          <span>Registrar</span>
+        </button>
+        <button id="navTabHistorial" onclick="cambiarPestana('historial')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
+          <span>📜</span>
+          <span>Historial</span>
+        </button>
+        <button id="navTabPresupuestos" onclick="cambiarPestana('presupuestos')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
+          <span>📉</span>
+          <span>Presupuestos</span>
+        </button>
+        <button id="navTabMetas" onclick="cambiarPestana('metas')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
+          <span>🎯</span>
+          <span>Metas</span>
+        </button>
+        <button id="navTabDeudas" onclick="cambiarPestana('deudas')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
+          <span>💳</span>
+          <span>Deudas</span>
         </button>
       </div>
+    </nav>
 
-      <!-- Alertas dinámicas -->
-      <div id="contenedorAlertasPresupuesto" class="hidden space-y-2"></div>
-
-      <!-- Grid de Presupuestos -->
-      <div id="gridPresupuestos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
-    </div>
-
-    <!-- 3. Metas de Ahorro -->
-    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5">
-      <div class="flex justify-between items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
-        <div class="flex items-center gap-2 min-w-0">
-          <span class="text-base sm:text-lg">🎯</span>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema truncate">Metas de Ahorro</h2>
+    <!-- PESTAÑA 1: Resumen (Métricas + Gráficos) -->
+    <div id="tabContentResumen" class="space-y-5 sm:space-y-6 fade-in">
+      <!-- 1. Resumen de Métricas Financieras (Layout adaptable 2 columnas en mobile) -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
+        <!-- Balance Neto (Ocupa 2 cols en mobile para protagonismo) -->
+        <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-gradient-to-br from-azulelectrico/10 to-transparent dark:from-azulelectrico/20 dark:to-slate-900 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-azulelectrico/30 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] sm:text-xs font-bold text-azulelectrico uppercase tracking-wider">Balance Neto</span>
+            <span class="text-xs">⚖️</span>
+          </div>
+          <p id="balanceNeto" class="text-2xl sm:text-3xl font-black tracking-tight">$0.00</p>
+          <p id="tasaAhorro" class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1">Ahorro: 0%</p>
         </div>
-        <button onclick="mostrarModalMetaAhorro()" class="bg-azulcielo/15 dark:bg-azulcielo/20 hover:bg-azulcielo hover:text-slate-950 text-azulcielo-dark dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulcielo/30 active:scale-95 shrink-0">
-          + Nueva
-        </button>
+
+        <!-- Ingresos -->
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ingresos</span>
+            <span class="text-emerald-500 font-bold text-xs">▲</span>
+          </div>
+          <p id="totalIngresos" class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</p>
+          <p id="subIngresos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
+        </div>
+
+        <!-- Gastos -->
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Gastos</span>
+            <span class="text-coral font-bold text-xs">▼</span>
+          </div>
+          <p id="totalGastos" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
+          <p id="subGastos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
+        </div>
+
+        <!-- Ahorro Total -->
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ahorro Total</span>
+            <span class="text-xs">🏦</span>
+          </div>
+          <p id="totalAhorro" class="text-xl sm:text-2xl font-black text-azulcielo-dark dark:text-azulcielo tracking-tight">$0.00</p>
+          <p id="subAhorro" class="text-[10px] text-slate-400 mt-0.5">En fondos</p>
+        </div>
+
+        <!-- Deuda Pendiente -->
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Deuda Total</span>
+            <span class="text-xs">💳</span>
+          </div>
+          <p id="totalDeudas" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
+          <p id="subDeudas" class="text-[10px] text-slate-400 mt-0.5">Por pagar</p>
+        </div>
       </div>
 
-      <!-- Grid de Metas -->
-      <div id="gridMetasAhorro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+      <!-- Visualizaciones y Gráficos (Con Pestañas interactivas en Mobile) -->
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+            <span>📈</span> Gráficos Financieros
+          </h2>
+
+          <!-- Selector de pestañas para Mobile -->
+          <div class="flex sm:hidden p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-azulcielo/20 text-xs font-bold w-full justify-between">
+            <button id="tabIngresos" onclick="cambiarTabGrafico('ingresos')" class="flex-1 py-1.5 rounded-lg bg-azulelectrico text-white shadow-sm transition">Ingresos</button>
+            <button id="tabGastos" onclick="cambiarTabGrafico('gastos')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Gastos</button>
+            <button id="tabAhorros" onclick="cambiarTabGrafico('ahorros')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Ahorros</button>
+          </div>
+        </div>
+
+        <!-- Contenedor de gráficos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Gráfico Ingresos -->
+          <div id="contenedorGraficoIngresos" class="p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex flex-col items-center justify-between">
+            <p class="text-xs font-bold text-azulelectrico uppercase mb-2">Fuentes de Ingreso</p>
+            <div class="w-full max-w-[200px] h-[200px] flex items-center justify-center">
+              <canvas id="graficoIngresos"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico Gastos -->
+          <div id="contenedorGraficoGastos" class="hidden sm:flex p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex-col items-center justify-between">
+            <p class="text-xs font-bold text-coral uppercase mb-2">Distribución de Gastos</p>
+            <div class="w-full max-w-[200px] h-[200px] flex items-center justify-center">
+              <canvas id="graficoGastos"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico Ahorros -->
+          <div id="contenedorGraficoAhorros" class="hidden sm:flex p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex-col items-center justify-between">
+            <p class="text-xs font-bold text-azulcielo-dark dark:text-azulcielo uppercase mb-2">Fondos de Ahorro</p>
+            <div class="w-full h-[200px] flex items-center justify-center">
+              <canvas id="graficoAhorros"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 4. Registro y Control de Deudas -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-
-      <!-- Formulario de Registro Principal -->
-      <div id="seccionRegistrar" class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+    <!-- PESTAÑA 2: Registrar Movimiento -->
+    <div id="tabContentRegistrar" class="hidden fade-in">
+      <div id="seccionRegistrar" class="max-w-2xl mx-auto bg-white dark:bg-slate-900 p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/20 pb-3">
           <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
             <span>✍️</span> Registrar Movimiento
           </h2>
-          <span class="text-[10px] font-bold text-azulelectrico bg-azulelectrico/10 px-2 py-0.5 rounded-full">Nuevo</span>
+          <span class="text-[10px] font-bold text-azulelectrico bg-azulelectrico/10 px-2.5 py-1 rounded-full">Nuevo</span>
         </div>
 
-        <form id="formMovimiento" class="space-y-3.5">
+        <form id="formMovimiento" class="space-y-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Tipo de Operación</label>
-            <select id="tipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm">
+            <select id="tipo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm">
               <option value="ingreso">🟢 Ingreso</option>
               <option value="gasto" selected>🔴 Gasto</option>
               <option value="ahorro">🟡 Ahorro (Fondo)</option>
             </select>
           </div>
 
-          <div class="grid grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
-              <input type="number" id="monto" step="0.01" min="0.01" required placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
+              <input type="number" id="monto" step="0.01" min="0.01" required placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
-              <input type="date" id="fecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
+              <input type="date" id="fecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
             </div>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Categoría</label>
-            <select id="categoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
+            <select id="categoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
           </div>
 
           <!-- Selector dinámico de Deudas -->
           <div id="contenedorDeudaSelect" class="hidden">
             <label class="block text-xs text-coral font-bold mb-1">Deuda a Pagar</label>
-            <select id="deudaObjetivo" class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-coral focus:outline-none transition text-sm"></select>
+            <select id="deudaObjetivo" class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-coral focus:outline-none transition text-sm"></select>
           </div>
 
           <!-- Selector dinámico de Metas de Ahorro -->
           <div id="contenedorMetaAhorroSelect" class="hidden">
             <label class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1">Meta Asociada (Opcional)</label>
-            <select id="metaAhorroSelect" class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
+            <select id="metaAhorroSelect" class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"></select>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Descripción / Concepto</label>
-            <input type="text" id="descripcion" placeholder="Ej: Supermercado, Alquiler..." required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
+            <input type="text" id="descripcion" placeholder="Ej: Supermercado, Alquiler..." required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition">
           </div>
 
-          <button type="submit" class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold p-3 rounded-2xl shadow-lg shadow-azulelectrico/20 transition active:scale-[0.98] disabled:opacity-50">
+          <button type="submit" class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold p-3.5 rounded-2xl shadow-lg shadow-azulelectrico/20 transition active:scale-[0.98] disabled:opacity-50">
             Guardar Movimiento
           </button>
         </form>
       </div>
-
-      <!-- Control de Deudas (Adaptive: Cards en mobile, Tabla en desktop) -->
-      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4 lg:col-span-2 flex flex-col justify-between">
-        <div>
-          <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3 mb-3">
-            <div class="flex items-center gap-2">
-              <span class="text-base sm:text-lg">💳</span>
-              <h2 class="text-sm sm:text-base font-bold text-coral">Control de Deudas</h2>
-            </div>
-            <button onclick="mostrarModalDeuda()" class="bg-coral hover:bg-coral-hover text-white text-xs px-3 py-1.5 rounded-xl font-bold shadow-md shadow-coral/20 transition active:scale-95">+ Deuda</button>
-          </div>
-
-          <!-- Vista Desktop: Tabla -->
-          <div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-100/75 dark:bg-slate-950/70 text-slate-600 dark:text-azulcielo text-xs uppercase font-bold">
-                <tr>
-                  <th class="p-3">Acreedor</th>
-                  <th class="p-3 text-right">Inicial</th>
-                  <th class="p-3 text-right">Abonado</th>
-                  <th class="p-3 text-right">Saldo Restante</th>
-                  <th class="p-3 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tablaDeudas" class="divide-y divide-slate-200 dark:divide-azulcielo/10"></tbody>
-            </table>
-          </div>
-
-          <!-- Vista Mobile: Tarjetas táctiles -->
-          <div id="listaDeudasMobile" class="sm:hidden space-y-2.5">
-            <!-- Render dinámico mobile -->
-          </div>
-        </div>
-      </div>
-
     </div>
 
-    <!-- 5. Visualizaciones y Gráficos (Con Pestañas interactivas en Mobile) -->
-    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
-        <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
-          <span>📈</span> Gráficos Financieros
-        </h2>
-
-        <!-- Selector de pestañas para Mobile -->
-        <div class="flex sm:hidden p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-azulcielo/20 text-xs font-bold w-full justify-between">
-          <button id="tabIngresos" onclick="cambiarTabGrafico('ingresos')" class="flex-1 py-1.5 rounded-lg bg-azulelectrico text-white shadow-sm transition">Ingresos</button>
-          <button id="tabGastos" onclick="cambiarTabGrafico('gastos')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Gastos</button>
-          <button id="tabAhorros" onclick="cambiarTabGrafico('ahorros')" class="flex-1 py-1.5 rounded-lg text-slate-600 dark:text-azulcielo hover:text-slate-900 transition">Ahorros</button>
-        </div>
-      </div>
-
-      <!-- Contenedor de gráficos -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Gráfico Ingresos -->
-        <div id="contenedorGraficoIngresos" class="p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex flex-col items-center justify-between">
-          <p class="text-xs font-bold text-azulelectrico uppercase mb-2">Fuentes de Ingreso</p>
-          <div class="w-full max-w-[200px] h-[200px] flex items-center justify-center">
-            <canvas id="graficoIngresos"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfico Gastos -->
-        <div id="contenedorGraficoGastos" class="hidden sm:flex p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex-col items-center justify-between">
-          <p class="text-xs font-bold text-coral uppercase mb-2">Distribución de Gastos</p>
-          <div class="w-full max-w-[200px] h-[200px] flex items-center justify-center">
-            <canvas id="graficoGastos"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfico Ahorros -->
-        <div id="contenedorGraficoAhorros" class="hidden sm:flex p-3 rounded-2xl border border-slate-100 dark:border-azulcielo/15 flex-col items-center justify-between">
-          <p class="text-xs font-bold text-azulcielo-dark dark:text-azulcielo uppercase mb-2">Fondos de Ahorro</p>
-          <div class="w-full h-[200px] flex items-center justify-center">
-            <canvas id="graficoAhorros"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 6. Historial de Transacciones con Chips de Filtro (Sin barra de texto) -->
-    <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
-        <div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
-            <span>📜</span> Historial de Movimientos
-          </h2>
-          <p id="conteoFiltradas" class="text-[11px] text-slate-500 dark:text-azulcielo">0 movimientos</p>
-        </div>
-        <div id="resumenMontoFiltrado" class="text-xs font-black text-azulelectrico self-start sm:self-auto bg-azulelectrico/10 px-2.5 py-1 rounded-xl"></div>
-      </div>
-
-      <!-- Filtros Inmersivos por Chips Táctiles (Sin barra de búsqueda) -->
-      <div class="space-y-2.5">
-        <!-- Chips de Tipo de Operación -->
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-          <button onclick="seleccionarChipTipo('')" id="chipTipoTodos" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-white shadow-sm transition shrink-0">
-            Todos
-          </button>
-          <button onclick="seleccionarChipTipo('gasto')" id="chipTipoGasto" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
-            🔴 Gastos
-          </button>
-          <button onclick="seleccionarChipTipo('ingreso')" id="chipTipoIngreso" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
-            🟢 Ingresos
-          </button>
-          <button onclick="seleccionarChipTipo('ahorro')" id="chipTipoAhorro" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
-            🟡 Ahorros
-          </button>
-        </div>
-
-        <!-- Filtros secundarios: Categoría y Alcance -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+    <!-- PESTAÑA 3: Historial de Transacciones -->
+    <div id="tabContentHistorial" class="hidden fade-in">
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
           <div>
-            <select id="filtroCategoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
-              <option value="">Todas las categorías</option>
-            </select>
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2">
+              <span>📜</span> Historial de Movimientos
+            </h2>
+            <p id="conteoFiltradas" class="text-[11px] text-slate-500 dark:text-azulcielo">0 movimientos</p>
           </div>
-          <div>
-            <select id="filtroAlcance" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
-              <option value="mes" selected>Este mes</option>
-              <option value="todo">Histórico completo</option>
-            </select>
-          </div>
-          <div class="col-span-2 sm:col-span-1 flex items-center justify-end">
-            <button onclick="limpiarFiltros()" class="text-[11px] font-bold text-slate-500 dark:text-azulcielo hover:text-coral transition">
-              Restablecer filtros
+          <div id="resumenMontoFiltrado" class="text-xs font-black text-azulelectrico self-start sm:self-auto bg-azulelectrico/10 px-2.5 py-1 rounded-xl"></div>
+        </div>
+
+        <!-- Filtros Inmersivos por Chips Táctiles -->
+        <div class="space-y-2.5">
+          <!-- Chips de Tipo de Operación -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            <button onclick="seleccionarChipTipo('')" id="chipTipoTodos" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-white shadow-sm transition shrink-0">
+              Todos
+            </button>
+            <button onclick="seleccionarChipTipo('gasto')" id="chipTipoGasto" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
+              🔴 Gastos
+            </button>
+            <button onclick="seleccionarChipTipo('ingreso')" id="chipTipoIngreso" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
+              🟢 Ingresos
+            </button>
+            <button onclick="seleccionarChipTipo('ahorro')" id="chipTipoAhorro" class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0">
+              🟡 Ahorros
             </button>
           </div>
+
+          <!-- Filtros secundarios: Categoría y Alcance -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+            <div>
+              <select id="filtroCategoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
+                <option value="">Todas las categorías</option>
+              </select>
+            </div>
+            <div>
+              <select id="filtroAlcance" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
+                <option value="mes" selected>Este mes</option>
+                <option value="todo">Histórico completo</option>
+              </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1 flex items-center justify-end">
+              <button onclick="limpiarFiltros()" class="text-[11px] font-bold text-slate-500 dark:text-azulcielo hover:text-coral transition">
+                Restablecer filtros
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista Desktop: Tabla -->
+        <div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-100/75 dark:bg-slate-950/70 text-slate-600 dark:text-azulcielo text-xs uppercase font-bold">
+              <tr>
+                <th class="p-3">Fecha</th>
+                <th class="p-3">Tipo</th>
+                <th class="p-3">Categoría</th>
+                <th class="p-3">Descripción</th>
+                <th class="p-3 text-right">Monto</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaHistorial" class="divide-y divide-slate-200 dark:divide-azulcielo/10"></tbody>
+          </table>
+        </div>
+
+        <!-- Vista Mobile: Lista de Tarjetas táctiles fluidas -->
+        <div id="listaHistorialMobile" class="sm:hidden space-y-2.5">
+          <!-- Render dinámico mobile -->
         </div>
       </div>
+    </div>
 
-      <!-- Vista Desktop: Tabla -->
-      <div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-100/75 dark:bg-slate-950/70 text-slate-600 dark:text-azulcielo text-xs uppercase font-bold">
-            <tr>
-              <th class="p-3">Fecha</th>
-              <th class="p-3">Tipo</th>
-              <th class="p-3">Categoría</th>
-              <th class="p-3">Descripción</th>
-              <th class="p-3 text-right">Monto</th>
-              <th class="p-3 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaHistorial" class="divide-y divide-slate-200 dark:divide-azulcielo/10"></tbody>
-        </table>
+    <!-- PESTAÑA 4: Sección Presupuestos Límites Mensuales -->
+    <div id="tabContentPresupuestos" class="hidden fade-in">
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5">
+        <div class="flex justify-between items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-base sm:text-lg">📊</span>
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema truncate">Límites de Presupuesto</h2>
+          </div>
+          <button onclick="mostrarModalPresupuestos()" class="bg-azulelectrico/10 dark:bg-azulelectrico/20 hover:bg-azulelectrico hover:text-white text-azulelectrico dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulelectrico/30 active:scale-95 shrink-0">
+            ⚙️ Ajustar
+          </button>
+        </div>
+
+        <!-- Alertas dinámicas -->
+        <div id="contenedorAlertasPresupuesto" class="hidden space-y-2"></div>
+
+        <!-- Grid de Presupuestos -->
+        <div id="gridPresupuestos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
       </div>
+    </div>
 
-      <!-- Vista Mobile: Lista de Tarjetas táctiles fluidas -->
-      <div id="listaHistorialMobile" class="sm:hidden space-y-2.5">
-        <!-- Render dinámico mobile -->
+    <!-- PESTAÑA 5: Metas de Ahorro -->
+    <div id="tabContentMetas" class="hidden fade-in">
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5">
+        <div class="flex justify-between items-center gap-2 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-base sm:text-lg">🎯</span>
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema truncate">Metas de Ahorro</h2>
+          </div>
+          <button onclick="mostrarModalMetaAhorro()" class="bg-azulcielo/15 dark:bg-azulcielo/20 hover:bg-azulcielo hover:text-slate-950 text-azulcielo-dark dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulcielo/30 active:scale-95 shrink-0">
+            + Nueva
+          </button>
+        </div>
+
+        <!-- Grid de Metas -->
+        <div id="gridMetasAhorro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 6: Control de Deudas -->
+    <div id="tabContentDeudas" class="hidden fade-in">
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base sm:text-lg">💳</span>
+            <h2 class="text-sm sm:text-base font-bold text-coral">Control de Deudas</h2>
+          </div>
+          <button onclick="mostrarModalDeuda()" class="bg-coral hover:bg-coral-hover text-white text-xs px-3.5 py-1.5 rounded-xl font-bold shadow-md shadow-coral/20 transition active:scale-95">+ Deuda</button>
+        </div>
+
+        <!-- Vista Desktop: Tabla -->
+        <div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200 dark:border-azulcielo/15">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-100/75 dark:bg-slate-950/70 text-slate-600 dark:text-azulcielo text-xs uppercase font-bold">
+              <tr>
+                <th class="p-3">Acreedor</th>
+                <th class="p-3 text-right">Inicial</th>
+                <th class="p-3 text-right">Abonado</th>
+                <th class="p-3 text-right">Saldo Restante</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaDeudas" class="divide-y divide-slate-200 dark:divide-azulcielo/10"></tbody>
+          </table>
+        </div>
+
+        <!-- Vista Mobile: Tarjetas táctiles -->
+        <div id="listaDeudasMobile" class="sm:hidden space-y-2.5">
+          <!-- Render dinámico mobile -->
+        </div>
       </div>
     </div>
 
@@ -959,6 +995,7 @@
 
         if (!sesionInicializada) {
           sesionInicializada = true;
+          inicializarPestanas();
           if (navigator.onLine) {
             cargarDatosCloud();
             suscribirRealtime();
@@ -1144,10 +1181,57 @@
       btn.textContent = btn.dataset.textoOriginal || btn.textContent;
     }
 
+    // ---------- Sistema de Navegación por Pestañas ----------
+
+    let pestanaActual = 'resumen';
+
+    function cambiarPestana(tabName) {
+      pestanaActual = tabName;
+      localStorage.setItem('pestana_activa_presupuesto', tabName);
+
+      const pestanas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas'];
+      pestanas.forEach(p => {
+        const idContent = `tabContent${p.charAt(0).toUpperCase() + p.slice(1)}`;
+        const idNav = `navTab${p.charAt(0).toUpperCase() + p.slice(1)}`;
+        const el = document.getElementById(idContent);
+        const btn = document.getElementById(idNav);
+        if (!el || !btn) return;
+
+        if (p === tabName) {
+          el.classList.remove('hidden');
+          btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25';
+        } else {
+          el.classList.add('hidden');
+          btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema';
+        }
+      });
+
+      if (tabName === 'resumen') {
+        setTimeout(() => {
+          if (graficoIngresosChart) graficoIngresosChart.resize();
+          if (graficoGastosChart) graficoGastosChart.resize();
+          if (graficoAhorrosChart) graficoAhorrosChart.resize();
+        }, 50);
+      }
+    }
+
+    function inicializarPestanas() {
+      const guardada = localStorage.getItem('pestana_activa_presupuesto');
+      const pestanasValidas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas'];
+      if (guardada && pestanasValidas.includes(guardada)) {
+        cambiarPestana(guardada);
+      } else {
+        cambiarPestana('resumen');
+      }
+    }
+
     function abrirRegistroMobile() {
-      const seccion = document.getElementById('seccionRegistrar');
-      seccion.scrollIntoView({ behavior: 'smooth' });
-      document.getElementById('monto').focus();
+      cambiarPestana('registrar');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        const m = document.getElementById('monto');
+        if (m) m.focus();
+      }, 150);
     }
 
     // ---------- Pestañas de Gráficos (Mobile) ----------
@@ -1583,9 +1667,10 @@
     }
 
     function filtrarPorCategoriaRapido(cat) {
+      cambiarPestana('historial');
       document.getElementById('filtroCategoria').value = cat;
       renderizarHistorialFiltrado();
-      document.getElementById('listaHistorialMobile').scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function limpiarFiltros() {
@@ -2269,6 +2354,7 @@
     // ---------- Inicialización & SW ----------
 
     inicializarTema();
+    inicializarPestanas();
     actualizarIndicadorConexion();
 
     if ('serviceWorker' in navigator) {

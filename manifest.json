@@ -2,12 +2,12 @@
   "name": "Presupuesto Mensual",
   "short_name": "Presupuesto",
   "description": "Control de presupuesto mensual con seguimiento de ingresos, gastos, ahorros y deudas.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "display_override": ["fullscreen", "standalone", "minimal-ui", "window-controls-overlay"],
   "background_color": "#020617",
-  "theme_color": "#0259DD",
+  "theme_color": "#020617",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -2,7 +2,7 @@
 <html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Presupuesto Mensual</title>
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#020617">
@@ -18,6 +18,10 @@
       --scrollbar-track: #020617;
       --scrollbar-thumb: #0259DD;
       --app-bg: #020617;
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
     }
     html.light {
       --scrollbar-track: #f1f5f9;
@@ -33,15 +37,25 @@
       -webkit-user-select: none;
       user-select: none;
       transition: background-color 0.3s ease;
+      min-height: 100vh;
+      min-height: 100dvh;
     }
     body {
       background-color: var(--app-bg);
       overscroll-behavior: none;
       touch-action: manipulation;
+      min-height: 100vh;
+      min-height: 100dvh;
       padding-top: max(12px, env(safe-area-inset-top, 0px));
       padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
       padding-left: max(12px, env(safe-area-inset-left, 0px));
       padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     /* Inputs permiten interacción y selección */
     input, select, textarea {

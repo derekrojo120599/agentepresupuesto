@@ -2539,10 +2539,10 @@
         const completada = acumulado >= meta.objetivo;
 
         return `
-          <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-azulcielo/20 space-y-2.5 shadow-sm">
+          <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border ${completada ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]' : 'border-slate-200 dark:border-azulcielo/20 shadow-sm'} space-y-2.5 transition-all duration-300">
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
-                <span class="text-xl p-2 rounded-xl bg-azulcielo/15 text-azulcielo shrink-0">${meta.icono || '🎯'}</span>
+                <span class="text-xl p-2 rounded-xl ${completada ? 'bg-emerald-500/20 text-emerald-500' : 'bg-azulcielo/15 text-azulcielo'} shrink-0 transition-colors">${meta.icono || '🎯'}</span>
                 <div class="min-w-0">
                   <h3 class="font-bold text-slate-900 dark:text-crema text-xs sm:text-sm truncate">${escapeHTML(meta.nombre)}</h3>
                   ${meta.fechaLimite ? `<p class="text-[10px] text-slate-400 truncate">Límite: ${escapeHTML(meta.fechaLimite)}</p>` : ''}
@@ -2555,19 +2555,21 @@
             </div>
 
             <div class="flex items-baseline justify-between text-xs">
-              <span class="font-black text-azulcielo-dark dark:text-azulcielo text-sm">$${acumulado.toFixed(2)}</span>
+              <span class="font-black ${completada ? 'text-emerald-500' : 'text-azulcielo-dark dark:text-azulcielo'} text-sm">$${acumulado.toFixed(2)}</span>
               <span class="text-slate-400 text-[11px] font-semibold">Obj: $${meta.objetivo.toFixed(2)}</span>
             </div>
 
-            <div class="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-              <div class="${completada ? 'bg-emerald-500' : 'bg-azulelectrico'} h-full rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
+            <div class="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden relative ${completada ? 'ring-1 ring-emerald-500/30' : ''}">
+              <div class="${completada ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-azulelectrico'} h-full rounded-full transition-all duration-500 relative overflow-hidden" style="width: ${porcentaje}%">
+                ${completada ? '<div class="absolute inset-0 bg-white/20 animate-pulse"></div>' : ''}
+              </div>
             </div>
 
             <div class="flex items-center justify-between text-[11px] pt-1">
               <span class="font-bold ${completada ? 'text-emerald-500' : 'text-slate-500 dark:text-azulcielo'} text-[10px]">
                 ${completada ? '🎉 ¡Completada!' : `${porcentaje.toFixed(0)}%`}
               </span>
-              <button onclick="depositarEnMetaRapido('${escapeHTML(meta.nombre)}')" class="text-xs bg-azulcielo/20 hover:bg-azulcielo hover:text-slate-950 text-azulcielo-dark dark:text-azulcielo px-2.5 py-1 rounded-lg font-bold transition">
+              <button onclick="depositarEnMetaRapido('${escapeHTML(meta.nombre)}')" class="text-xs ${completada ? 'bg-emerald-500/20 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400' : 'bg-azulcielo/20 hover:bg-azulcielo text-azulcielo-dark dark:text-azulcielo'} hover:text-slate-950 px-2.5 py-1 rounded-lg font-bold transition">
                 + Abonar
               </button>
             </div>
@@ -3526,7 +3528,14 @@
       document.getElementById('totalDeudas').textContent = `$${totalDeudaPendiente.toFixed(2)}`;
       document.getElementById('subDeudas').textContent = `${deudas.length} acreedor(es)`;
 
-      const balance = ingresosMes - gastosMes;
+      let balance = 0;
+      transacciones.forEach(t => {
+        if (t.fecha.substring(0, 7) <= mesSeleccionado) {
+          const m = parseFloat(t.monto);
+          if (t.tipo === 'ingreso') balance += m;
+          else if (t.tipo === 'gasto') balance -= m;
+        }
+      });
       const balanceEl = document.getElementById('balanceNeto');
       const signoBal = balance < 0 ? '-' : '';
       const partesBal = Math.abs(balance).toFixed(2).split('.');

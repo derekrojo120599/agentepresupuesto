@@ -1981,14 +1981,21 @@
         const idNav = `navTab${p.charAt(0).toUpperCase() + p.slice(1)}`;
         const el = document.getElementById(idContent);
         const btn = document.getElementById(idNav);
-        if (!el || !btn) return;
 
-        if (p === tabName) {
-          el.classList.remove('hidden');
-          btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25';
-        } else {
-          el.classList.add('hidden');
-          btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema';
+        if (el) {
+          if (p === tabName) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+
+        if (btn) {
+          if (p === tabName) {
+            btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25';
+          } else {
+            btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema';
+          }
         }
       });
 
@@ -2007,6 +2014,7 @@
         }, 50);
       } else if (tabName === 'configuracion') {
         renderizarConfiguracionCategorias();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 

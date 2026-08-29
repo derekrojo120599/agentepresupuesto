@@ -180,6 +180,7 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-[100dvh] pb-28 sm:pb-8 relative transition-colors duration-300 antialiased font-sans">
@@ -341,7 +342,7 @@
           </div>
           <div>
             <p id="totalGastos" class="text-xl sm:text-2xl font-black text-coral tracking-tight tabular-nums font-mono-num">$0.00</p>
-            <p id="subGastos" class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate">0 mov.</p>
+            <p id="subGastos" class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5">0 mov.</p>
           </div>
         </div>
 
@@ -2422,30 +2423,34 @@
         const excedido = gastado > limite;
         const restante = Math.max(0, limite - gastado);
 
-        let colorBarra = 'bg-emerald-500';
+        let colorBarra = 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]';
         let colorTexto = 'text-emerald-500';
-        let badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">Normal</span>';
+        let badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">Tranquilidad</span>';
 
         if (excedido) {
-          colorBarra = 'bg-coral';
+          colorBarra = 'bg-coral shadow-[0_0_8px_rgba(255,102,72,0.8)] animate-pulse';
           colorTexto = 'text-coral';
           badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-coral/20 text-coral animate-pulse">Excedido</span>';
           alertasHTML += `
-            <div class="p-3 rounded-2xl bg-coral/15 border border-coral text-coral text-xs font-bold flex items-center justify-between gap-2">
+            <div class="p-3 rounded-2xl bg-coral/15 border border-coral text-coral text-xs font-bold flex items-center justify-between gap-2 shadow-sm">
               <span>⚠️ <strong>${escapeHTML(cat)}</strong> excedió su límite por <strong>$${(gastado - limite).toFixed(2)}</strong>.</span>
               <button onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')" class="text-[11px] underline shrink-0 cursor-pointer">Ver</button>
             </div>
           `;
         } else if (porcentaje >= 80) {
-          colorBarra = 'bg-amber-500';
+          colorBarra = 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]';
           colorTexto = 'text-amber-500';
-          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">80%+</span>';
+          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">Precaución</span>';
           alertasHTML += `
             <div class="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center justify-between gap-2">
               <span>⚠️ <strong>${escapeHTML(cat)}</strong> ha alcanzado el <strong>${porcentaje.toFixed(0)}%</strong> de su presupuesto ($${gastado.toFixed(2)} de $${limite.toFixed(2)}).</span>
               <button onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')" class="text-[11px] underline shrink-0 cursor-pointer">Ver</button>
             </div>
           `;
+        } else if (porcentaje >= 50) {
+          colorBarra = 'bg-azulelectrico shadow-[0_0_8px_rgba(2,89,221,0.5)]';
+          colorTexto = 'text-azulelectrico';
+          badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-azulelectrico/10 text-azulelectrico">Medio</span>';
         }
 
         return `
@@ -2543,6 +2548,19 @@
         const acumulado = Math.max(0, fondosMapa[meta.nombre] || 0);
         const porcentaje = Math.min(100, (acumulado / meta.objetivo) * 100);
         const completada = acumulado >= meta.objetivo;
+        
+        let textoProyeccion = '';
+        if (!completada && acumulado > 0) {
+          // Obtener depósitos promedios (simplificado: asumiendo que los depósitos se han hecho en un tiempo, o calculamos un promedio mensual).
+          // Para no hacer cálculos pesados de fechas, sugerimos algo estático en base al ahorro mensual actual o global.
+          // Simplificado: calculamos "si ahorras $X adicionales, lo logras".
+          const restante = meta.objetivo - acumulado;
+          textoProyeccion = `<p class="text-[10px] text-azulcielo font-medium bg-azulcielo/10 px-2 py-1 rounded-lg mt-1 inline-block">Te faltan $${restante.toFixed(2)} para lograrlo 🚀</p>`;
+        } else if (completada) {
+          textoProyeccion = `<p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded-lg mt-1 inline-block">¡Meta alcanzada, sigue así! 🎉</p>`;
+        } else {
+          textoProyeccion = `<p class="text-[10px] text-slate-400 font-medium mt-1">¡Abona por primera vez para comenzar! 💪</p>`;
+        }
 
         return `
           <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border ${completada ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]' : 'border-slate-200 dark:border-azulcielo/20 shadow-sm'} space-y-2.5 transition-all duration-300">
@@ -2570,6 +2588,8 @@
                 ${completada ? '<div class="absolute inset-0 bg-white/20 animate-pulse"></div>' : ''}
               </div>
             </div>
+            
+            ${textoProyeccion}
 
             <div class="flex items-center justify-between text-[11px] pt-1">
               <span class="font-bold ${completada ? 'text-emerald-500' : 'text-slate-500 dark:text-azulcielo'} text-[10px]">
@@ -3140,6 +3160,17 @@
           actualizarOpcionesCategoria();
           actualizarInterfaz();
           mostrarToast('Guardado localmente', 'info');
+          
+          if (nueva.tipo === 'ahorro' && !nueva.categoria.toLowerCase().includes('retirar')) {
+            if (typeof confetti === 'function') {
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#0259DD', '#84AFFB', '#10b981', '#34d399']
+              });
+            }
+          }
           return;
         }
 
@@ -3154,6 +3185,17 @@
         actualizarOpcionesCategoria();
         await cargarDatosCloud();
         mostrarToast('Movimiento registrado', 'success');
+
+        if (nueva.tipo === 'ahorro' && !nueva.categoria.toLowerCase().includes('retirar')) {
+          if (typeof confetti === 'function') {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#0259DD', '#84AFFB', '#10b981', '#34d399']
+            });
+          }
+        }
       } finally {
         desbloquearBoton(btn);
       }
@@ -3515,9 +3557,11 @@
 
         if (gastosMesAnt > 0) {
           const diffGas = ((gastosMes - gastosMesAnt) / gastosMesAnt) * 100;
-          const colorDiff = diffGas <= 0 ? 'text-emerald-500' : 'text-coral';
-          const iconoDiff = diffGas <= 0 ? '▼ ' : '▲ +';
-          compGastoHTML = ` · <span class="${colorDiff} font-bold">${iconoDiff}${Math.abs(diffGas).toFixed(0)}%</span>`;
+          if (diffGas <= 0) {
+            compGastoHTML = `<br><span class="text-emerald-500 font-bold text-xs mt-1 block">¡Genial! Has gastado ${Math.abs(diffGas).toFixed(0)}% menos que el mes pasado.</span>`;
+          } else {
+            compGastoHTML = ` · <span class="text-coral font-bold">▲ +${Math.abs(diffGas).toFixed(0)}%</span>`;
+          }
         }
       }
 

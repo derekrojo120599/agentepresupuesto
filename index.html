@@ -188,31 +188,33 @@
   <div id="toastContainer" class="fixed top-3 sm:top-4 right-3 sm:right-4 left-3 sm:left-auto z-50 flex flex-col gap-2 max-w-sm w-auto sm:w-full pointer-events-none"></div>
 
   <!-- Pantalla de autenticación -->
-  <div id="authScreen" class="max-w-md mx-auto mt-12 sm:mt-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl transition-all duration-300">
-    <div class="text-center space-y-1">
-      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico mb-2 text-2xl shadow-inner">
-        💰
+  <div id="authScreen" class="flex flex-col justify-center items-center min-h-[80vh] px-4">
+    <div class="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl transition-all duration-300">
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-azulelectrico/10 dark:bg-azulelectrico/20 text-azulelectrico mb-2 text-2xl shadow-inner">
+          💰
+        </div>
+        <h1 class="text-2xl font-black text-slate-900 dark:text-crema tracking-tight">Presupuesto Mensual</h1>
+        <p class="text-slate-500 dark:text-azulcielo text-xs sm:text-sm">Control inteligente de gastos, metas y deudas</p>
       </div>
-      <h1 class="text-2xl font-black text-slate-900 dark:text-crema tracking-tight">Presupuesto Mensual</h1>
-      <p class="text-slate-500 dark:text-azulcielo text-xs sm:text-sm">Control inteligente de gastos, metas y deudas</p>
+
+      <div id="avisoAuth" class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"></div>
+
+      <form id="formAuth" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Correo Electrónico</label>
+          <input type="email" id="authEmail" required autocomplete="email" placeholder="tu@correo.com" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Contraseña</label>
+          <input type="password" id="authPassword" required minlength="6" autocomplete="current-password" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
+          <button type="submit" id="btnIngresar" class="w-full sm:flex-1 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-azulelectrico/25 transition active:scale-[0.98] disabled:opacity-50">Ingresar</button>
+          <button type="button" id="btnCrearCuenta" class="w-full sm:flex-1 bg-coral hover:bg-coral-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-coral/25 transition active:scale-[0.98] disabled:opacity-50">Crear cuenta</button>
+        </div>
+      </form>
     </div>
-
-    <div id="avisoAuth" class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"></div>
-
-    <form id="formAuth" class="space-y-4">
-      <div>
-        <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Correo Electrónico</label>
-        <input type="email" id="authEmail" required autocomplete="email" placeholder="tu@correo.com" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
-      </div>
-      <div>
-        <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5">Contraseña</label>
-        <input type="password" id="authPassword" required minlength="6" autocomplete="current-password" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition">
-      </div>
-      <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
-        <button type="submit" id="btnIngresar" class="w-full sm:flex-1 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-azulelectrico/25 transition active:scale-[0.98] disabled:opacity-50">Ingresar</button>
-        <button type="button" id="btnCrearCuenta" class="w-full sm:flex-1 bg-coral hover:bg-coral-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-coral/25 transition active:scale-[0.98] disabled:opacity-50">Crear cuenta</button>
-      </div>
-    </form>
   </div>
 
   <!-- Contenedor Principal de la App -->
@@ -710,7 +712,7 @@
   </div>
 
   <!-- Barra de Navegación Inferior Móvil (Mobile Bottom Dock) -->
-  <nav id="mobileBottomNav" class="sm:hidden fixed z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-azulcielo/20 px-1.5 py-1.5 flex justify-around items-center shadow-[0_15px_35px_-5px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_35px_-5px_rgba(2,89,221,0.2)] rounded-3xl" style="bottom: calc(1rem + env(safe-area-inset-bottom)); left: 1rem; right: 1rem;">
+  <nav id="mobileBottomNav" class="hidden sm:hidden fixed z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-azulcielo/20 px-1.5 py-1.5 flex justify-around items-center shadow-[0_15px_35px_-5px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_35px_-5px_rgba(2,89,221,0.2)] rounded-3xl" style="bottom: calc(1rem + env(safe-area-inset-bottom)); left: 1rem; right: 1rem;">
     <button onclick="cambiarPestana('resumen')" id="mobileNavResumen" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-azulelectrico font-bold flex-1 bg-azulelectrico/10 dark:bg-azulelectrico/20 cursor-pointer">
       <span class="text-base">📊</span>
       <span class="text-[9px] font-bold mt-0.5">Resumen</span>
@@ -1893,6 +1895,8 @@
       if (session) {
         document.getElementById('authScreen').classList.add('hidden');
         document.getElementById('appContainer').classList.remove('hidden');
+        document.getElementById('mobileBottomNav').classList.remove('hidden');
+        document.getElementById('mobileBottomNav').classList.add('flex');
         document.getElementById('usuarioEmail').textContent = session.user.email;
         document.getElementById('formAuth').reset();
         document.getElementById('avisoAuth').classList.add('hidden');
@@ -1917,6 +1921,8 @@
         }
       } else {
         document.getElementById('appContainer').classList.add('hidden');
+        document.getElementById('mobileBottomNav').classList.add('hidden');
+        document.getElementById('mobileBottomNav').classList.remove('flex');
         document.getElementById('authScreen').classList.remove('hidden');
         sesionInicializada = false;
         usuarioActualId = null;

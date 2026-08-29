@@ -66,9 +66,6 @@
       mostrarToast('Sesión cerrada', 'info');
     }
 
-    document.getElementById('formAuth').addEventListener('submit', iniciarSesion);
-    document.getElementById('btnCrearCuenta').addEventListener('click', crearCuenta);
-
     function suscribirRealtime() {
       if (canalRealtime) return;
       canalRealtime = supabaseClient
@@ -84,13 +81,16 @@
         });
     }
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && usuarioActualId && navigator.onLine) {
-        cargarDatosCloud();
-      }
-    });
-
     function inicializarAutenticacion() {
+      document.getElementById('formAuth').addEventListener('submit', iniciarSesion);
+      document.getElementById('btnCrearCuenta').addEventListener('click', crearCuenta);
+      
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && usuarioActualId && navigator.onLine) {
+          cargarDatosCloud();
+        }
+      });
+
       supabaseClient.auth.onAuthStateChange((event, session) => {
         if (session) {
           document.getElementById('authScreen').classList.add('hidden');

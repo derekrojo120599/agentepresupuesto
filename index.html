@@ -164,7 +164,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-[100dvh] pb-24 sm:pb-8 relative transition-colors duration-300 antialiased font-sans">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-[100dvh] pb-28 sm:pb-8 relative transition-colors duration-300 antialiased font-sans">
 
   <!-- Toast Container Flotante para notificaciones -->
   <div id="toastContainer" class="fixed top-3 sm:top-4 right-3 sm:right-4 left-3 sm:left-auto z-50 flex flex-col gap-2 max-w-sm w-auto sm:w-full pointer-events-none"></div>
@@ -244,8 +244,8 @@
     <!-- Aviso de estado global -->
     <div id="avisoEstado" class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"></div>
 
-    <!-- Barra de Navegación por Pestañas -->
-    <nav class="bg-white dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm overflow-x-auto no-scrollbar">
+    <!-- Barra de Navegación por Pestañas (Desktop) -->
+    <nav class="hidden sm:block bg-white dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm overflow-x-auto no-scrollbar">
       <div class="flex items-center gap-1 sm:gap-1.5 min-w-max">
         <button id="navTabResumen" onclick="cambiarPestana('resumen')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25">
           <span>📊</span>
@@ -408,12 +408,23 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
-              <input type="number" id="monto" step="0.01" min="0.01" required placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
+              <input type="number" id="monto" step="0.01" min="0.01" inputmode="decimal" required placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
               <input type="date" id="fecha" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
             </div>
+          </div>
+
+          <!-- Montos rápidos para agilizar registro -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mt-1.5">
+            <span class="text-[10px] font-bold text-slate-400 dark:text-azulcielo shrink-0">Rápido:</span>
+            <button type="button" onclick="sumarMontoRapido(5)" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-950 hover:bg-azulelectrico/10 hover:text-azulelectrico text-slate-700 dark:text-crema text-xs font-bold rounded-lg border border-slate-200 dark:border-azulcielo/20 transition active:scale-95 shrink-0 cursor-pointer">+$5</button>
+            <button type="button" onclick="sumarMontoRapido(10)" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-950 hover:bg-azulelectrico/10 hover:text-azulelectrico text-slate-700 dark:text-crema text-xs font-bold rounded-lg border border-slate-200 dark:border-azulcielo/20 transition active:scale-95 shrink-0 cursor-pointer">+$10</button>
+            <button type="button" onclick="sumarMontoRapido(20)" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-950 hover:bg-azulelectrico/10 hover:text-azulelectrico text-slate-700 dark:text-crema text-xs font-bold rounded-lg border border-slate-200 dark:border-azulcielo/20 transition active:scale-95 shrink-0 cursor-pointer">+$20</button>
+            <button type="button" onclick="sumarMontoRapido(50)" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-950 hover:bg-azulelectrico/10 hover:text-azulelectrico text-slate-700 dark:text-crema text-xs font-bold rounded-lg border border-slate-200 dark:border-azulcielo/20 transition active:scale-95 shrink-0 cursor-pointer">+$50</button>
+            <button type="button" onclick="sumarMontoRapido(100)" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-950 hover:bg-azulelectrico/10 hover:text-azulelectrico text-slate-700 dark:text-crema text-xs font-bold rounded-lg border border-slate-200 dark:border-azulcielo/20 transition active:scale-95 shrink-0 cursor-pointer">+$100</button>
+            <button type="button" onclick="limpiarMontoRapido()" class="px-2 py-1 text-slate-400 hover:text-coral text-[10px] font-bold rounded-lg transition active:scale-95 shrink-0 cursor-pointer">Limpiar</button>
           </div>
 
           <div>
@@ -455,7 +466,13 @@
             </h2>
             <p id="conteoFiltradas" class="text-[11px] text-slate-500 dark:text-azulcielo">0 movimientos</p>
           </div>
-          <div id="resumenMontoFiltrado" class="text-xs font-black text-azulelectrico self-start sm:self-auto bg-azulelectrico/10 px-2.5 py-1 rounded-xl"></div>
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <div id="resumenMontoFiltrado" class="text-xs font-black text-azulelectrico bg-azulelectrico/10 px-2.5 py-1.5 rounded-xl"></div>
+            <button type="button" onclick="exportarHistorialCSV()" title="Descargar reporte en formato CSV" class="text-xs font-bold text-slate-700 dark:text-crema bg-slate-100 dark:bg-slate-800 hover:bg-azulelectrico/10 hover:text-azulelectrico border border-slate-200 dark:border-azulcielo/20 px-3 py-1.5 rounded-xl transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm">
+              <span>📥</span>
+              <span>CSV</span>
+            </button>
+          </div>
         </div>
 
         <!-- Filtros Inmersivos por Chips Táctiles -->
@@ -596,6 +613,11 @@
 
     <!-- PESTAÑA 7: Configuración de Categorías -->
     <div id="tabContentConfiguracion" class="hidden fade-in space-y-4 sm:space-y-6">
+      <div class="flex items-center justify-between">
+        <button onclick="cambiarPestana('resumen')" class="text-xs font-bold text-slate-600 dark:text-azulcielo hover:text-azulelectrico flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/20 transition active:scale-95 cursor-pointer shadow-sm">
+          <span>←</span> <span>Volver al Resumen</span>
+        </button>
+      </div>
       <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4">
         <!-- Cabecera -->
         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-4">
@@ -644,10 +666,33 @@
 
   </div>
 
-  <!-- Botón Flotante de Acción Rápida (FAB) en Mobile para Registrar Movimiento -->
-  <button onclick="abrirRegistroMobile()" class="sm:hidden fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-azulelectrico text-white text-2xl font-black shadow-2xl flex items-center justify-center active:scale-90 transition border-2 border-white/20">
-    +
-  </button>
+  <!-- Barra de Navegación Inferior Móvil (Mobile Bottom Dock) -->
+  <nav id="mobileBottomNav" class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-azulcielo/20 px-1 py-1 flex justify-around items-center shadow-2xl safe-bottom">
+    <button onclick="cambiarPestana('resumen')" id="mobileNavResumen" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-azulelectrico font-bold flex-1 bg-azulelectrico/10 dark:bg-azulelectrico/20 cursor-pointer">
+      <span class="text-base">📊</span>
+      <span class="text-[9px] font-bold mt-0.5">Resumen</span>
+    </button>
+    <button onclick="cambiarPestana('registrar')" id="mobileNavRegistrar" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 cursor-pointer">
+      <span class="text-base">✍️</span>
+      <span class="text-[9px] font-semibold mt-0.5">Registrar</span>
+    </button>
+    <button onclick="cambiarPestana('historial')" id="mobileNavHistorial" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 cursor-pointer">
+      <span class="text-base">📜</span>
+      <span class="text-[9px] font-semibold mt-0.5">Historial</span>
+    </button>
+    <button onclick="cambiarPestana('presupuestos')" id="mobileNavPresupuestos" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 cursor-pointer">
+      <span class="text-base">📉</span>
+      <span class="text-[9px] font-semibold mt-0.5">Límites</span>
+    </button>
+    <button onclick="cambiarPestana('metas')" id="mobileNavMetas" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 cursor-pointer">
+      <span class="text-base">🎯</span>
+      <span class="text-[9px] font-semibold mt-0.5">Metas</span>
+    </button>
+    <button onclick="cambiarPestana('deudas')" id="mobileNavDeudas" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 cursor-pointer">
+      <span class="text-base">💳</span>
+      <span class="text-[9px] font-semibold mt-0.5">Deudas</span>
+    </button>
+  </nav>
 
   <!-- MODALES ADAPTABLES (Bottom Sheet en Mobile, Modal centrado en Desktop) -->
 
@@ -692,7 +737,7 @@
         <div class="grid grid-cols-2 gap-2.5">
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto Objetivo ($)</label>
-            <input type="number" id="metaMonto" step="0.01" min="1" placeholder="1000.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold text-sm focus:border-azulelectrico focus:outline-none transition">
+            <input type="number" id="metaMonto" step="0.01" min="1" inputmode="decimal" placeholder="1000.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-bold text-sm focus:border-azulelectrico focus:outline-none transition">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Ícono</label>
@@ -737,7 +782,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto Inicial ($)</label>
-          <input type="number" id="deudaMontoInicial" step="0.01" min="0.01" placeholder="0.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
+          <input type="number" id="deudaMontoInicial" step="0.01" min="0.01" inputmode="decimal" placeholder="0.00" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
         <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
           <button type="button" onclick="ocultarModalDeuda()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
@@ -765,7 +810,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto acumulado total ($)</label>
-          <input type="number" id="incrementoMonto" step="0.01" min="0" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
+          <input type="number" id="incrementoMonto" step="0.01" min="0" inputmode="decimal" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
         </div>
         <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20">
           <button type="button" onclick="ocultarModalIncremento()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition">Cancelar</button>
@@ -798,7 +843,7 @@
         <div class="grid grid-cols-2 gap-2.5">
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Monto ($)</label>
-            <input type="number" id="editMonto" step="0.01" min="0.01" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
+            <input type="number" id="editMonto" step="0.01" min="0.01" inputmode="decimal" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1">Fecha</label>
@@ -1646,6 +1691,39 @@
       }, duracion);
     }
 
+    function mostrarToastDeshacer(mensaje, onUndo) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'p-3.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center justify-between gap-3 pointer-events-auto border toast-enter bg-slate-900 dark:bg-slate-800 text-white border-slate-700';
+
+      toast.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">🗑️</span>
+          <span>${escapeHTML(mensaje)}</span>
+        </div>
+        <button type="button" class="btn-undo px-3 py-1 rounded-xl bg-azulelectrico hover:bg-azulelectrico-hover text-white text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm">
+          Deshacer
+        </button>
+      `;
+
+      const btnUndo = toast.querySelector('.btn-undo');
+      btnUndo.addEventListener('click', () => {
+        if (typeof onUndo === 'function') onUndo();
+        toast.remove();
+      });
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-10px)';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 5000);
+    }
+
     function mostrarAvisoAuth(mensaje, tipo = 'error') {
       const avisoAuth = document.getElementById('avisoAuth');
       const estilos = {
@@ -1997,6 +2075,16 @@
             btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema';
           }
         }
+
+        const idMobileNav = `mobileNav${p.charAt(0).toUpperCase() + p.slice(1)}`;
+        const mobileBtn = document.getElementById(idMobileNav);
+        if (mobileBtn) {
+          if (p === tabName) {
+            mobileBtn.className = 'mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-azulelectrico font-bold flex-1 bg-azulelectrico/10 dark:bg-azulelectrico/20 cursor-pointer';
+          } else {
+            mobileBtn.className = 'mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer';
+          }
+        }
       });
 
       const btnHeaderConfig = document.getElementById('btnHeaderConfiguracion');
@@ -2296,13 +2384,19 @@
           alertasHTML += `
             <div class="p-3 rounded-2xl bg-coral/15 border border-coral text-coral text-xs font-bold flex items-center justify-between gap-2">
               <span>⚠️ <strong>${escapeHTML(cat)}</strong> excedió su límite por <strong>$${(gastado - limite).toFixed(2)}</strong>.</span>
-              <button onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')" class="text-[11px] underline shrink-0">Ver</button>
+              <button onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')" class="text-[11px] underline shrink-0 cursor-pointer">Ver</button>
             </div>
           `;
         } else if (porcentaje >= 80) {
           colorBarra = 'bg-amber-500';
           colorTexto = 'text-amber-500';
           badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">80%+</span>';
+          alertasHTML += `
+            <div class="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center justify-between gap-2">
+              <span>⚠️ <strong>${escapeHTML(cat)}</strong> ha alcanzado el <strong>${porcentaje.toFixed(0)}%</strong> de su presupuesto ($${gastado.toFixed(2)} de $${limite.toFixed(2)}).</span>
+              <button onclick="filtrarPorCategoriaRapido('${escapeHTML(cat)}')" class="text-[11px] underline shrink-0 cursor-pointer">Ver</button>
+            </div>
+          `;
         }
 
         return `
@@ -2780,8 +2874,9 @@
             <td class="p-3 text-right font-extrabold text-sm ${colorMonto}">${signo}$${montoNum.toFixed(2)}</td>
             <td class="p-3 text-center">
               <div class="flex items-center justify-center gap-1">
-                <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1" title="Editar">✏️</button>
-                <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1" title="Eliminar">🗑️</button>
+                <button onclick="duplicarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1 cursor-pointer" title="Duplicar">📋</button>
+                <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1 cursor-pointer" title="Editar">✏️</button>
+                <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1 cursor-pointer" title="Eliminar">🗑️</button>
               </div>
             </td>
           </tr>
@@ -2819,10 +2914,11 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0">
               <span class="text-sm font-black ${colorMonto}">${signo}$${montoNum.toFixed(2)}</span>
-              <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5" title="Editar">✏️</button>
-              <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1.5" title="Eliminar">🗑️</button>
+              <button onclick="duplicarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5 cursor-pointer" title="Duplicar">📋</button>
+              <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5 cursor-pointer" title="Editar">✏️</button>
+              <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1.5 cursor-pointer" title="Eliminar">🗑️</button>
             </div>
           </div>
         `;
@@ -3012,21 +3108,115 @@
       }
     }
 
-    async function eliminarTransaccion(id) {
-      if (!confirm('¿Eliminar esta transacción?')) return;
+    let temporizadorUndoTransaccion = null;
+    let transaccionPendienteEliminar = null;
 
-      if (!navigator.onLine) {
-        transacciones = transacciones.filter(t => t.id !== id);
-        encolarOperacion('delete', 'transacciones', null, id);
-        guardarCacheLocal();
-        actualizarInterfaz();
-        mostrarToast('Eliminado offline', 'info');
+    function eliminarTransaccion(id) {
+      const idx = transacciones.findIndex(t => t.id === id);
+      if (idx === -1) return;
+
+      const tEliminada = transacciones[idx];
+      transaccionPendienteEliminar = { transaccion: tEliminada, index: idx };
+
+      // Remover visualmente y actualizar interfaz al instante
+      transacciones.splice(idx, 1);
+      guardarCacheLocal();
+      actualizarInterfaz();
+
+      // Mostrar Toast interactivo con opción de Deshacer durante 5 segundos
+      mostrarToastDeshacer('Transacción eliminada', () => {
+        if (transaccionPendienteEliminar && transaccionPendienteEliminar.transaccion.id === id) {
+          if (temporizadorUndoTransaccion) clearTimeout(temporizadorUndoTransaccion);
+          transacciones.splice(transaccionPendienteEliminar.index, 0, transaccionPendienteEliminar.transaccion);
+          transaccionPendienteEliminar = null;
+          guardarCacheLocal();
+          actualizarInterfaz();
+          mostrarToast('Transacción restaurada', 'success');
+        }
+      });
+
+      if (temporizadorUndoTransaccion) clearTimeout(temporizadorUndoTransaccion);
+      temporizadorUndoTransaccion = setTimeout(async () => {
+        if (transaccionPendienteEliminar && transaccionPendienteEliminar.transaccion.id === id) {
+          transaccionPendienteEliminar = null;
+          if (!navigator.onLine) {
+            encolarOperacion('delete', 'transacciones', null, id);
+          } else {
+            await supabaseClient.from('transacciones').delete().eq('id', id);
+          }
+        }
+      }, 5000);
+    }
+
+    function duplicarTransaccion(id) {
+      const t = transacciones.find(x => x.id === id);
+      if (!t) return;
+      cambiarPestana('registrar');
+      tipoSelect.value = t.tipo;
+      actualizarOpcionesCategoria();
+      categoriaSelect.value = t.categoria;
+      document.getElementById('monto').value = parseFloat(t.monto);
+      document.getElementById('descripcion').value = t.descripcion || '';
+      document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+      evaluarSeleccionesEspeciales();
+      if (t.deuda_id && deudaObjetivoSelect) deudaObjetivoSelect.value = t.deuda_id;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      mostrarToast('Datos cargados para duplicar', 'info');
+    }
+
+    function sumarMontoRapido(val) {
+      const input = document.getElementById('monto');
+      const actual = parseFloat(input.value) || 0;
+      input.value = (actual + val).toFixed(2);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function limpiarMontoRapido() {
+      const input = document.getElementById('monto');
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function exportarHistorialCSV() {
+      const mesSeleccionado = document.getElementById('mesFiltro').value;
+      const categoria = document.getElementById('filtroCategoria').value;
+      const alcance = document.getElementById('filtroAlcance').value;
+
+      const filtradas = transacciones.filter(t => {
+        if (alcance === 'mes' && !t.fecha.startsWith(mesSeleccionado)) return false;
+        if (filtroTipoActual && t.tipo !== filtroTipoActual) return false;
+        if (categoria && t.categoria !== categoria) return false;
+        return true;
+      });
+
+      if (!filtradas.length) {
+        mostrarToast('No hay movimientos para exportar con los filtros actuales', 'info');
         return;
       }
 
-      await supabaseClient.from('transacciones').delete().eq('id', id);
-      await cargarDatosCloud();
-      mostrarToast('Transacción eliminada', 'success');
+      let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+      csvContent += 'Fecha,Tipo,Categoría,Descripción,Monto\n';
+
+      filtradas.forEach(t => {
+        const fila = [
+          `"${t.fecha}"`,
+          `"${t.tipo.toUpperCase()}"`,
+          `"${(t.categoria || '').replace(/"/g, '""')}"`,
+          `"${(t.descripcion || '').replace(/"/g, '""')}"`,
+          parseFloat(t.monto).toFixed(2)
+        ].join(',');
+        csvContent += fila + '\n';
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `reporte_presupuesto_${mesSeleccionado || 'general'}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      mostrarToast('Reporte CSV descargado con éxito', 'success');
     }
 
     // ---------- Edición ----------
@@ -3248,12 +3438,44 @@
         }).join('');
       }
 
+      // Comparativa con el mes anterior
+      const [anoActual, mesActual] = (mesSeleccionado || '').split('-').map(Number);
+      let compIngresoHTML = '';
+      let compGastoHTML = '';
+
+      if (anoActual && mesActual) {
+        const fechaMesAnt = new Date(anoActual, mesActual - 2, 1);
+        const mesAnteriorStr = `${fechaMesAnt.getFullYear()}-${String(fechaMesAnt.getMonth() + 1).padStart(2, '0')}`;
+        const filtradasMesAnt = transacciones.filter(t => t.fecha.startsWith(mesAnteriorStr));
+
+        let ingresosMesAnt = 0, gastosMesAnt = 0;
+        filtradasMesAnt.forEach(t => {
+          const m = parseFloat(t.monto) || 0;
+          if (t.tipo === 'ingreso') ingresosMesAnt += m;
+          else if (t.tipo === 'gasto') gastosMesAnt += m;
+        });
+
+        if (ingresosMesAnt > 0) {
+          const diffIng = ((ingresosMes - ingresosMesAnt) / ingresosMesAnt) * 100;
+          const colorDiff = diffIng >= 0 ? 'text-emerald-500' : 'text-coral';
+          const iconoDiff = diffIng >= 0 ? '▲ +' : '▼ ';
+          compIngresoHTML = ` · <span class="${colorDiff} font-bold">${iconoDiff}${Math.abs(diffIng).toFixed(0)}%</span>`;
+        }
+
+        if (gastosMesAnt > 0) {
+          const diffGas = ((gastosMes - gastosMesAnt) / gastosMesAnt) * 100;
+          const colorDiff = diffGas <= 0 ? 'text-emerald-500' : 'text-coral';
+          const iconoDiff = diffGas <= 0 ? '▼ ' : '▲ +';
+          compGastoHTML = ` · <span class="${colorDiff} font-bold">${iconoDiff}${Math.abs(diffGas).toFixed(0)}%</span>`;
+        }
+      }
+
       // Totales
       document.getElementById('totalIngresos').textContent = `$${ingresosMes.toFixed(2)}`;
-      document.getElementById('subIngresos').textContent = `${countIngresos} mov.`;
+      document.getElementById('subIngresos').innerHTML = `${countIngresos} mov.${compIngresoHTML}`;
 
       document.getElementById('totalGastos').textContent = `$${gastosMes.toFixed(2)}`;
-      document.getElementById('subGastos').textContent = `${countGastos} mov.`;
+      document.getElementById('subGastos').innerHTML = `${countGastos} mov.${compGastoHTML}`;
 
       document.getElementById('totalAhorro').textContent = `$${ahorroAcumuladoTotal.toFixed(2)}`;
       document.getElementById('subAhorro').textContent = `${Object.keys(fondosAhorroMapa).length} fondo(s)`;
@@ -3267,7 +3489,7 @@
       balanceEl.className = `text-2xl sm:text-3xl font-black tracking-tight ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-coral'}`;
 
       const tasaAhorro = ingresosMes > 0 ? Math.max(0, ((ingresosMes - gastosMes) / ingresosMes) * 100) : 0;
-      document.getElementById('tasaAhorro').textContent = `Ahorro: ${tasaAhorro.toFixed(0)}%`;
+      document.getElementById('tasaAhorro').textContent = `Tasa de Ahorro: ${tasaAhorro.toFixed(0)}%`;
 
       renderizarSeccionPresupuestos(gastosPorCat);
       renderizarMetasAhorro(fondosAhorroMapa);

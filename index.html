@@ -216,12 +216,16 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <!-- Botón Configuración -->
+          <button id="btnHeaderConfiguracion" onclick="cambiarPestana('configuracion')" title="Configuración de Categorías" class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm cursor-pointer">
+            <span>⚙️</span>
+          </button>
           <!-- Toggle Tema -->
-          <button id="btnToggleTema" onclick="alternarTema()" title="Cambiar tema" class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm">
+          <button id="btnToggleTema" onclick="alternarTema()" title="Cambiar tema" class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm cursor-pointer">
             <span id="iconoTema">🌙</span>
           </button>
           <!-- Cerrar sesión -->
-          <button type="button" onclick="cerrarSesion()" class="text-xs font-bold text-coral bg-coral/10 hover:bg-coral hover:text-white border border-coral/30 px-3 py-2 rounded-xl transition active:scale-95">
+          <button type="button" onclick="cerrarSesion()" class="text-xs font-bold text-coral bg-coral/10 hover:bg-coral hover:text-white border border-coral/30 px-3 py-2 rounded-xl transition active:scale-95 cursor-pointer">
             Salir
           </button>
         </div>
@@ -266,10 +270,6 @@
         <button id="navTabDeudas" onclick="cambiarPestana('deudas')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
           <span>💳</span>
           <span>Deudas</span>
-        </button>
-        <button id="navTabConfiguracion" onclick="cambiarPestana('configuracion')" class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema">
-          <span>⚙️</span>
-          <span>Configuración</span>
         </button>
       </div>
     </nav>
@@ -1991,6 +1991,15 @@
           btn.className = 'tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema';
         }
       });
+
+      const btnHeaderConfig = document.getElementById('btnHeaderConfiguracion');
+      if (btnHeaderConfig) {
+        if (tabName === 'configuracion') {
+          btnHeaderConfig.className = 'p-2.5 rounded-xl border border-azulelectrico bg-azulelectrico text-white shadow-sm shadow-azulelectrico/30 transition active:scale-95 cursor-pointer';
+        } else {
+          btnHeaderConfig.className = 'p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm cursor-pointer';
+        }
+      }
 
       if (tabName === 'resumen') {
         setTimeout(() => {

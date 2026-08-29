@@ -239,6 +239,17 @@
     </div>
   </div>
 
+  <!-- Pantalla de Carga Global (Overlay) -->
+  <div id="loadingOverlay" class="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center hidden fade-in transition-all duration-500">
+    <div class="relative flex flex-col items-center justify-center">
+      <div class="w-20 h-20 bg-azulelectrico/10 dark:bg-azulelectrico/20 rounded-3xl flex items-center justify-center text-4xl shadow-inner animate-bounce">
+        💰
+      </div>
+      <div class="absolute -inset-4 border-4 border-azulelectrico border-t-transparent rounded-full animate-spin opacity-50"></div>
+      <p class="mt-8 text-sm font-bold text-slate-500 dark:text-azulcielo tracking-widest uppercase animate-pulse">Cargando tus finanzas...</p>
+    </div>
+  </div>
+
   <!-- Contenedor Principal de la App -->
   <div id="appContainer" class="max-w-7xl mx-auto space-y-5 sm:space-y-6 hidden fade-in">
 
@@ -1973,10 +1984,18 @@
 
       if (session) {
         try {
-          document.getElementById('authScreen').classList.add('hidden');
-          document.getElementById('appContainer').classList.remove('hidden');
-          document.getElementById('mobileBottomNav').classList.remove('hidden');
-          document.getElementById('mobileBottomNav').classList.add('flex');
+          // Mostrar animación de carga
+          const overlay = document.getElementById('loadingOverlay');
+          const appContainer = document.getElementById('appContainer');
+          const authScreen = document.getElementById('authScreen');
+          const mobileNav = document.getElementById('mobileBottomNav');
+          
+          authScreen.classList.add('hidden');
+          
+          if (!sesionInicializada) {
+            overlay.classList.remove('hidden');
+          }
+
           document.getElementById('usuarioEmail').textContent = session.user.email;
           document.getElementById('formAuth').reset();
           document.getElementById('avisoAuth').classList.add('hidden');
@@ -1991,13 +2010,33 @@
           if (!sesionInicializada) {
             sesionInicializada = true;
             inicializarPestanas();
+            
+            const onDataReady = () => {
+              overlay.classList.add('opacity-0');
+              setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('opacity-0');
+                appContainer.classList.remove('hidden');
+                mobileNav.classList.remove('hidden');
+                mobileNav.classList.add('flex');
+              }, 400); // 400ms para la transición de desvanecimiento
+            };
+
             if (navigator.onLine) {
-              cargarDatosCloud();
-              suscribirRealtime();
+              cargarDatosCloud().then(() => {
+                suscribirRealtime();
+                onDataReady();
+              });
             } else {
               cargarCacheLocal();
+              onDataReady();
             }
             actualizarIndicadorConexion();
+          } else {
+            // Si la sesión ya estaba inicializada (ej. cambio rápido de tabs), mostrar directo
+            appContainer.classList.remove('hidden');
+            mobileNav.classList.remove('hidden');
+            mobileNav.classList.add('flex');
           }
         } catch (errorLogueo) {
           console.error("Error inicializando sesión:", errorLogueo);
@@ -2429,44 +2468,52 @@
 
     // ---------- Carga de Datos Cloud ----------
 
+    let promesaCargaInicial = null;
     async function cargarDatosCloud() {
-      const { data: transData, error: errTrans } = await supabaseClient
-        .from('transacciones')
-        .select('*')
-        .order('fecha', { ascending: false })
-        .order('id', { ascending: false });
+      // Retornar la promesa para que el overlay sepa cuándo ocultarse
+      if (promesaCargaInicial && sesionInicializada) return promesaCargaInicial;
 
-      const { data: deudasData, error: errDeudas } = await supabaseClient
-        .from('deudas')
-        .select('*');
+      promesaCargaInicial = (async () => {
+        const { data: transData, error: errTrans } = await supabaseClient
+          .from('transacciones')
+          .select('*')
+          .order('fecha', { ascending: false })
+          .order('id', { ascending: false });
 
-      if (errTrans || errDeudas) {
-        mostrarAviso('Mostrando datos almacenados localmente.', 'info');
-        return;
-      }
+        const { data: deudasData, error: errDeudas } = await supabaseClient
+          .from('deudas')
+          .select('*');
 
-      // Sincronizar ajustes del usuario desde Supabase Auth Metadata (categorías, presupuestos, metas)
-      try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (user && user.user_metadata) {
-          cargarAjustesDeUserMetadata(user);
+        if (errTrans || errDeudas) {
+          mostrarAviso('Mostrando datos almacenados localmente.', 'info');
+          return;
         }
-      } catch (e) {
-        console.warn(e);
-      }
 
-      ocultarAviso();
-      transacciones = transData || [];
-      deudas = (deudasData || []).map(d => ({
-        id: d.id,
-        nombre: d.nombre,
-        montoInicial: parseFloat(d.monto_inicial)
-      }));
+        // Sincronizar ajustes del usuario desde Supabase Auth Metadata (categorías, presupuestos, metas)
+        try {
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          if (user && user.user_metadata) {
+            cargarAjustesDeUserMetadata(user);
+          }
+        } catch (e) {
+          console.warn(e);
+        }
 
-      guardarCacheLocal();
-      actualizarOpcionesCategoria();
-      actualizarOpcionesFiltroCategoria();
-      actualizarInterfaz();
+        ocultarAviso();
+        transacciones = transData || [];
+        deudas = (deudasData || []).map(d => ({
+          id: d.id,
+          nombre: d.nombre,
+          montoInicial: parseFloat(d.monto_inicial)
+        }));
+
+        guardarCacheLocal();
+        actualizarOpcionesCategoria();
+        actualizarOpcionesFiltroCategoria();
+        actualizarInterfaz();
+      })();
+
+      return promesaCargaInicial;
     }
 
     // ---------- Módulo: Presupuestos ----------

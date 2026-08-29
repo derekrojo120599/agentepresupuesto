@@ -3,7 +3,7 @@
 // Los DATOS (transacciones, deudas) se manejan aparte con localStorage,
 // ver la lógica de caché/cola dentro de index.html.
 
-const CACHE_NAME = 'presupuesto-shell-v22';
+const CACHE_NAME = 'presupuesto-shell-v21';
 
 const ARCHIVOS_CASCARON = [
   './',
@@ -13,27 +13,7 @@ const ARCHIVOS_CASCARON = [
   './icons/icon-512.png',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-  './js/globals.js',
-  './js/theme.js',
-  './js/ui.js',
-  './js/auth.js',
-  './js/offline.js',
-  './js/utils.js',
-  './js/navigation.js',
-  './js/selectors.js',
-  './js/modals.js',
-  './js/data.js',
-  './js/presupuestos.js',
-  './js/metas.js',
-  './js/configCategorias.js',
-  './js/filtros.js',
-  './js/deudas.js',
-  './js/transacciones.js',
-  './js/edicion.js',
-  './js/render.js',
-  './js/stats.js',
-  './js/main.js'
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 
 self.addEventListener('install', (event) => {

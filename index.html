@@ -111,6 +111,24 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+    /* Estilos Premium de UI */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    .font-mono-num {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    html.dark .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
     /* Componente Select Personalizado / Custom Select & Bottom Sheet */
     .custom-select-trigger {
       touch-action: manipulation;
@@ -278,54 +296,79 @@
     <div id="tabContentResumen" class="space-y-5 sm:space-y-6 fade-in">
       <!-- 1. Resumen de Métricas Financieras (Layout adaptable 2 columnas en mobile) -->
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
-        <!-- Balance Neto (Ocupa 2 cols en mobile para protagonismo) -->
-        <div class="col-span-2 sm:col-span-1 lg:col-span-1 bg-gradient-to-br from-azulelectrico/10 to-transparent dark:from-azulelectrico/20 dark:to-slate-900 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-azulelectrico/30 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] sm:text-xs font-bold text-azulelectrico uppercase tracking-wider">Balance Neto</span>
-            <span class="text-xs">⚖️</span>
+        <!-- Balance Neto (Hero Card con iluminación y status pill) -->
+        <div class="col-span-2 sm:col-span-1 lg:col-span-1 relative overflow-hidden bg-gradient-to-br from-azulelectrico/15 via-white/80 to-azulcielo/15 dark:from-azulelectrico/25 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-azulelectrico/35 shadow-lg shadow-azulelectrico/10 flex flex-col justify-between space-y-3 group hover:border-azulelectrico/60 transition duration-300">
+          <div class="absolute -top-10 -left-10 w-28 h-28 bg-azulelectrico/20 dark:bg-azulelectrico/30 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex items-center justify-between relative z-10">
+            <span class="text-[11px] sm:text-xs font-black text-azulelectrico uppercase tracking-wider flex items-center gap-1.5">
+              <span>⚖️</span> Balance Neto
+            </span>
+            <span id="badgeSaludFinanciera" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+              🟢 Saludable
+            </span>
           </div>
-          <p id="balanceNeto" class="text-2xl sm:text-3xl font-black tracking-tight">$0.00</p>
-          <p id="tasaAhorro" class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1">Ahorro: 0%</p>
+
+          <div class="relative z-10">
+            <div id="balanceNeto" class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono-num">$0<span class="text-base sm:text-lg font-bold opacity-75">.00</span></div>
+            <p id="tasaAhorro" class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1">Tasa de Ahorro: 0%</p>
+          </div>
         </div>
 
         <!-- Ingresos -->
-        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ingresos</span>
-            <span class="text-emerald-500 font-bold text-xs">▲</span>
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo flex items-center gap-1.5">
+              <span>🟢</span> Ingresos
+            </span>
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-[11px]">▲</span>
           </div>
-          <p id="totalIngresos" class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</p>
-          <p id="subIngresos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
+          <div>
+            <p id="totalIngresos" class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums font-mono-num">$0.00</p>
+            <p id="subIngresos" class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate">0 mov.</p>
+          </div>
         </div>
 
         <!-- Gastos -->
-        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Gastos</span>
-            <span class="text-coral font-bold text-xs">▼</span>
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo flex items-center gap-1.5">
+              <span>🔴</span> Gastos
+            </span>
+            <span class="w-6 h-6 rounded-lg bg-coral/10 text-coral flex items-center justify-center font-bold text-[11px]">▼</span>
           </div>
-          <p id="totalGastos" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
-          <p id="subGastos" class="text-[10px] text-slate-400 mt-0.5">0 mov.</p>
+          <div>
+            <p id="totalGastos" class="text-xl sm:text-2xl font-black text-coral tracking-tight tabular-nums font-mono-num">$0.00</p>
+            <p id="subGastos" class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate">0 mov.</p>
+          </div>
         </div>
 
         <!-- Ahorro Total -->
-        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Ahorro Total</span>
-            <span class="text-xs">🏦</span>
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo flex items-center gap-1.5">
+              <span>🏦</span> Ahorro
+            </span>
+            <span class="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-[11px]">🟡</span>
           </div>
-          <p id="totalAhorro" class="text-xl sm:text-2xl font-black text-azulcielo-dark dark:text-azulcielo tracking-tight">$0.00</p>
-          <p id="subAhorro" class="text-[10px] text-slate-400 mt-0.5">En fondos</p>
+          <div>
+            <p id="totalAhorro" class="text-xl sm:text-2xl font-black text-azulcielo-dark dark:text-azulcielo tracking-tight tabular-nums font-mono-num">$0.00</p>
+            <p id="subAhorro" class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate">En fondos</p>
+          </div>
         </div>
 
         <!-- Deuda Pendiente -->
-        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo">Deuda Total</span>
-            <span class="text-xs">💳</span>
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo flex items-center gap-1.5">
+              <span>💳</span> Deuda
+            </span>
+            <span class="w-6 h-6 rounded-lg bg-coral/10 text-coral flex items-center justify-center font-bold text-[11px]">⚠️</span>
           </div>
-          <p id="totalDeudas" class="text-xl sm:text-2xl font-black text-coral tracking-tight">$0.00</p>
-          <p id="subDeudas" class="text-[10px] text-slate-400 mt-0.5">Por pagar</p>
+          <div>
+            <p id="totalDeudas" class="text-xl sm:text-2xl font-black text-coral tracking-tight tabular-nums font-mono-num">$0.00</p>
+            <p id="subDeudas" class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate">Por pagar</p>
+          </div>
         </div>
       </div>
 
@@ -3485,11 +3528,29 @@
 
       const balance = ingresosMes - gastosMes;
       const balanceEl = document.getElementById('balanceNeto');
-      balanceEl.textContent = `$${balance.toFixed(2)}`;
-      balanceEl.className = `text-2xl sm:text-3xl font-black tracking-tight ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-coral'}`;
+      const signoBal = balance < 0 ? '-' : '';
+      const partesBal = Math.abs(balance).toFixed(2).split('.');
+      const enterosBal = parseInt(partesBal[0], 10).toLocaleString('en-US');
+      const centavosBal = partesBal[1];
+      balanceEl.innerHTML = `${signoBal}$${enterosBal}<span class="text-base sm:text-lg font-bold opacity-75">.${centavosBal}</span>`;
+      balanceEl.className = `text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono-num ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-coral'}`;
 
       const tasaAhorro = ingresosMes > 0 ? Math.max(0, ((ingresosMes - gastosMes) / ingresosMes) * 100) : 0;
       document.getElementById('tasaAhorro').textContent = `Tasa de Ahorro: ${tasaAhorro.toFixed(0)}%`;
+
+      const badgeSalud = document.getElementById('badgeSaludFinanciera');
+      if (badgeSalud) {
+        if (balance > 0 && tasaAhorro >= 15) {
+          badgeSalud.innerHTML = '🟢 Excelente';
+          badgeSalud.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
+        } else if (balance >= 0) {
+          badgeSalud.innerHTML = '🟡 Estable';
+          badgeSalud.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+        } else {
+          badgeSalud.innerHTML = '🔴 Déficit';
+          badgeSalud.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-coral/20 text-coral border border-coral/40';
+        }
+      }
 
       renderizarSeccionPresupuestos(gastosPorCat);
       renderizarMetasAhorro(fondosAhorroMapa);
@@ -3607,15 +3668,30 @@
       if (!canvasMultilinea) return;
       const ctx = canvasMultilinea.getContext('2d');
 
+      // Degradados verticales de área
+      const gradIngresos = ctx.createLinearGradient(0, 0, 0, 240);
+      gradIngresos.addColorStop(0, 'rgba(6, 182, 212, 0.28)');
+      gradIngresos.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+
+      const gradGastos = ctx.createLinearGradient(0, 0, 0, 240);
+      gradGastos.addColorStop(0, 'rgba(244, 63, 94, 0.28)');
+      gradGastos.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
+
+      const gradAhorros = ctx.createLinearGradient(0, 0, 0, 240);
+      gradAhorros.addColorStop(0, 'rgba(234, 179, 8, 0.28)');
+      gradAhorros.addColorStop(1, 'rgba(234, 179, 8, 0.0)');
+
       const datasets = [
         {
           label: 'Ingresos',
           data: ingresosPorDia,
           borderColor: (isIncomes || isAll) ? '#06b6d4' : (esOscuro ? 'rgba(6, 182, 212, 0.15)' : 'rgba(6, 182, 212, 0.22)'),
-          backgroundColor: isIncomes ? 'rgba(6, 182, 212, 0.12)' : (isAll ? 'rgba(6, 182, 212, 0.04)' : 'transparent'),
+          backgroundColor: (isIncomes || isAll) ? gradIngresos : 'transparent',
           borderWidth: isIncomes ? 3.5 : (isAll ? 2.5 : 1.5),
           pointRadius: isIncomes ? 4.5 : (isAll ? 3 : 0),
-          pointHoverRadius: 6.5,
+          pointHoverRadius: 7,
+          pointHoverBorderWidth: 4,
+          pointHoverBorderColor: 'rgba(6, 182, 212, 0.35)',
           pointBackgroundColor: '#06b6d4',
           pointBorderColor: esOscuro ? '#0f172a' : '#ffffff',
           pointBorderWidth: 2,
@@ -3626,10 +3702,12 @@
           label: 'Gastos',
           data: gastosPorDia,
           borderColor: (isExpenses || isAll) ? '#f43f5e' : (esOscuro ? 'rgba(244, 63, 94, 0.15)' : 'rgba(244, 63, 94, 0.22)'),
-          backgroundColor: isExpenses ? 'rgba(244, 63, 94, 0.12)' : (isAll ? 'rgba(244, 63, 94, 0.04)' : 'transparent'),
+          backgroundColor: (isExpenses || isAll) ? gradGastos : 'transparent',
           borderWidth: isExpenses ? 3.5 : (isAll ? 2.5 : 1.5),
           pointRadius: isExpenses ? 4.5 : (isAll ? 3 : 0),
-          pointHoverRadius: 6.5,
+          pointHoverRadius: 7,
+          pointHoverBorderWidth: 4,
+          pointHoverBorderColor: 'rgba(244, 63, 94, 0.35)',
           pointBackgroundColor: '#f43f5e',
           pointBorderColor: esOscuro ? '#0f172a' : '#ffffff',
           pointBorderWidth: 2,
@@ -3640,10 +3718,12 @@
           label: 'Ahorro',
           data: ahorrosPorDia,
           borderColor: (isSavings || isAll) ? '#eab308' : (esOscuro ? 'rgba(234, 179, 8, 0.15)' : 'rgba(234, 179, 8, 0.22)'),
-          backgroundColor: isSavings ? 'rgba(234, 179, 8, 0.12)' : (isAll ? 'rgba(234, 179, 8, 0.04)' : 'transparent'),
+          backgroundColor: (isSavings || isAll) ? gradAhorros : 'transparent',
           borderWidth: isSavings ? 3.5 : (isAll ? 2.5 : 1.5),
           pointRadius: isSavings ? 4.5 : (isAll ? 3 : 0),
-          pointHoverRadius: 6.5,
+          pointHoverRadius: 7,
+          pointHoverBorderWidth: 4,
+          pointHoverBorderColor: 'rgba(234, 179, 8, 0.35)',
           pointBackgroundColor: '#eab308',
           pointBorderColor: esOscuro ? '#0f172a' : '#ffffff',
           pointBorderWidth: 2,

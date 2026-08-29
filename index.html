@@ -2326,7 +2326,8 @@
       const { data: transData, error: errTrans } = await supabaseClient
         .from('transacciones')
         .select('*')
-        .order('fecha', { ascending: false });
+        .order('fecha', { ascending: false })
+        .order('id', { ascending: false });
 
       const { data: deudasData, error: errDeudas } = await supabaseClient
         .from('deudas')
@@ -2896,6 +2897,13 @@
         if (filtroTipoActual && t.tipo !== filtroTipoActual) return false;
         if (categoria && t.categoria !== categoria) return false;
         return true;
+      }).sort((a, b) => {
+        // Orden descendente por fecha, y si es la misma fecha, descendente por ID (última registrada primero)
+        // Usamos Math.abs() para los IDs porque los temporales offline son negativos (-Date.now())
+        if (a.fecha !== b.fecha) {
+          return new Date(b.fecha) - new Date(a.fecha);
+        }
+        return Math.abs(b.id) - Math.abs(a.id);
       });
 
       document.getElementById('conteoFiltradas').textContent = `${filtradas.length} de ${transacciones.length} movimiento(s)`;

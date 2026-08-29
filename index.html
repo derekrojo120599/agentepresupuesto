@@ -1470,9 +1470,14 @@
       ahorro: [...CATEGORIAS_DEFAULT.ahorro]
     };
 
+    function claveCategorias() { return `categorias_presupuesto_${usuarioActualId || 'local'}`; }
+    function claveIconos() { return `categoria_iconos_${usuarioActualId || 'local'}`; }
+
     function cargarCategoriasGuardadas() {
       try {
-        const catsGuardadas = localStorage.getItem('categorias_presupuesto_app');
+        const keyCats = claveCategorias();
+        const keyIconos = claveIconos();
+        const catsGuardadas = localStorage.getItem(keyCats) || localStorage.getItem('categorias_presupuesto_app');
         if (catsGuardadas) {
           const parsed = JSON.parse(catsGuardadas);
           if (parsed && typeof parsed === 'object') {
@@ -1481,7 +1486,7 @@
             if (Array.isArray(parsed.ahorro) && parsed.ahorro.length) categoriasMap.ahorro = parsed.ahorro;
           }
         }
-        const iconosGuardados = localStorage.getItem('categoria_iconos_presupuesto_app');
+        const iconosGuardados = localStorage.getItem(keyIconos) || localStorage.getItem('categoria_iconos_presupuesto_app');
         if (iconosGuardados) {
           const parsedIconos = JSON.parse(iconosGuardados);
           if (parsedIconos && typeof parsedIconos === 'object') {
@@ -1494,8 +1499,55 @@
     }
 
     function guardarCategoriasEnStorage() {
-      localStorage.setItem('categorias_presupuesto_app', JSON.stringify(categoriasMap));
-      localStorage.setItem('categoria_iconos_presupuesto_app', JSON.stringify(categoriaIconosMap));
+      try {
+        localStorage.setItem(claveCategorias(), JSON.stringify(categoriasMap));
+        localStorage.setItem(claveIconos(), JSON.stringify(categoriaIconosMap));
+      } catch (e) {
+        console.warn(e);
+      }
+      guardarCacheLocal();
+      sincronizarAjustesUsuarioCloud();
+    }
+
+    // Sincronización en la Nube de Preferencias, Categorías, Metas y Presupuestos (Supabase User Metadata)
+    async function sincronizarAjustesUsuarioCloud() {
+      if (!usuarioActualId || !navigator.onLine) return;
+      try {
+        await supabaseClient.auth.updateUser({
+          data: {
+            categoriasMap,
+            categoriaIconosMap,
+            presupuestos,
+            metasAhorro
+          }
+        });
+      } catch (err) {
+        console.warn('No se pudieron sincronizar los ajustes en la nube:', err);
+      }
+    }
+
+    function cargarAjustesDeUserMetadata(user) {
+      if (!user || !user.user_metadata) return;
+      const meta = user.user_metadata;
+
+      if (meta.categoriasMap && typeof meta.categoriasMap === 'object') {
+        if (Array.isArray(meta.categoriasMap.ingreso) && meta.categoriasMap.ingreso.length) categoriasMap.ingreso = meta.categoriasMap.ingreso;
+        if (Array.isArray(meta.categoriasMap.gasto) && meta.categoriasMap.gasto.length) categoriasMap.gasto = meta.categoriasMap.gasto;
+        if (Array.isArray(meta.categoriasMap.ahorro) && meta.categoriasMap.ahorro.length) categoriasMap.ahorro = meta.categoriasMap.ahorro;
+      }
+      if (meta.categoriaIconosMap && typeof meta.categoriaIconosMap === 'object') {
+        Object.assign(categoriaIconosMap, meta.categoriaIconosMap);
+      }
+      if (meta.presupuestos && typeof meta.presupuestos === 'object') {
+        presupuestos = { ...meta.presupuestos };
+      }
+      if (Array.isArray(meta.metasAhorro)) {
+        metasAhorro = [...meta.metasAhorro];
+      }
+
+      guardarCategoriasEnStorage();
+      guardarPresupuestosLocales();
+      guardarMetasLocales();
     }
 
     cargarCategoriasGuardadas();
@@ -1553,7 +1605,6 @@
     function alternarTema() {
       const esOscuro = document.documentElement.classList.contains('dark');
       aplicarTema(esOscuro ? 'light' : 'dark');
-      mostrarToast(esOscuro ? 'Modo Claro activado' : 'Modo Oscuro activado', 'info');
     }
 
     // ---------- Toasts ----------
@@ -1726,7 +1777,11 @@
         document.getElementById('avisoAuth').classList.add('hidden');
         usuarioActualId = session.user.id;
 
+        cargarCategoriasGuardadas();
         cargarPresupuestosYMetasLocales();
+        if (session.user) {
+          cargarAjustesDeUserMetadata(session.user);
+        }
 
         if (!sesionInicializada) {
           sesionInicializada = true;
@@ -1806,12 +1861,14 @@
       if (!usuarioActualId) return;
       localStorage.setItem(clavePresupuestos(), JSON.stringify(presupuestos));
       guardarCacheLocal();
+      sincronizarAjustesUsuarioCloud();
     }
 
     function guardarMetasLocales() {
       if (!usuarioActualId) return;
       localStorage.setItem(claveMetas(), JSON.stringify(metasAhorro));
       guardarCacheLocal();
+      sincronizarAjustesUsuarioCloud();
     }
 
     function obtenerCola() {
@@ -2123,6 +2180,16 @@
       if (errTrans || errDeudas) {
         mostrarAviso('Mostrando datos almacenados localmente.', 'info');
         return;
+      }
+
+      // Sincronizar ajustes del usuario desde Supabase Auth Metadata (categorías, presupuestos, metas)
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user && user.user_metadata) {
+          cargarAjustesDeUserMetadata(user);
+        }
+      } catch (e) {
+        console.warn(e);
       }
 
       ocultarAviso();

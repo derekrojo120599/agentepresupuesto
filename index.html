@@ -539,8 +539,8 @@
             </button>
           </div>
 
-          <!-- Filtros secundarios: Categoría y Alcance -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+          <!-- Filtros secundarios: Categoría, Alcance y Día -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             <div>
               <select id="filtroCategoria" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
                 <option value="">Todas las categorías</option>
@@ -548,9 +548,13 @@
             </div>
             <div>
               <select id="filtroAlcance" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
-                <option value="mes" selected>Este mes</option>
+                <option value="dia">Día específico</option>
+                <option value="mes" selected>Mes completo</option>
                 <option value="todo">Histórico completo</option>
               </select>
+            </div>
+            <div id="contenedorFiltroDia" class="hidden col-span-2 sm:col-span-1">
+              <input type="date" id="filtroDia" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/30 p-2 rounded-xl text-slate-800 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition">
             </div>
             <div class="col-span-2 sm:col-span-1 flex items-center justify-end">
               <button onclick="limpiarFiltros()" class="text-[11px] font-bold text-slate-500 dark:text-azulcielo hover:text-coral transition">
@@ -2232,8 +2236,10 @@
     document.getElementById('mesFiltro').addEventListener('change', actualizarInterfaz);
 
     // Eventos de filtros
+    document.getElementById('filtroDia').value = hoy.toISOString().split('T')[0];
     document.getElementById('filtroCategoria').addEventListener('change', renderizarHistorialFiltrado);
     document.getElementById('filtroAlcance').addEventListener('change', renderizarHistorialFiltrado);
+    document.getElementById('filtroDia').addEventListener('change', renderizarHistorialFiltrado);
 
     actualizarOpcionesCategoria();
 
@@ -2883,6 +2889,7 @@
       seleccionarChipTipo('');
       document.getElementById('filtroCategoria').value = '';
       document.getElementById('filtroAlcance').value = 'mes';
+      document.getElementById('filtroDia').value = new Date().toISOString().split('T')[0];
       renderizarHistorialFiltrado();
       mostrarToast('Filtros restablecidos', 'info');
     }
@@ -2891,9 +2898,20 @@
       const mesSeleccionado = document.getElementById('mesFiltro').value;
       const categoria = document.getElementById('filtroCategoria').value;
       const alcance = document.getElementById('filtroAlcance').value;
+      const diaFiltro = document.getElementById('filtroDia').value;
+
+      const contenedorDia = document.getElementById('contenedorFiltroDia');
+      if (alcance === 'dia') {
+        contenedorDia.classList.remove('hidden');
+        contenedorDia.classList.add('block'); // para grid
+      } else {
+        contenedorDia.classList.add('hidden');
+        contenedorDia.classList.remove('block');
+      }
 
       const filtradas = transacciones.filter(t => {
         if (alcance === 'mes' && !t.fecha.startsWith(mesSeleccionado)) return false;
+        if (alcance === 'dia' && t.fecha !== diaFiltro) return false;
         if (filtroTipoActual && t.tipo !== filtroTipoActual) return false;
         if (categoria && t.categoria !== categoria) return false;
         return true;
@@ -3282,9 +3300,11 @@
       const mesSeleccionado = document.getElementById('mesFiltro').value;
       const categoria = document.getElementById('filtroCategoria').value;
       const alcance = document.getElementById('filtroAlcance').value;
+      const diaFiltro = document.getElementById('filtroDia').value;
 
       const filtradas = transacciones.filter(t => {
         if (alcance === 'mes' && !t.fecha.startsWith(mesSeleccionado)) return false;
+        if (alcance === 'dia' && t.fecha !== diaFiltro) return false;
         if (filtroTipoActual && t.tipo !== filtroTipoActual) return false;
         if (categoria && t.categoria !== categoria) return false;
         return true;

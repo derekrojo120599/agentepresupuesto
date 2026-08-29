@@ -37,25 +37,27 @@
         metasAhorro.map(m => `<option value="${escapeHTML(m.nombre)}">${escapeHTML(m.icono || '🎯')} ${escapeHTML(m.nombre)} (Meta: $${m.objetivo.toFixed(2)})</option>`).join('');
     }
 
-    metaAhorroSelect.addEventListener('change', () => {
-      const val = metaAhorroSelect.value;
-      if (val) document.getElementById('descripcion').value = val;
-    });
+    function inicializarEventosGenerales() {
+      metaAhorroSelect.addEventListener('change', () => {
+        const val = metaAhorroSelect.value;
+        if (val) document.getElementById('descripcion').value = val;
+      });
 
-    const hoy = new Date();
-    document.getElementById('mesFiltro').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    document.getElementById('fecha').value = hoy.toISOString().split('T')[0];
+      const hoy = new Date();
+      document.getElementById('mesFiltro').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+      document.getElementById('fecha').value = hoy.toISOString().split('T')[0];
 
-    tipoSelect.addEventListener('change', actualizarOpcionesCategoria);
-    categoriaSelect.addEventListener('change', evaluarSeleccionesEspeciales);
-    document.getElementById('formMovimiento').addEventListener('submit', agregarTransaccion);
-    document.getElementById('formNuevaDeuda').addEventListener('submit', crearDeuda);
-    document.getElementById('formIncrementoDeuda').addEventListener('submit', confirmarIncrementoDeuda);
-    document.getElementById('formCategoria').addEventListener('submit', guardarFormCategoria);
-    document.getElementById('mesFiltro').addEventListener('change', actualizarInterfaz);
+      tipoSelect.addEventListener('change', actualizarOpcionesCategoria);
+      categoriaSelect.addEventListener('change', evaluarSeleccionesEspeciales);
+      document.getElementById('formMovimiento').addEventListener('submit', agregarTransaccion);
+      document.getElementById('formNuevaDeuda').addEventListener('submit', crearDeuda);
+      document.getElementById('formIncrementoDeuda').addEventListener('submit', confirmarIncrementoDeuda);
+      document.getElementById('formCategoria').addEventListener('submit', guardarFormCategoria);
+      document.getElementById('mesFiltro').addEventListener('change', actualizarInterfaz);
 
-    // Eventos de filtros
-    document.getElementById('filtroCategoria').addEventListener('change', renderizarHistorialFiltrado);
-    document.getElementById('filtroAlcance').addEventListener('change', renderizarHistorialFiltrado);
+      // Eventos de filtros
+      document.getElementById('filtroCategoria').addEventListener('change', renderizarHistorialFiltrado);
+      document.getElementById('filtroAlcance').addEventListener('change', renderizarHistorialFiltrado);
 
-    actualizarOpcionesCategoria();\n
+      actualizarOpcionesCategoria();
+    }

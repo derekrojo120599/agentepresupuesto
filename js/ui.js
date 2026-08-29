@@ -98,4 +98,4 @@
 
     function ocultarAviso() {
       avisoEstado.classList.add('hidden');
-    }\n
+    }

@@ -76,4 +76,4 @@
         const m = document.getElementById('monto');
         if (m) m.focus();
       }, 150);
-    }\n
+    }

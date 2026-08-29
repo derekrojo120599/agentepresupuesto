@@ -12,4 +12,4 @@
       if (!btn) return;
       btn.disabled = false;
       btn.textContent = btn.dataset.textoOriginal || btn.textContent;
-    }\n
+    }

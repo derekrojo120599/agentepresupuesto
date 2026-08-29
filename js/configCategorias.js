@@ -223,4 +223,4 @@
       actualizarInterfaz();
       renderizarConfiguracionCategorias();
       mostrarToast('Categorías restablecidas por defecto', 'info');
-    }\n
+    }

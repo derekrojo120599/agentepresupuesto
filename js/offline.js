@@ -141,4 +141,4 @@
     window.addEventListener('offline', () => {
       actualizarIndicadorConexion();
       mostrarToast('Modo offline activo', 'info');
-    });\n
+    });

@@ -90,40 +90,42 @@
       }
     });
 
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        document.getElementById('authScreen').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
-        document.getElementById('usuarioEmail').textContent = session.user.email;
-        document.getElementById('formAuth').reset();
-        document.getElementById('avisoAuth').classList.add('hidden');
-        usuarioActualId = session.user.id;
+    function inicializarAutenticacion() {
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          document.getElementById('authScreen').classList.add('hidden');
+          document.getElementById('appContainer').classList.remove('hidden');
+          document.getElementById('usuarioEmail').textContent = session.user.email;
+          document.getElementById('formAuth').reset();
+          document.getElementById('avisoAuth').classList.add('hidden');
+          usuarioActualId = session.user.id;
 
-        cargarCategoriasGuardadas();
-        cargarPresupuestosYMetasLocales();
-        if (session.user) {
-          cargarAjustesDeUserMetadata(session.user);
-        }
-
-        if (!sesionInicializada) {
-          sesionInicializada = true;
-          inicializarPestanas();
-          if (navigator.onLine) {
-            cargarDatosCloud();
-            suscribirRealtime();
-          } else {
-            cargarCacheLocal();
+          cargarCategoriasGuardadas();
+          cargarPresupuestosYMetasLocales();
+          if (session.user) {
+            cargarAjustesDeUserMetadata(session.user);
           }
-          actualizarIndicadorConexion();
+
+          if (!sesionInicializada) {
+            sesionInicializada = true;
+            inicializarPestanas();
+            if (navigator.onLine) {
+              cargarDatosCloud();
+              suscribirRealtime();
+            } else {
+              cargarCacheLocal();
+            }
+            actualizarIndicadorConexion();
+          }
+        } else {
+          document.getElementById('appContainer').classList.add('hidden');
+          document.getElementById('authScreen').classList.remove('hidden');
+          sesionInicializada = false;
+          usuarioActualId = null;
+          transacciones = [];
+          deudas = [];
+          presupuestos = {};
+          metasAhorro = [];
         }
-      } else {
-        document.getElementById('appContainer').classList.add('hidden');
-        document.getElementById('authScreen').classList.remove('hidden');
-        sesionInicializada = false;
-        usuarioActualId = null;
-        transacciones = [];
-        deudas = [];
-        presupuestos = {};
-        metasAhorro = [];
-      }
-    });\n
+      });
+    }

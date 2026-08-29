@@ -120,4 +120,4 @@
       await supabaseClient.from('deudas').delete().eq('id', id);
       await cargarDatosCloud();
       mostrarToast('Deuda eliminada', 'success');
-    }\n
+    }

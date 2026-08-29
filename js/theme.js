@@ -39,4 +39,4 @@
     function alternarTema() {
       const esOscuro = document.documentElement.classList.contains('dark');
       aplicarTema(esOscuro ? 'light' : 'dark');
-    }\n
+    }

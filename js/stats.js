@@ -389,4 +389,4 @@
       if (e.target.closest('button, select, canvas, .chip-tipo, [onclick], .custom-select-trigger, .custom-select-option-item')) {
         e.preventDefault();
       }
-    });\n
+    });

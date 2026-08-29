@@ -89,4 +89,4 @@
       }
     }
 
-    document.getElementById('formEditarMovimiento').addEventListener('submit', confirmarEditarMovimiento);\n
+    document.getElementById('formEditarMovimiento').addEventListener('submit', confirmarEditarMovimiento);

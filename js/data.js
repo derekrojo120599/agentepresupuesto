@@ -37,4 +37,4 @@
       actualizarOpcionesCategoria();
       actualizarOpcionesFiltroCategoria();
       actualizarInterfaz();
-    }\n
+    }

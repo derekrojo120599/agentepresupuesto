@@ -113,4 +113,4 @@
       } else {
         contenedorAlertas.classList.add('hidden');
       }
-    }\n
+    }

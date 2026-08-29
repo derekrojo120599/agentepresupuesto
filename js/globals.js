@@ -142,4 +142,4 @@
 
     let canalRealtime = null;
     let sesionInicializada = false;
-    let usuarioActualId = null;\n
+    let usuarioActualId = null;

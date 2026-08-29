@@ -166,4 +166,4 @@
       document.body.removeChild(link);
 
       mostrarToast('Reporte CSV descargado con éxito', 'success');
-    }\n
+    }

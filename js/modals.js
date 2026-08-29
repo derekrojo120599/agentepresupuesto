@@ -79,4 +79,4 @@
         ocultarModalMetaAhorro();
         ocultarModalCategoria();
       }
-    });\n
+    });

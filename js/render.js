@@ -206,4 +206,4 @@
       renderizarMetasAhorro(fondosAhorroMapa);
       renderizarEstadisticasFinancieras(filtradasMes, fondosAhorroMapa);
       renderizarHistorialFiltrado();
-    }\n
+    }

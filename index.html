@@ -1960,32 +1960,44 @@
     });
 
     supabaseClient.auth.onAuthStateChange((event, session) => {
+      // Manejar posibles errores retornados en el hash de la URL tras OAuth
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      if (hashParams.get('error_description')) {
+        mostrarAvisoAuth('Error de acceso: ' + decodeURIComponent(hashParams.get('error_description')), 'error');
+        window.history.replaceState(null, null, window.location.pathname);
+      }
+
       if (session) {
-        document.getElementById('authScreen').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
-        document.getElementById('mobileBottomNav').classList.remove('hidden');
-        document.getElementById('mobileBottomNav').classList.add('flex');
-        document.getElementById('usuarioEmail').textContent = session.user.email;
-        document.getElementById('formAuth').reset();
-        document.getElementById('avisoAuth').classList.add('hidden');
-        usuarioActualId = session.user.id;
+        try {
+          document.getElementById('authScreen').classList.add('hidden');
+          document.getElementById('appContainer').classList.remove('hidden');
+          document.getElementById('mobileBottomNav').classList.remove('hidden');
+          document.getElementById('mobileBottomNav').classList.add('flex');
+          document.getElementById('usuarioEmail').textContent = session.user.email;
+          document.getElementById('formAuth').reset();
+          document.getElementById('avisoAuth').classList.add('hidden');
+          usuarioActualId = session.user.id;
 
-        cargarCategoriasGuardadas();
-        cargarPresupuestosYMetasLocales();
-        if (session.user) {
-          cargarAjustesDeUserMetadata(session.user);
-        }
-
-        if (!sesionInicializada) {
-          sesionInicializada = true;
-          inicializarPestanas();
-          if (navigator.onLine) {
-            cargarDatosCloud();
-            suscribirRealtime();
-          } else {
-            cargarCacheLocal();
+          cargarCategoriasGuardadas();
+          cargarPresupuestosYMetasLocales();
+          if (session.user) {
+            cargarAjustesDeUserMetadata(session.user);
           }
-          actualizarIndicadorConexion();
+
+          if (!sesionInicializada) {
+            sesionInicializada = true;
+            inicializarPestanas();
+            if (navigator.onLine) {
+              cargarDatosCloud();
+              suscribirRealtime();
+            } else {
+              cargarCacheLocal();
+            }
+            actualizarIndicadorConexion();
+          }
+        } catch (errorLogueo) {
+          console.error("Error inicializando sesión:", errorLogueo);
+          mostrarAvisoAuth("Error interno al cargar tus datos. Revisa la consola.", "error");
         }
       } else {
         document.getElementById('appContainer').classList.add('hidden');

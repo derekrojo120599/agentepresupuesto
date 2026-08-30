@@ -3722,9 +3722,9 @@
         const tipo = tipoSelect.value;
         const categoriaSeleccionada = (categoriaSelect.value || "").toLowerCase();
         
-        // Calcular balance físico y balance no asignado
-        let saldoFisico = 0;
-        let saldoNoAsignado = 0;
+        // Calcular balance actual
+        let balance = 0;
+        let ingresosTotales = 0;
 
         transacciones.forEach((t) => {
           if (
@@ -3733,19 +3733,18 @@
           ) {
             const m = parseFloat(t.monto) || 0;
             if (t.tipo === "ingreso") {
-              saldoFisico += m;
-              saldoNoAsignado += m;
+              balance += m;
+              ingresosTotales += m;
             }
             else if (t.tipo === "gasto") {
-              saldoFisico -= m;
-              saldoNoAsignado -= m;
+              balance -= m;
             }
             else if (t.tipo === "ahorro") {
               const cat = (t.categoria || "").toLowerCase();
               if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-                saldoNoAsignado += m;
+                balance += m;
               } else {
-                saldoNoAsignado -= m;
+                balance -= m;
               }
             }
           }
@@ -3762,11 +3761,7 @@
           const esAbonoAhorro = tipo === "ahorro" && !categoriaSeleccionada.includes("retirar") && !categoriaSeleccionada.includes("retiro") && !categoriaSeleccionada.includes("usar") && !categoriaSeleccionada.includes("gasto");
           const esGasto = tipo === "gasto";
 
-          let limiteAplicable = Infinity;
-          if (esGasto) limiteAplicable = saldoFisico;
-          if (esAbonoAhorro) limiteAplicable = saldoNoAsignado;
-
-          if ((esGasto || esAbonoAhorro) && monto > limiteAplicable) {
+          if ((esGasto || esAbonoAhorro) && monto > balance) {
             // BLOQUEO: No hay fondos suficientes
             montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
             montoInput.classList.add("border-coral", "focus:border-coral", "text-coral");
@@ -3774,8 +3769,8 @@
             alertaMontoExcedido.classList.remove("hidden");
             if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
           } else if (esAbonoAhorro) {
-            // SUGERENCIA (Amarilla): Ahorro que consume más del 80% del balance no asignado
-            const umbralMaximoAhorro = saldoNoAsignado * 0.80;
+            // SUGERENCIA (Amarilla): Ahorro que consume más del 80% del balance actual
+            const umbralMaximoAhorro = balance * 0.80;
             
             if (monto > umbralMaximoAhorro) {
               montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");

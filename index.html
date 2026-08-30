@@ -701,7 +701,7 @@
         <!-- Alertas Inteligentes Globales -->
         <div
           id="contenedorAlertasGlobales"
-          class="hidden flex flex-col gap-2"
+          class="hidden flex gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory"
         ></div>
 
         <!-- SECCIÓN PRINCIPAL: Estadísticas Financieras (Gráfico Multilínea + Desglose de Categorías) -->
@@ -5479,27 +5479,39 @@
         if (anoActual && mesActual) {
           if (ingresosMesAnt > 0 && ingresosMes > ingresosMesAnt) {
             alertasGlobalesHTML += `
-                <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-2 shadow-sm">
-                  <span class="text-lg">🎉</span>
-                  <span>¡Felicidades! Tus ingresos de este mes superan a los del mes pasado.</span>
+              <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-emerald-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center gap-2.5 relative z-10">
+                  <div class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">🎉</div>
+                  <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">¡Nuevos Ingresos!</h4>
                 </div>
-              `;
+                <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Tus ingresos de este mes superan a los del mes pasado.</p>
+              </div>
+            `;
           }
           if (gastosMesAnt > 0) {
             if (gastosMes >= gastosMesAnt) {
               alertasGlobalesHTML += `
-                  <div class="p-3 bg-coral/10 border border-coral/30 rounded-2xl text-coral text-xs font-bold flex items-center gap-2 shadow-sm">
-                    <span class="text-lg">⚠️</span>
-                    <span>Atención: Has superado tus gastos del mes pasado.</span>
+                <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-coral/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-coral/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div class="flex items-center gap-2.5 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-coral/15 text-coral flex items-center justify-center text-lg shrink-0">⚠️</div>
+                    <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">Gastos Elevados</h4>
                   </div>
-                `;
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Atención: Has superado tus gastos del mes pasado.</p>
+                </div>
+              `;
             } else if (gastosMes >= gastosMesAnt * 0.9) {
               alertasGlobalesHTML += `
-                  <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-2 shadow-sm">
-                    <span class="text-lg">⚠️</span>
-                    <span>Precaución: Estás muy cerca de igualar o superar tus gastos del mes pasado.</span>
+                <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-amber-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div class="flex items-center gap-2.5 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0">⚠️</div>
+                    <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">Cerca del Límite</h4>
                   </div>
-                `;
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Estás muy cerca de igualar o superar tus gastos del mes pasado.</p>
+                </div>
+              `;
             }
           }
         }
@@ -5509,11 +5521,15 @@
           const gastado = gastosPorCat[cat] || 0;
           if (limite > 0 && gastado < limite && gastado >= limite * 0.9) {
             alertasGlobalesHTML += `
-                <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-2 shadow-sm">
-                  <span class="text-lg">⚠️</span>
-                  <span>Estás a punto de alcanzar el límite de tu presupuesto en <strong>${escapeHTML(cat)}</strong>.</span>
+              <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-amber-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center gap-2.5 relative z-10">
+                  <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0">⚠️</div>
+                  <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">Presupuesto al Borde</h4>
                 </div>
-              `;
+                <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Estás a punto de alcanzar el límite en <strong>${escapeHTML(cat)}</strong>.</p>
+              </div>
+            `;
           }
         });
 
@@ -5525,11 +5541,15 @@
             acumulado >= meta.objetivo * 0.9
           ) {
             alertasGlobalesHTML += `
-                <div class="p-3 bg-azulcielo/10 border border-azulcielo/30 rounded-2xl text-azulcielo-dark dark:text-azulcielo text-xs font-bold flex items-center gap-2 shadow-sm">
-                  <span class="text-lg">🎯</span>
-                  <span>¡Estás a muy poco de cumplir tu meta <strong>${escapeHTML(meta.nombre)}</strong>! Sigue así.</span>
+              <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-azulcielo/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-azulcielo/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center gap-2.5 relative z-10">
+                  <div class="w-8 h-8 rounded-xl bg-azulcielo/15 text-azulcielo-dark dark:text-azulcielo flex items-center justify-center text-lg shrink-0">🎯</div>
+                  <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">¡Casi lo logras!</h4>
                 </div>
-              `;
+                <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">A poco de cumplir <strong>${escapeHTML(meta.nombre)}</strong>. ¡Sigue así!</p>
+              </div>
+            `;
           }
         });
 

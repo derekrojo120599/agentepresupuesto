@@ -5582,8 +5582,18 @@
           if (t.fecha.substring(0, 7) <= mesSeleccionado) {
             if (typeof transaccionesPendientesEliminar !== "undefined" && transaccionesPendientesEliminar.has(t.id)) return;
             const m = parseFloat(t.monto) || 0;
-            if (t.tipo === "ingreso") balance += m;
-            else if (t.tipo === "gasto") balance -= m;
+            if (t.tipo === "ingreso") {
+              balance += m;
+            } else if (t.tipo === "gasto") {
+              balance -= m;
+            } else if (t.tipo === "ahorro") {
+              const cat = (t.categoria || "").toLowerCase();
+              if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
+                balance += m;
+              } else {
+                balance -= m;
+              }
+            }
           }
         });
         const balanceEl = document.getElementById("balanceNeto");

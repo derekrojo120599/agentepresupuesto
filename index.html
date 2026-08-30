@@ -877,9 +877,6 @@
                 <p id="alertaMontoExcedido" class="hidden text-[10px] font-bold text-coral mt-1.5 flex items-start gap-1">
                   <span>⚠️</span> Estás gastando más del saldo disponible.
                 </p>
-                <p id="alertaAhorroExcesivo" class="hidden text-[10px] font-bold text-amber-500 mt-1.5 flex items-start gap-1">
-                  <span>💡</span> Sugerencia: Este ahorro consume más del 80% de tu saldo actual. Te sugerimos dejar algo para imprevistos.
-                </p>
               </div>
               <div>
                 <label
@@ -3720,64 +3717,38 @@
       function verificarMontoEnTiempoReal() {
         const monto = parseFloat(montoInput.value) || 0;
         const tipo = tipoSelect.value;
-        const categoriaSeleccionada = (categoriaSelect.value || "").toLowerCase();
         
-        // Calcular balance actual
-        let balance = 0;
-        let ingresosTotales = 0;
-
-        transacciones.forEach((t) => {
-          if (
-            typeof transaccionesPendientesEliminar === "undefined" ||
-            !transaccionesPendientesEliminar.has(t.id)
-          ) {
-            const m = parseFloat(t.monto) || 0;
-            if (t.tipo === "ingreso") {
-              balance += m;
-              ingresosTotales += m;
+        // Solo aplica si es un gasto
+        if (tipo === "gasto" && monto > 0) {
+          // Calcular balance actual (solo Ingresos - Gastos)
+          let balance = 0;
+          transacciones.forEach((t) => {
+            if (
+              typeof transaccionesPendientesEliminar === "undefined" ||
+              !transaccionesPendientesEliminar.has(t.id)
+            ) {
+              const m = parseFloat(t.monto) || 0;
+              if (t.tipo === "ingreso") balance += m;
+              else if (t.tipo === "gasto") balance -= m;
             }
-            else if (t.tipo === "gasto") {
-              balance -= m;
-            }
-            else if (t.tipo === "ahorro") {
-              const cat = (t.categoria || "").toLowerCase();
-              if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-                balance += m;
-              } else {
-                balance -= m;
-              }
-            }
-          }
-        });
+          });
 
-        // Reset visual default
-        montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
-        montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral", "border-amber-500", "focus:border-amber-500", "text-amber-500");
-        alertaMontoExcedido.classList.add("hidden");
-        alertaAhorroExcesivo.classList.add("hidden");
-        if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = false;
-
-        if (monto > 0) {
-          const esAbonoAhorro = tipo === "ahorro" && !categoriaSeleccionada.includes("retirar") && !categoriaSeleccionada.includes("retiro") && !categoriaSeleccionada.includes("usar") && !categoriaSeleccionada.includes("gasto");
-          const esGasto = tipo === "gasto";
-
-          if ((esGasto || esAbonoAhorro) && monto > balance) {
-            // BLOQUEO: No hay fondos suficientes
+          if (monto > balance) {
             montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
             montoInput.classList.add("border-coral", "focus:border-coral", "text-coral");
-            alertaMontoExcedido.textContent = "⚠️ Estás intentando registrar más del saldo disponible.";
             alertaMontoExcedido.classList.remove("hidden");
             if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
-          } else if (esAbonoAhorro) {
-            // SUGERENCIA (Amarilla): Ahorro que consume más del 80% del balance actual
-            const umbralMaximoAhorro = balance * 0.80;
-            
-            if (monto > umbralMaximoAhorro) {
-              montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
-              montoInput.classList.add("border-amber-500", "focus:border-amber-500", "text-amber-500");
-              alertaAhorroExcesivo.classList.remove("hidden");
-            }
+          } else {
+            montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
+            montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral");
+            alertaMontoExcedido.classList.add("hidden");
+            if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = false;
           }
+        } else {
+          montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
+          montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral");
+          alertaMontoExcedido.classList.add("hidden");
+          if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = false;
         }
       }
 
@@ -5582,18 +5553,8 @@
           if (t.fecha.substring(0, 7) <= mesSeleccionado) {
             if (typeof transaccionesPendientesEliminar !== "undefined" && transaccionesPendientesEliminar.has(t.id)) return;
             const m = parseFloat(t.monto) || 0;
-            if (t.tipo === "ingreso") {
-              balance += m;
-            } else if (t.tipo === "gasto") {
-              balance -= m;
-            } else if (t.tipo === "ahorro") {
-              const cat = (t.categoria || "").toLowerCase();
-              if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-                balance += m;
-              } else {
-                balance -= m;
-              }
-            }
+            if (t.tipo === "ingreso") balance += m;
+            else if (t.tipo === "gasto") balance -= m;
           }
         });
         const balanceEl = document.getElementById("balanceNeto");

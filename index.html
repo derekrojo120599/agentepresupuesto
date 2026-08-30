@@ -3930,7 +3930,11 @@
             }
 
             ocultarAviso();
-            transacciones = transData || [];
+            const fetchedTransacciones = transData || [];
+            transacciones = fetchedTransacciones.filter(
+              (t) => typeof transaccionesPendientesEliminar === "undefined" || !transaccionesPendientesEliminar.has(t.id)
+            );
+
             deudas = (deudasData || []).map((d) => ({
               id: d.id,
               nombre: d.nombre,
@@ -4925,7 +4929,6 @@
             }
             return;
           }
-
           const { error } = await supabaseClient
             .from("transacciones")
             .insert([nueva]);
@@ -4939,8 +4942,6 @@
             .toISOString()
             .split("T")[0];
           actualizarOpcionesCategoria();
-          await cargarDatosCloud();
-          mostrarToast("Movimiento registrado", "success");
 
           if (
             nueva.tipo === "ahorro" &&
@@ -4955,54 +4956,30 @@
               });
             }
           }
+
+          await cargarDatosCloud();
+          mostrarToast("Movimiento registrado", "success");
         } finally {
           desbloquearBoton(btn);
         }
       }
 
-      let temporizadorUndoTransaccion = null;
-      let transaccionPendienteEliminar = null;
+      const transaccionesPendientesEliminar = new Map();
 
       function eliminarTransaccion(id) {
         const idx = transacciones.findIndex((t) => t.id === id);
         if (idx === -1) return;
 
         const tEliminada = transacciones[idx];
-        transaccionPendienteEliminar = { transaccion: tEliminada, index: idx };
 
         // Remover visualmente y actualizar interfaz al instante
         transacciones.splice(idx, 1);
         guardarCacheLocal();
         actualizarInterfaz();
 
-        // Mostrar Toast interactivo con opción de Deshacer durante 5 segundos
-        mostrarToastDeshacer("Transacción eliminada", () => {
-          if (
-            transaccionPendienteEliminar &&
-            transaccionPendienteEliminar.transaccion.id === id
-          ) {
-            if (temporizadorUndoTransaccion)
-              clearTimeout(temporizadorUndoTransaccion);
-            transacciones.splice(
-              transaccionPendienteEliminar.index,
-              0,
-              transaccionPendienteEliminar.transaccion,
-            );
-            transaccionPendienteEliminar = null;
-            guardarCacheLocal();
-            actualizarInterfaz();
-            mostrarToast("Transacción restaurada", "success");
-          }
-        });
-
-        if (temporizadorUndoTransaccion)
-          clearTimeout(temporizadorUndoTransaccion);
-        temporizadorUndoTransaccion = setTimeout(async () => {
-          if (
-            transaccionPendienteEliminar &&
-            transaccionPendienteEliminar.transaccion.id === id
-          ) {
-            transaccionPendienteEliminar = null;
+        const temporizador = setTimeout(async () => {
+          if (transaccionesPendientesEliminar.has(id)) {
+            transaccionesPendientesEliminar.delete(id);
             if (!navigator.onLine) {
               encolarOperacion("delete", "transacciones", null, id);
             } else {
@@ -5010,6 +4987,29 @@
             }
           }
         }, 5000);
+
+        transaccionesPendientesEliminar.set(id, {
+          transaccion: tEliminada,
+          index: idx,
+          temporizador: temporizador,
+        });
+
+        // Mostrar Toast interactivo con opción de Deshacer durante 5 segundos
+        mostrarToastDeshacer("Transacción eliminada", () => {
+          if (transaccionesPendientesEliminar.has(id)) {
+            const pending = transaccionesPendientesEliminar.get(id);
+            clearTimeout(pending.temporizador);
+            transacciones.splice(
+              pending.index,
+              0,
+              pending.transaccion,
+            );
+            transaccionesPendientesEliminar.delete(id);
+            guardarCacheLocal();
+            actualizarInterfaz();
+            mostrarToast("Transacción restaurada", "success");
+          }
+        });
       }
 
       function duplicarTransaccion(id) {
@@ -5535,21 +5535,30 @@
 
         metasAhorro.forEach((meta) => {
           const acumulado = Math.max(0, fondosAhorroMapa[meta.nombre] || 0);
-          if (
-            meta.objetivo > 0 &&
-            acumulado < meta.objetivo &&
-            acumulado >= meta.objetivo * 0.9
-          ) {
-            alertasGlobalesHTML += `
-              <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-azulcielo/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-16 h-16 bg-azulcielo/10 rounded-full blur-xl pointer-events-none"></div>
-                <div class="flex items-center gap-2.5 relative z-10">
-                  <div class="w-8 h-8 rounded-xl bg-azulcielo/15 text-azulcielo-dark dark:text-azulcielo flex items-center justify-center text-lg shrink-0">🎯</div>
-                  <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">¡Casi lo logras!</h4>
+          if (meta.objetivo > 0) {
+            if (acumulado >= meta.objetivo) {
+              alertasGlobalesHTML += `
+                <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-emerald-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div class="flex items-center gap-2.5 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">🏆</div>
+                    <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">¡Meta Cumplida!</h4>
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Has alcanzado tu objetivo para <strong>${escapeHTML(meta.nombre)}</strong>. ¡Increíble!</p>
                 </div>
-                <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">A poco de cumplir <strong>${escapeHTML(meta.nombre)}</strong>. ¡Sigue así!</p>
-              </div>
-            `;
+              `;
+            } else if (acumulado >= meta.objetivo * 0.9) {
+              alertasGlobalesHTML += `
+                <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-azulcielo/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-azulcielo/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div class="flex items-center gap-2.5 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-azulcielo/15 text-azulcielo-dark dark:text-azulcielo flex items-center justify-center text-lg shrink-0">🎯</div>
+                    <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">¡Casi lo logras!</h4>
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">A poco de cumplir <strong>${escapeHTML(meta.nombre)}</strong>. ¡Sigue así!</p>
+                </div>
+              `;
+            }
           }
         });
 

@@ -1598,6 +1598,26 @@
       </div>
     </div>
 
+    <!-- Modal Alerta Inteligente -->
+    <div
+      id="modalAlertaInteligente"
+      class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-[60] fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-sm space-y-5 shadow-2xl slide-up sm:slide-none text-center"
+      >
+        <div id="modalAlertaIcono" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-2"></div>
+        <h3 id="modalAlertaTitulo" class="text-xl font-black text-slate-800 dark:text-crema"></h3>
+        <p id="modalAlertaMensaje" class="text-sm font-medium text-slate-500 dark:text-azulcielo/80 leading-relaxed"></p>
+        <button
+          onclick="document.getElementById('modalAlertaInteligente').classList.add('hidden')"
+          class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-crema font-bold py-3.5 px-4 rounded-2xl transition mt-4"
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+
     <!-- Modal Crear Deuda -->
     <div
       id="modalDeuda"
@@ -3799,6 +3819,107 @@
         document.getElementById("modalDeuda").classList.add("hidden");
       }
 
+      function mostrarModalAlertaInteligente(tipo, titulo, mensaje) {
+        const modal = document.getElementById("modalAlertaInteligente");
+        const icono = document.getElementById("modalAlertaIcono");
+        const tituloEl = document.getElementById("modalAlertaTitulo");
+        const mensajeEl = document.getElementById("modalAlertaMensaje");
+
+        if (tipo === "exceso_presupuesto") {
+          icono.className = "w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-2 bg-coral/15 text-coral shadow-[0_0_20px_rgba(244,63,94,0.3)]";
+          icono.textContent = "🚨";
+        } else if (tipo === "meta_superada") {
+          icono.className = "w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-2 bg-emerald-500/15 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]";
+          icono.textContent = "🏆";
+        } else if (tipo === "advertencia") {
+          icono.className = "w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-2 bg-amber-500/15 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)]";
+          icono.textContent = "⚠️";
+        }
+
+        tituloEl.textContent = titulo;
+        mensajeEl.innerHTML = mensaje;
+
+        modal.classList.remove("hidden");
+      }
+
+      function verificarLimitesDespuesDeTransaccion(nueva) {
+        const [anoStr, mesStr] = nueva.fecha.split("-");
+        const mesTransStr = `${anoStr}-${mesStr.padStart(2, "0")}`;
+
+        if (nueva.tipo === "gasto") {
+          const limite = presupuestos[nueva.categoria];
+          if (limite > 0) {
+            let gastado = 0;
+            transacciones.forEach(t => {
+              if (
+                t.tipo === "gasto" && 
+                t.categoria === nueva.categoria && 
+                (t.fecha || "").startsWith(mesTransStr) && 
+                (typeof transaccionesPendientesEliminar === "undefined" || !transaccionesPendientesEliminar.has(t.id))
+              ) {
+                gastado += parseFloat(t.monto) || 0;
+              }
+            });
+            
+            const gastadoPrevio = gastado - parseFloat(nueva.monto);
+            
+            if (gastado > limite && gastadoPrevio <= limite) {
+              mostrarModalAlertaInteligente(
+                "exceso_presupuesto",
+                "¡Presupuesto Excedido!",
+                `Has gastado <strong>$${nueva.monto.toFixed(2)}</strong> en <strong>${escapeHTML(nueva.categoria)}</strong> y has superado tu límite mensual por <strong>$${(gastado - limite).toFixed(2)}</strong>.`
+              );
+            } else if (gastado > limite * 0.9 && gastadoPrevio <= limite * 0.9) {
+              mostrarModalAlertaInteligente(
+                "advertencia",
+                "Presupuesto al Borde",
+                `Con este gasto, has consumido más del 90% de tu presupuesto mensual para <strong>${escapeHTML(nueva.categoria)}</strong>.`
+              );
+            }
+          }
+        } else if (nueva.tipo === "ahorro" && !nueva.categoria.toLowerCase().includes("retirar")) {
+          const nombreMeta = nueva.descripcion.trim();
+          const metaObj = metasAhorro.find(m => m.nombre === nombreMeta);
+          
+          if (metaObj && metaObj.objetivo > 0) {
+            let acumulado = 0;
+            transacciones.forEach(t => {
+              if (
+                t.tipo === "ahorro" && 
+                (t.descripcion || "").trim() === nombreMeta && 
+                (typeof transaccionesPendientesEliminar === "undefined" || !transaccionesPendientesEliminar.has(t.id))
+              ) {
+                const cat = (t.categoria || "").toLowerCase().trim();
+                const m = parseFloat(t.monto) || 0;
+                if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
+                  acumulado -= m;
+                } else {
+                  acumulado += m;
+                }
+              }
+            });
+            
+            const acumuladoPrevio = acumulado - parseFloat(nueva.monto);
+            
+            if (acumulado >= metaObj.objetivo && acumuladoPrevio < metaObj.objetivo) {
+               const excedente = acumulado - metaObj.objetivo;
+               const extraMsg = excedente > 0 ? `<br><br>¡Y la has superado por <strong>$${excedente.toFixed(2)}</strong>!` : "";
+               mostrarModalAlertaInteligente(
+                 "meta_superada",
+                 "¡Meta Cumplida!",
+                 `¡Felicidades! Con tu abono de <strong>$${nueva.monto.toFixed(2)}</strong> has alcanzado tu objetivo para <strong>${escapeHTML(nombreMeta)}</strong>.${extraMsg}`
+               );
+            } else if (acumulado >= metaObj.objetivo * 0.9 && acumuladoPrevio < metaObj.objetivo * 0.9) {
+               mostrarModalAlertaInteligente(
+                 "advertencia",
+                 "¡Casi lo logras!",
+                 `Con este abono, estás a muy poco de cumplir tu meta <strong>${escapeHTML(nombreMeta)}</strong>. ¡Sigue así!`
+               );
+            }
+          }
+        }
+      }
+
       function mostrarModalIncremento(id, nombre, montoInicial) {
         document.getElementById("incrementoDeudaId").value = id;
         document.getElementById("incrementoNombre").value = nombre;
@@ -4914,6 +5035,8 @@
             actualizarInterfaz();
             mostrarToast("Guardado localmente", "info");
 
+            verificarLimitesDespuesDeTransaccion(nueva);
+
             if (
               nueva.tipo === "ahorro" &&
               !nueva.categoria.toLowerCase().includes("retirar")
@@ -4959,6 +5082,8 @@
 
           await cargarDatosCloud();
           mostrarToast("Movimiento registrado", "success");
+          
+          verificarLimitesDespuesDeTransaccion(nueva);
         } finally {
           desbloquearBoton(btn);
         }
@@ -5519,17 +5644,31 @@
         Object.keys(presupuestos).forEach((cat) => {
           const limite = presupuestos[cat];
           const gastado = gastosPorCat[cat] || 0;
-          if (limite > 0 && gastado < limite && gastado >= limite * 0.9) {
-            alertasGlobalesHTML += `
-              <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-amber-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
-                <div class="flex items-center gap-2.5 relative z-10">
-                  <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0">⚠️</div>
-                  <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">Presupuesto al Borde</h4>
+          if (limite > 0) {
+            if (gastado >= limite) {
+              const excedidoPor = gastado - limite;
+              alertasGlobalesHTML += `
+                <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-coral/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-coral/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div class="flex items-center gap-2.5 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-coral/15 text-coral flex items-center justify-center text-lg shrink-0">🚨</div>
+                    <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">Presupuesto Excedido</h4>
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Has superado el límite en <strong>${escapeHTML(cat)}</strong> por <strong>$${excedidoPor.toFixed(2)}</strong>.</p>
                 </div>
-                <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Estás a punto de alcanzar el límite en <strong>${escapeHTML(cat)}</strong>.</p>
-              </div>
-            `;
+              `;
+            } else if (gastado >= limite * 0.9) {
+              alertasGlobalesHTML += `
+                <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-amber-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
+                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div class="flex items-center gap-2.5 relative z-10">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0">⚠️</div>
+                    <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">Presupuesto al Borde</h4>
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Estás a punto de alcanzar el límite en <strong>${escapeHTML(cat)}</strong>.</p>
+                </div>
+              `;
+            }
           }
         });
 
@@ -5537,6 +5676,8 @@
           const acumulado = Math.max(0, fondosAhorroMapa[meta.nombre] || 0);
           if (meta.objetivo > 0) {
             if (acumulado >= meta.objetivo) {
+              const excedente = acumulado - meta.objetivo;
+              const textoExtra = excedente > 0 ? ` ¡Y la has superado por $${excedente.toFixed(2)}!` : " ¡Increíble!";
               alertasGlobalesHTML += `
                 <div class="snap-center shrink-0 w-64 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-emerald-500/30 shadow-md flex flex-col gap-2 relative overflow-hidden">
                   <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
@@ -5544,7 +5685,7 @@
                     <div class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">🏆</div>
                     <h4 class="font-bold text-sm text-slate-800 dark:text-crema truncate">¡Meta Cumplida!</h4>
                   </div>
-                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Has alcanzado tu objetivo para <strong>${escapeHTML(meta.nombre)}</strong>. ¡Increíble!</p>
+                  <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 relative z-10 leading-snug">Has alcanzado tu objetivo para <strong>${escapeHTML(meta.nombre)}</strong>.${textoExtra}</p>
                 </div>
               `;
             } else if (acumulado >= meta.objetivo * 0.9) {

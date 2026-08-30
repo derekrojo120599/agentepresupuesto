@@ -3722,43 +3722,34 @@
         const tipo = tipoSelect.value;
         const categoriaSeleccionada = (categoriaSelect.value || "").toLowerCase();
         
-        // Calcular balance actual y total de ingresos con reconciliación histórica
-        let balanceBruto = 0;
-        let ingresosTotales = 0;
-        let minBalance = 0;
+        // Calcular balance físico y balance no asignado
+        let saldoFisico = 0;
+        let saldoNoAsignado = 0;
 
-        const transaccionesCronologicas = [...transacciones].sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
-
-        transaccionesCronologicas.forEach((t) => {
+        transacciones.forEach((t) => {
           if (
             typeof transaccionesPendientesEliminar === "undefined" ||
             !transaccionesPendientesEliminar.has(t.id)
           ) {
             const m = parseFloat(t.monto) || 0;
             if (t.tipo === "ingreso") {
-              balanceBruto += m;
-              ingresosTotales += m;
+              saldoFisico += m;
+              saldoNoAsignado += m;
             }
             else if (t.tipo === "gasto") {
-              balanceBruto -= m;
+              saldoFisico -= m;
+              saldoNoAsignado -= m;
             }
             else if (t.tipo === "ahorro") {
               const cat = (t.categoria || "").toLowerCase();
               if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-                balanceBruto += m;
+                saldoNoAsignado += m;
               } else {
-                balanceBruto -= m;
+                saldoNoAsignado -= m;
               }
-            }
-
-            if (balanceBruto < minBalance) {
-              minBalance = balanceBruto;
             }
           }
         });
-
-        const capitalImplicito = Math.abs(minBalance);
-        const balance = balanceBruto + capitalImplicito;
 
         // Reset visual default
         montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
@@ -3771,7 +3762,11 @@
           const esAbonoAhorro = tipo === "ahorro" && !categoriaSeleccionada.includes("retirar") && !categoriaSeleccionada.includes("retiro") && !categoriaSeleccionada.includes("usar") && !categoriaSeleccionada.includes("gasto");
           const esGasto = tipo === "gasto";
 
-          if ((esGasto || esAbonoAhorro) && monto > balance) {
+          let limiteAplicable = Infinity;
+          if (esGasto) limiteAplicable = saldoFisico;
+          if (esAbonoAhorro) limiteAplicable = saldoNoAsignado;
+
+          if ((esGasto || esAbonoAhorro) && monto > limiteAplicable) {
             // BLOQUEO: No hay fondos suficientes
             montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
             montoInput.classList.add("border-coral", "focus:border-coral", "text-coral");
@@ -3779,8 +3774,8 @@
             alertaMontoExcedido.classList.remove("hidden");
             if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
           } else if (esAbonoAhorro) {
-            // SUGERENCIA (Amarilla): Ahorro que consume más del 80% del balance actual
-            const umbralMaximoAhorro = balance * 0.80;
+            // SUGERENCIA (Amarilla): Ahorro que consume más del 80% del balance no asignado
+            const umbralMaximoAhorro = saldoNoAsignado * 0.80;
             
             if (monto > umbralMaximoAhorro) {
               montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
@@ -5587,39 +5582,15 @@
         document.getElementById("subDeudas").textContent =
           `${deudas.length} acreedor(es)`;
 
-        let balanceBruto = 0;
-        let minBalance = 0;
-        
-        // Orden cronológico para encontrar el verdadero mínimo histórico (Capital Implícito)
-        const transaccionesCronologicasBalance = [...transacciones]
-          .filter((t) => t.fecha.substring(0, 7) <= mesSeleccionado)
-          .sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
-
-        transaccionesCronologicasBalance.forEach((t) => {
-          if (typeof transaccionesPendientesEliminar !== "undefined" && transaccionesPendientesEliminar.has(t.id)) return;
-
-          const m = parseFloat(t.monto) || 0;
-          if (t.tipo === "ingreso") {
-            balanceBruto += m;
-          } else if (t.tipo === "gasto") {
-            balanceBruto -= m;
-          } else if (t.tipo === "ahorro") {
-            const cat = (t.categoria || "").toLowerCase();
-            if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-              balanceBruto += m;
-            } else {
-              balanceBruto -= m;
-            }
-          }
-          
-          if (balanceBruto < minBalance) {
-            minBalance = balanceBruto;
+        let balance = 0;
+        transacciones.forEach((t) => {
+          if (t.fecha.substring(0, 7) <= mesSeleccionado) {
+            if (typeof transaccionesPendientesEliminar !== "undefined" && transaccionesPendientesEliminar.has(t.id)) return;
+            const m = parseFloat(t.monto) || 0;
+            if (t.tipo === "ingreso") balance += m;
+            else if (t.tipo === "gasto") balance -= m;
           }
         });
-
-        // Reconciliación histórica: el déficit histórico máximo se asume como capital inicial no registrado
-        const capitalImplicito = Math.abs(minBalance);
-        const balance = balanceBruto + capitalImplicito;
         const balanceEl = document.getElementById("balanceNeto");
         const signoBal = balance < 0 ? "-" : "";
         const partesBal = Math.abs(balance).toFixed(2).split(".");

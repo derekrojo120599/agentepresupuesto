@@ -917,6 +917,7 @@
             <!-- Selector dinámico de Metas de Ahorro -->
             <div id="contenedorMetaAhorroSelect" class="hidden">
               <label
+                id="labelMetaAhorroSelect"
                 class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
                 >Meta Asociada (Opcional)</label
               >
@@ -924,6 +925,10 @@
                 id="metaAhorroSelect"
                 class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"
               ></select>
+              <div id="infoSaldoFondoAhorro" class="hidden mt-1.5 p-2 rounded-xl bg-azulcielo/10 border border-azulcielo/20 flex items-center justify-between text-xs">
+                <span class="text-slate-600 dark:text-azulcielo/90 font-medium">Disponible en esta meta:</span>
+                <span id="valorSaldoFondoAhorro" class="font-extrabold text-azulcielo-dark dark:text-azulcielo">$0.00</span>
+              </div>
             </div>
 
             <!-- Selector de Origen de Fondos para Ahorro -->
@@ -3692,19 +3697,16 @@
       }
 
       function evaluarSeleccionesEspeciales() {
-        if (typeof verificarMontoEnTiempoReal === "function") {
-          verificarMontoEnTiempoReal();
-        }
-
-        if (
-          tipoSelect.value === "gasto" &&
-          categoriaSelect.value === "Pago de Deuda"
-        ) {
+        if (tipoSelect.value === "gasto" && categoriaSelect.value === "Pago de Deuda") {
           contenedorDeudaSelect.classList.remove("hidden");
           actualizarSelectDeudas();
         } else {
           contenedorDeudaSelect.classList.add("hidden");
         }
+
+        const labelMetaSelect = document.getElementById("labelMetaAhorroSelect");
+        const infoSaldoFondoAhorro = document.getElementById("infoSaldoFondoAhorro");
+        const valorSaldoFondoAhorro = document.getElementById("valorSaldoFondoAhorro");
 
         if (tipoSelect.value === "ahorro") {
           contenedorMetaAhorroSelect.classList.remove("hidden");
@@ -3712,15 +3714,74 @@
 
           const cat = (categoriaSelect.value || "").toLowerCase();
           const esRetiro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
-          if (!esRetiro) {
-            contenedorOrigenAhorroSelect.classList.remove("hidden");
-          } else {
+          
+          if (labelMetaSelect) {
+            labelMetaSelect.textContent = esRetiro ? "Retirar de la Meta / Fondo" : "Meta Asociada (Opcional)";
+          }
+
+          if (esRetiro) {
             contenedorOrigenAhorroSelect.classList.add("hidden");
+            // Mostrar saldo disponible en la meta seleccionada
+            const fondosMapa = obtenerFondosAhorroMapaActual();
+            const nombreMetaSel = (metaAhorroSelect.value || document.getElementById("descripcion").value || "Ahorro General").trim();
+            const saldoFondo = Math.max(0, fondosMapa[nombreMetaSel] || 0);
+
+            if (infoSaldoFondoAhorro && valorSaldoFondoAhorro) {
+              valorSaldoFondoAhorro.textContent = `$${saldoFondo.toFixed(2)}`;
+              infoSaldoFondoAhorro.classList.remove("hidden");
+            }
+          } else {
+            contenedorOrigenAhorroSelect.classList.remove("hidden");
+            if (infoSaldoFondoAhorro) infoSaldoFondoAhorro.classList.add("hidden");
           }
         } else {
           contenedorMetaAhorroSelect.classList.add("hidden");
           contenedorOrigenAhorroSelect.classList.add("hidden");
+          if (infoSaldoFondoAhorro) infoSaldoFondoAhorro.classList.add("hidden");
         }
+
+        if (typeof verificarMontoEnTiempoReal === "function") {
+          verificarMontoEnTiempoReal();
+        }
+      }
+
+      function obtenerFondosAhorroMapaActual() {
+        const fondosAhorroMapa = {};
+        metasAhorro.forEach((m) => {
+          if (m.nombre) fondosAhorroMapa[m.nombre.trim()] = 0;
+        });
+
+        const transaccionesCronologicas = [...transacciones].sort((a, b) =>
+          (a.fecha || "").localeCompare(b.fecha || ""),
+        );
+
+        transaccionesCronologicas.forEach((t) => {
+          if (
+            typeof transaccionesPendientesEliminar !== "undefined" &&
+            transaccionesPendientesEliminar.has(t.id)
+          ) return;
+
+          const montoNum = parseFloat(t.monto) || 0;
+          if (t.tipo === "ahorro") {
+            const fondoNombre = (t.descripcion || "Ahorro General").trim();
+            if (fondosAhorroMapa[fondoNombre] === undefined)
+              fondosAhorroMapa[fondoNombre] = 0;
+
+            const cat = (t.categoria || "").toLowerCase().trim();
+            if (
+              cat.includes("retirar") ||
+              cat.includes("usar") ||
+              cat.includes("retiro") ||
+              cat.includes("gasto")
+            ) {
+              fondosAhorroMapa[fondoNombre] -= montoNum;
+            } else {
+              fondosAhorroMapa[fondoNombre] += montoNum;
+            }
+          }
+        });
+
+        return fondosAhorroMapa;
       }
 
       function actualizarSelectDeudas() {
@@ -3753,6 +3814,7 @@
       metaAhorroSelect.addEventListener("change", () => {
         const val = metaAhorroSelect.value;
         if (val) document.getElementById("descripcion").value = val;
+        evaluarSeleccionesEspeciales();
       });
 
       const montoInput = document.getElementById("monto");
@@ -3773,6 +3835,35 @@
             hintOrigenAhorro.textContent = "Se descontará de tu balance disponible actual.";
           } else {
             hintOrigenAhorro.textContent = "No afectará tu balance. Se registrará como ahorro previo o externo.";
+          }
+        }
+
+        // VALIDACIÓN 1: Retiro de Ahorro mayor al fondo acumulado
+        if (tipo === "ahorro" && esRetiroAhorro && monto > 0) {
+          const fondosMapa = obtenerFondosAhorroMapaActual();
+          const nombreMetaSel = (metaAhorroSelect.value || document.getElementById("descripcion").value || "Ahorro General").trim();
+          const saldoDisponibleFondo = Math.max(0, fondosMapa[nombreMetaSel] || 0);
+
+          const valorSaldoEl = document.getElementById("valorSaldoFondoAhorro");
+          if (valorSaldoEl) {
+            valorSaldoEl.textContent = `$${saldoDisponibleFondo.toFixed(2)}`;
+          }
+
+          if (monto > saldoDisponibleFondo) {
+            montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico", "border-amber-500", "focus:border-amber-500", "text-amber-500");
+            montoInput.classList.add("border-coral", "focus:border-coral", "text-coral");
+            alertaMontoExcedido.textContent = `⚠️ No puedes retirar más de lo ahorrado ($${saldoDisponibleFondo.toFixed(2)}) en "${nombreMetaSel}".`;
+            alertaMontoExcedido.classList.remove("hidden");
+            if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
+            if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
+            return;
+          } else {
+            montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
+            montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral", "border-amber-500", "focus:border-amber-500", "text-amber-500");
+            alertaMontoExcedido.classList.add("hidden");
+            if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
+            if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = false;
+            return;
           }
         }
 
@@ -5166,6 +5257,17 @@
           const cat = (categoriaSelect.value || "").toLowerCase();
           const esRetiroAhorro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
 
+          if (esAhorro && esRetiroAhorro) {
+            const fondosMapa = obtenerFondosAhorroMapaActual();
+            const nombreMetaSel = (metaAhorroSelect.value || document.getElementById("descripcion").value || "Ahorro General").trim();
+            const saldoDisponibleFondo = Math.max(0, fondosMapa[nombreMetaSel] || 0);
+
+            if (monto > saldoDisponibleFondo) {
+              mostrarToast(`No puedes retirar más de lo ahorrado ($${saldoDisponibleFondo.toFixed(2)}) en "${nombreMetaSel}".`, "error");
+              return;
+            }
+          }
+
           const nueva = {
             tipo: tipoSelect.value,
             monto: monto,
@@ -5476,6 +5578,22 @@
           const esAhorro = editTipoSelect.value === "ahorro";
           const cat = (editCategoriaSelect.value || "").toLowerCase();
           const esRetiroAhorro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
+
+          if (esAhorro && esRetiroAhorro) {
+            const fondosMapa = obtenerFondosAhorroMapaActual();
+            const desc = document.getElementById("editDescripcion").value.trim();
+            const nombreMetaSel = desc || "Ahorro General";
+            
+            // Si estamos editando una transacción existente, debemos compensar el monto previo
+            const tOriginal = transacciones.find((x) => x.id === id);
+            const montoPrevio = (tOriginal && tOriginal.tipo === "ahorro" && (tOriginal.categoria || "").toLowerCase().includes("retir")) ? parseFloat(tOriginal.monto) || 0 : 0;
+            const saldoDisponibleFondo = Math.max(0, (fondosMapa[nombreMetaSel] || 0) + montoPrevio);
+
+            if (monto > saldoDisponibleFondo) {
+              mostrarToast(`No puedes retirar más de lo ahorrado ($${saldoDisponibleFondo.toFixed(2)}) en "${nombreMetaSel}".`, "error");
+              return;
+            }
+          }
 
           const cambios = {
             tipo: editTipoSelect.value,

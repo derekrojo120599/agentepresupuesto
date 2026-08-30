@@ -570,21 +570,6 @@
               >
                 Tasa de Ahorro: 0%
               </p>
-              <div
-                id="avisoSincronizarBalance"
-                class="hidden mt-2 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl"
-              >
-                <p class="text-[10px] font-bold text-amber-600 dark:text-amber-400 leading-snug">
-                  ⚠️ Tu balance está en negativo por ahorros registrados sin ingresos previos.
-                </p>
-                <button
-                  id="btnSincronizarBalance"
-                  onclick="sincronizarBalanceNegativo()"
-                  class="mt-1.5 w-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black py-2 px-3 rounded-lg transition active:scale-95 cursor-pointer"
-                >
-                  🔄 Ajustar balance a $0.00
-                </button>
-              </div>
             </div>
           </div>
 
@@ -2785,7 +2770,6 @@
           "Sueldo / Salario",
           "Ventas",
           "Inversión",
-          "Ajuste Inicial",
           "Otros Ingresos",
         ],
         gasto: [
@@ -2809,7 +2793,6 @@
         Ventas: "📈",
         Inversión: "📊",
         "Otros Ingresos": "💰",
-        "Ajuste Inicial": "🔄",
         Comida: "🍔",
         Ocio: "🎮",
         "Pago de Deuda": "💳",
@@ -3739,32 +3722,43 @@
         const tipo = tipoSelect.value;
         const categoriaSeleccionada = (categoriaSelect.value || "").toLowerCase();
         
-        // Calcular balance actual y total de ingresos
-        let balance = 0;
+        // Calcular balance actual y total de ingresos con reconciliación histórica
+        let balanceBruto = 0;
         let ingresosTotales = 0;
-        transacciones.forEach((t) => {
+        let minBalance = 0;
+
+        const transaccionesCronologicas = [...transacciones].sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+
+        transaccionesCronologicas.forEach((t) => {
           if (
             typeof transaccionesPendientesEliminar === "undefined" ||
             !transaccionesPendientesEliminar.has(t.id)
           ) {
             const m = parseFloat(t.monto) || 0;
             if (t.tipo === "ingreso") {
-              balance += m;
+              balanceBruto += m;
               ingresosTotales += m;
             }
             else if (t.tipo === "gasto") {
-              balance -= m;
+              balanceBruto -= m;
             }
             else if (t.tipo === "ahorro") {
               const cat = (t.categoria || "").toLowerCase();
               if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-                balance += m;
+                balanceBruto += m;
               } else {
-                balance -= m;
+                balanceBruto -= m;
               }
+            }
+
+            if (balanceBruto < minBalance) {
+              minBalance = balanceBruto;
             }
           }
         });
+
+        const capitalImplicito = Math.abs(minBalance);
+        const balance = balanceBruto + capitalImplicito;
 
         // Reset visual default
         montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
@@ -3965,65 +3959,6 @@
             }
           }
         }
-      }
-
-      async function sincronizarBalanceNegativo() {
-        // Calcular el balance actual exacto
-        let balance = 0;
-        transacciones.forEach((t) => {
-          const m = parseFloat(t.monto) || 0;
-          if (t.tipo === "ingreso") {
-            balance += m;
-          } else if (t.tipo === "gasto") {
-            balance -= m;
-          } else if (t.tipo === "ahorro") {
-            const cat = (t.categoria || "").toLowerCase();
-            if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-              balance += m;
-            } else {
-              balance -= m;
-            }
-          }
-        });
-
-        if (balance >= 0) {
-          mostrarToast("Tu balance ya está en positivo", "info");
-          return;
-        }
-
-        const montoAjuste = parseFloat(Math.abs(balance).toFixed(2));
-        const fechaHoy = new Date().toISOString().split("T")[0];
-
-        const nueva = {
-          tipo: "ingreso",
-          monto: montoAjuste,
-          categoria: "Ajuste Inicial",
-          deuda_id: null,
-          descripcion: "Ajuste de saldo inicial - Sincronización automática",
-          fecha: fechaHoy,
-        };
-
-        if (!navigator.onLine) {
-          const tempId = -Date.now();
-          transacciones.unshift({ ...nueva, id: tempId });
-          encolarOperacion("insert", "transacciones", nueva);
-          guardarCacheLocal();
-          actualizarInterfaz();
-          mostrarToast(`Balance ajustado (+$${montoAjuste.toFixed(2)})`, "success");
-          return;
-        }
-
-        const { error } = await supabaseClient
-          .from("transacciones")
-          .insert([nueva]);
-
-        if (error) {
-          mostrarToast("Error al sincronizar", "error");
-          return;
-        }
-
-        await cargarDatosCloud();
-        mostrarToast(`Balance ajustado (+$${montoAjuste.toFixed(2)})`, "success");
       }
 
       function mostrarModalIncremento(id, nombre, montoInicial) {
@@ -5652,24 +5587,39 @@
         document.getElementById("subDeudas").textContent =
           `${deudas.length} acreedor(es)`;
 
-        let balance = 0;
-        transacciones.forEach((t) => {
-          if (t.fecha.substring(0, 7) <= mesSeleccionado) {
-            const m = parseFloat(t.monto);
-            if (t.tipo === "ingreso") {
-              balance += m;
-            } else if (t.tipo === "gasto") {
-              balance -= m;
-            } else if (t.tipo === "ahorro") {
-              const cat = (t.categoria || "").toLowerCase();
-              if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
-                balance += m;
-              } else {
-                balance -= m;
-              }
+        let balanceBruto = 0;
+        let minBalance = 0;
+        
+        // Orden cronológico para encontrar el verdadero mínimo histórico (Capital Implícito)
+        const transaccionesCronologicasBalance = [...transacciones]
+          .filter((t) => t.fecha.substring(0, 7) <= mesSeleccionado)
+          .sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+
+        transaccionesCronologicasBalance.forEach((t) => {
+          if (typeof transaccionesPendientesEliminar !== "undefined" && transaccionesPendientesEliminar.has(t.id)) return;
+
+          const m = parseFloat(t.monto) || 0;
+          if (t.tipo === "ingreso") {
+            balanceBruto += m;
+          } else if (t.tipo === "gasto") {
+            balanceBruto -= m;
+          } else if (t.tipo === "ahorro") {
+            const cat = (t.categoria || "").toLowerCase();
+            if (cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto")) {
+              balanceBruto += m;
+            } else {
+              balanceBruto -= m;
             }
           }
+          
+          if (balanceBruto < minBalance) {
+            minBalance = balanceBruto;
+          }
         });
+
+        // Reconciliación histórica: el déficit histórico máximo se asume como capital inicial no registrado
+        const capitalImplicito = Math.abs(minBalance);
+        const balance = balanceBruto + capitalImplicito;
         const balanceEl = document.getElementById("balanceNeto");
         const signoBal = balance < 0 ? "-" : "";
         const partesBal = Math.abs(balance).toFixed(2).split(".");
@@ -5677,16 +5627,6 @@
         const centavosBal = partesBal[1];
         balanceEl.innerHTML = `${signoBal}$${enterosBal}<span class="text-base sm:text-lg font-bold opacity-75">.${centavosBal}</span>`;
         balanceEl.className = `text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono-num ${balance >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-coral"}`;
-
-        // Mostrar/ocultar botón de sincronización
-        const avisoSync = document.getElementById("avisoSincronizarBalance");
-        if (avisoSync) {
-          if (balance < 0) {
-            avisoSync.classList.remove("hidden");
-          } else {
-            avisoSync.classList.add("hidden");
-          }
-        }
 
         const tasaAhorro =
           ingresosMes > 0

@@ -926,6 +926,24 @@
               ></select>
             </div>
 
+            <!-- Selector de Origen de Fondos para Ahorro -->
+            <div id="contenedorOrigenAhorroSelect" class="hidden">
+              <label
+                class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
+                >Origen del Dinero</label
+              >
+              <select
+                id="origenAhorro"
+                class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"
+              >
+                <option value="balance" selected>💰 De mi balance actual</option>
+                <option value="externo">📦 Dinero externo / Ahorro antiguo</option>
+              </select>
+              <p id="hintOrigenAhorro" class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-1">
+                Se descontará de tu balance disponible actual.
+              </p>
+            </div>
+
             <div>
               <label
                 class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
@@ -1807,6 +1825,18 @@
               class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-coral focus:outline-none transition text-sm"
             ></select>
           </div>
+          <div id="editContenedorOrigenAhorroSelect" class="hidden">
+            <label class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
+              >Origen del Dinero</label
+            >
+            <select
+              id="editOrigenAhorro"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-2.5 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"
+            >
+              <option value="balance">💰 De mi balance actual</option>
+              <option value="externo">📦 Dinero externo / Ahorro antiguo</option>
+            </select>
+          </div>
           <div>
             <label
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
@@ -2153,12 +2183,14 @@
         categoria: { title: "Seleccionar Categoría", icon: "🏷️" },
         deudaObjetivo: { title: "Deuda a Pagar", icon: "💳" },
         metaAhorroSelect: { title: "Meta de Ahorro Asociada", icon: "🎯" },
+        origenAhorro: { title: "Origen del Dinero", icon: "🏦" },
         filtroCategoria: { title: "Filtrar por Categoría", icon: "🔍" },
         filtroAlcance: { title: "Período del Historial", icon: "📅" },
         metaIcono: { title: "Ícono del Objetivo", icon: "🎨" },
         editTipo: { title: "Tipo de Operación", icon: "🔄" },
         editCategoria: { title: "Seleccionar Categoría", icon: "🏷️" },
         editDeudaObjetivo: { title: "Deuda a Pagar", icon: "💳" },
+        editOrigenAhorro: { title: "Origen del Dinero", icon: "🏦" },
         catTipo: { title: "Tipo de Operación", icon: "🔄" },
       };
 
@@ -2939,6 +2971,11 @@
         "contenedorMetaAhorroSelect",
       );
       const metaAhorroSelect = document.getElementById("metaAhorroSelect");
+      const contenedorOrigenAhorroSelect = document.getElementById(
+        "contenedorOrigenAhorroSelect",
+      );
+      const origenAhorroSelect = document.getElementById("origenAhorro");
+      const hintOrigenAhorro = document.getElementById("hintOrigenAhorro");
       const avisoEstado = document.getElementById("avisoEstado");
 
       let canalRealtime = null;
@@ -3672,8 +3709,17 @@
         if (tipoSelect.value === "ahorro") {
           contenedorMetaAhorroSelect.classList.remove("hidden");
           actualizarSelectMetas();
+
+          const cat = (categoriaSelect.value || "").toLowerCase();
+          const esRetiro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
+          if (!esRetiro) {
+            contenedorOrigenAhorroSelect.classList.remove("hidden");
+          } else {
+            contenedorOrigenAhorroSelect.classList.add("hidden");
+          }
         } else {
           contenedorMetaAhorroSelect.classList.add("hidden");
+          contenedorOrigenAhorroSelect.classList.add("hidden");
         }
       }
 
@@ -3717,10 +3763,28 @@
       function verificarMontoEnTiempoReal() {
         const monto = parseFloat(montoInput.value) || 0;
         const tipo = tipoSelect.value;
-        
-        // Solo aplica si es un gasto
-        if (tipo === "gasto" && monto > 0) {
-          // Calcular balance actual (solo Ingresos - Gastos)
+        const cat = (categoriaSelect.value || "").toLowerCase();
+        const esRetiroAhorro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
+        const origenAhorroVal = origenAhorroSelect ? origenAhorroSelect.value : "balance";
+
+        // Actualizar hint de texto
+        if (hintOrigenAhorro) {
+          if (origenAhorroVal === "balance") {
+            hintOrigenAhorro.textContent = "Se descontará de tu balance disponible actual.";
+          } else {
+            hintOrigenAhorro.textContent = "No afectará tu balance. Se registrará como ahorro previo o externo.";
+          }
+        }
+
+        // Determinar si debemos evaluar contra el balance
+        // 1. Siempre para gastos
+        // 2. Para ahorros (depósitos) SOLO si provienen de 'balance'
+        const requiereValidacionBalance =
+          (tipo === "gasto" && monto > 0) ||
+          (tipo === "ahorro" && !esRetiroAhorro && origenAhorroVal === "balance" && monto > 0);
+
+        if (requiereValidacionBalance) {
+          // Calcular balance actual: Ingresos - Gastos - Ahorros (donde origen !== 'externo') + Retiros
           let balance = 0;
           transacciones.forEach((t) => {
             if (
@@ -3728,32 +3792,59 @@
               !transaccionesPendientesEliminar.has(t.id)
             ) {
               const m = parseFloat(t.monto) || 0;
-              if (t.tipo === "ingreso") balance += m;
-              else if (t.tipo === "gasto") balance -= m;
+              if (t.tipo === "ingreso") {
+                balance += m;
+              } else if (t.tipo === "gasto") {
+                balance -= m;
+              } else if (t.tipo === "ahorro") {
+                const c = (t.categoria || "").toLowerCase();
+                const esRetiro = c.includes("retirar") || c.includes("usar") || c.includes("retiro") || c.includes("gasto");
+                if (esRetiro) {
+                  balance += m;
+                } else if (t.origen_ahorro === "balance") {
+                  balance -= m;
+                }
+              }
             }
           });
 
           if (monto > balance) {
-            montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
+            montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico", "border-amber-500", "focus:border-amber-500", "text-amber-500");
             montoInput.classList.add("border-coral", "focus:border-coral", "text-coral");
+            alertaMontoExcedido.textContent = tipo === "ahorro" 
+              ? "⚠️ No tienes suficiente balance disponible para este ahorro."
+              : "⚠️ Estás gastando más del saldo disponible.";
             alertaMontoExcedido.classList.remove("hidden");
+            if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
             if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
           } else {
             montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
-            montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral");
+            montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral", "border-amber-500", "focus:border-amber-500", "text-amber-500");
             alertaMontoExcedido.classList.add("hidden");
+
+            // Si es ahorro desde balance y consume > 80% del balance
+            if (tipo === "ahorro" && !esRetiroAhorro && origenAhorroVal === "balance" && monto > balance * 0.8) {
+              montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
+              montoInput.classList.add("border-amber-500", "focus:border-amber-500", "text-amber-500");
+              if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.remove("hidden");
+            } else {
+              if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
+            }
+
             if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = false;
           }
         } else {
           montoInput.classList.add("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico");
-          montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral");
+          montoInput.classList.remove("border-coral", "focus:border-coral", "text-coral", "border-amber-500", "focus:border-amber-500", "text-amber-500");
           alertaMontoExcedido.classList.add("hidden");
+          if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
           if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = false;
         }
       }
 
       montoInput.addEventListener("input", verificarMontoEnTiempoReal);
       tipoSelect.addEventListener("change", verificarMontoEnTiempoReal);
+      if (origenAhorroSelect) origenAhorroSelect.addEventListener("change", verificarMontoEnTiempoReal);
 
       const hoy = new Date();
       document.getElementById("mesFiltro").value =
@@ -4785,11 +4876,20 @@
               colorMonto = "text-azulcielo-dark dark:text-azulcielo";
             }
 
+            let tagOrigenHTML = "";
+            if (t.tipo === "ahorro" && t.categoria === "Depositar a Ahorro") {
+              if (t.origen_ahorro === "balance") {
+                tagOrigenHTML = ` <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Descontado del Balance">De Balance</span>`;
+              } else {
+                tagOrigenHTML = ` <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Dinero externo / pre-existente">Externo</span>`;
+              }
+            }
+
             return `
           <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
             <td class="p-3 font-medium text-slate-700 dark:text-crema text-xs">${escapeHTML(t.fecha)}</td>
             <td class="p-3"><span class="px-2 py-0.5 text-xs rounded-lg font-bold border ${badgeStyle}">${escapeHTML(t.tipo.toUpperCase())}</span></td>
-            <td class="p-3 text-slate-600 dark:text-azulcielo font-semibold text-xs">${escapeHTML(t.categoria)}</td>
+            <td class="p-3 text-slate-600 dark:text-azulcielo font-semibold text-xs">${escapeHTML(t.categoria)}${tagOrigenHTML}</td>
             <td class="p-3 text-slate-900 dark:text-crema font-medium text-xs">${escapeHTML(t.descripcion)}</td>
             <td class="p-3 text-right font-extrabold text-sm ${colorMonto}">${signo}$${montoNum.toFixed(2)}</td>
             <td class="p-3 text-center">
@@ -4822,6 +4922,15 @@
               iconTipo = "🟡";
             }
 
+            let tagOrigenMobile = "";
+            if (t.tipo === "ahorro" && t.categoria === "Depositar a Ahorro") {
+              if (t.origen_ahorro === "balance") {
+                tagOrigenMobile = ` <span>•</span> <span class="font-bold text-emerald-600 dark:text-emerald-400">De Balance</span>`;
+              } else {
+                tagOrigenMobile = ` <span>•</span> <span class="font-bold text-amber-600 dark:text-amber-400">Externo</span>`;
+              }
+            }
+
             return `
           <div class="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 flex items-center justify-between gap-2.5 active:scale-[0.99] transition">
             <div class="flex items-center gap-3 min-w-0">
@@ -4830,6 +4939,7 @@
                 <p class="text-xs font-bold text-slate-900 dark:text-crema truncate">${escapeHTML(t.descripcion)}</p>
                 <p class="text-[10px] text-slate-400 dark:text-azulcielo/70 flex items-center gap-1.5">
                   <span>${escapeHTML(t.categoria)}</span>
+                  ${tagOrigenMobile}
                   <span>•</span>
                   <span>${escapeHTML(t.fecha)}</span>
                 </p>
@@ -5058,11 +5168,16 @@
             return;
           }
 
+          const esAhorro = tipoSelect.value === "ahorro";
+          const cat = (categoriaSelect.value || "").toLowerCase();
+          const esRetiroAhorro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
+
           const nueva = {
             tipo: tipoSelect.value,
             monto: monto,
             categoria: categoriaSelect.value,
             deuda_id: esPagoDeuda ? parseInt(deudaObjetivoSelect.value) : null,
+            origen_ahorro: esAhorro && !esRetiroAhorro ? (origenAhorroSelect ? origenAhorroSelect.value : "balance") : null,
             descripcion: document.getElementById("descripcion").value.trim(),
             fecha: document.getElementById("fecha").value,
           };
@@ -5197,6 +5312,8 @@
         evaluarSeleccionesEspeciales();
         if (t.deuda_id && deudaObjetivoSelect)
           deudaObjetivoSelect.value = t.deuda_id;
+        if (t.origen_ahorro && origenAhorroSelect)
+          origenAhorroSelect.value = t.origen_ahorro;
         window.scrollTo({ top: 0, behavior: "smooth" });
         mostrarToast("Datos cargados para duplicar", "info");
       }
@@ -5265,6 +5382,11 @@
       );
       const editDeudaObjetivoSelect =
         document.getElementById("editDeudaObjetivo");
+      const editContenedorOrigenAhorroSelect = document.getElementById(
+        "editContenedorOrigenAhorroSelect",
+      );
+      const editOrigenAhorroSelect =
+        document.getElementById("editOrigenAhorro");
 
       function actualizarOpcionesCategoriaEdit(categoriaActual) {
         const tipo = editTipoSelect.value;
@@ -5280,7 +5402,7 @@
         evaluarSeleccionDeudaEdit();
       }
 
-      function evaluarSeleccionDeudaEdit(deudaIdActual) {
+      function evaluarSeleccionDeudaEdit(deudaIdActual, origenActual) {
         if (
           editTipoSelect.value === "gasto" &&
           editCategoriaSelect.value === "Pago de Deuda"
@@ -5297,6 +5419,21 @@
           if (deudaIdActual) editDeudaObjetivoSelect.value = deudaIdActual;
         } else {
           editContenedorDeudaSelect.classList.add("hidden");
+        }
+
+        if (editTipoSelect.value === "ahorro") {
+          const cat = (editCategoriaSelect.value || "").toLowerCase();
+          const esRetiro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
+          if (!esRetiro) {
+            editContenedorOrigenAhorroSelect.classList.remove("hidden");
+            if (origenActual) {
+              editOrigenAhorroSelect.value = origenActual;
+            }
+          } else {
+            editContenedorOrigenAhorroSelect.classList.add("hidden");
+          }
+        } else {
+          editContenedorOrigenAhorroSelect.classList.add("hidden");
         }
       }
 
@@ -5318,7 +5455,7 @@
         document.getElementById("editFecha").value = t.fecha;
 
         actualizarOpcionesCategoriaEdit(t.categoria);
-        evaluarSeleccionDeudaEdit(t.deuda_id);
+        evaluarSeleccionDeudaEdit(t.deuda_id, t.origen_ahorro);
 
         document
           .getElementById("modalEditarMovimiento")
@@ -5342,6 +5479,10 @@
             return;
           }
 
+          const esAhorro = editTipoSelect.value === "ahorro";
+          const cat = (editCategoriaSelect.value || "").toLowerCase();
+          const esRetiroAhorro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
+
           const cambios = {
             tipo: editTipoSelect.value,
             monto,
@@ -5349,6 +5490,7 @@
             deuda_id: esPagoDeuda
               ? parseInt(editDeudaObjetivoSelect.value)
               : null,
+            origen_ahorro: esAhorro && !esRetiroAhorro ? (editOrigenAhorroSelect ? editOrigenAhorroSelect.value : "balance") : null,
             descripcion: document
               .getElementById("editDescripcion")
               .value.trim(),
@@ -5596,8 +5738,19 @@
           if (t.fecha.substring(0, 7) <= mesSeleccionado) {
             if (typeof transaccionesPendientesEliminar !== "undefined" && transaccionesPendientesEliminar.has(t.id)) return;
             const m = parseFloat(t.monto) || 0;
-            if (t.tipo === "ingreso") balance += m;
-            else if (t.tipo === "gasto") balance -= m;
+            if (t.tipo === "ingreso") {
+              balance += m;
+            } else if (t.tipo === "gasto") {
+              balance -= m;
+            } else if (t.tipo === "ahorro") {
+              const c = (t.categoria || "").toLowerCase();
+              const esRetiro = c.includes("retirar") || c.includes("usar") || c.includes("retiro") || c.includes("gasto");
+              if (esRetiro) {
+                balance += m;
+              } else if (t.origen_ahorro === "balance") {
+                balance -= m;
+              }
+            }
           }
         });
         const balanceEl = document.getElementById("balanceNeto");

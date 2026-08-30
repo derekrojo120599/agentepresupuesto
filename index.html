@@ -698,6 +698,12 @@
           </div>
         </div>
 
+        <!-- Alertas Inteligentes Globales -->
+        <div
+          id="contenedorAlertasGlobales"
+          class="hidden flex flex-col gap-2"
+        ></div>
+
         <!-- SECCIÓN PRINCIPAL: Estadísticas Financieras (Gráfico Multilínea + Desglose de Categorías) -->
         <div
           id="seccionEstadisticasFinancieras"
@@ -5373,6 +5379,8 @@
           .map(Number);
         let compIngresoHTML = "";
         let compGastoHTML = "";
+        let ingresosMesAnt = 0;
+        let gastosMesAnt = 0;
 
         if (anoActual && mesActual) {
           const fechaMesAnt = new Date(anoActual, mesActual - 2, 1);
@@ -5381,8 +5389,6 @@
             t.fecha.startsWith(mesAnteriorStr),
           );
 
-          let ingresosMesAnt = 0,
-            gastosMesAnt = 0;
           filtradasMesAnt.forEach((t) => {
             const m = parseFloat(t.monto) || 0;
             if (t.tipo === "ingreso") ingresosMesAnt += m;
@@ -5465,6 +5471,78 @@
             badgeSalud.innerHTML = "🔴 Déficit";
             badgeSalud.className =
               "text-[10px] font-black px-2 py-0.5 rounded-full bg-coral/20 text-coral border border-coral/40";
+          }
+        }
+
+        let alertasGlobalesHTML = "";
+
+        if (anoActual && mesActual) {
+          if (ingresosMesAnt > 0 && ingresosMes > ingresosMesAnt) {
+            alertasGlobalesHTML += `
+                <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-2 shadow-sm">
+                  <span class="text-lg">🎉</span>
+                  <span>¡Felicidades! Tus ingresos de este mes superan a los del mes pasado.</span>
+                </div>
+              `;
+          }
+          if (gastosMesAnt > 0) {
+            if (gastosMes >= gastosMesAnt) {
+              alertasGlobalesHTML += `
+                  <div class="p-3 bg-coral/10 border border-coral/30 rounded-2xl text-coral text-xs font-bold flex items-center gap-2 shadow-sm">
+                    <span class="text-lg">⚠️</span>
+                    <span>Atención: Has superado tus gastos del mes pasado.</span>
+                  </div>
+                `;
+            } else if (gastosMes >= gastosMesAnt * 0.9) {
+              alertasGlobalesHTML += `
+                  <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-2 shadow-sm">
+                    <span class="text-lg">⚠️</span>
+                    <span>Precaución: Estás muy cerca de igualar o superar tus gastos del mes pasado.</span>
+                  </div>
+                `;
+            }
+          }
+        }
+
+        Object.keys(presupuestos).forEach((cat) => {
+          const limite = presupuestos[cat];
+          const gastado = gastosPorCat[cat] || 0;
+          if (limite > 0 && gastado < limite && gastado >= limite * 0.9) {
+            alertasGlobalesHTML += `
+                <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-2 shadow-sm">
+                  <span class="text-lg">⚠️</span>
+                  <span>Estás a punto de alcanzar el límite de tu presupuesto en <strong>${escapeHTML(cat)}</strong>.</span>
+                </div>
+              `;
+          }
+        });
+
+        metasAhorro.forEach((meta) => {
+          const acumulado = Math.max(0, fondosAhorroMapa[meta.nombre] || 0);
+          if (
+            meta.objetivo > 0 &&
+            acumulado < meta.objetivo &&
+            acumulado >= meta.objetivo * 0.9
+          ) {
+            alertasGlobalesHTML += `
+                <div class="p-3 bg-azulcielo/10 border border-azulcielo/30 rounded-2xl text-azulcielo-dark dark:text-azulcielo text-xs font-bold flex items-center gap-2 shadow-sm">
+                  <span class="text-lg">🎯</span>
+                  <span>¡Estás a muy poco de cumplir tu meta <strong>${escapeHTML(meta.nombre)}</strong>! Sigue así.</span>
+                </div>
+              `;
+          }
+        });
+
+        const contenedorAlertasGlobales = document.getElementById(
+          "contenedorAlertasGlobales",
+        );
+        if (contenedorAlertasGlobales) {
+          if (alertasGlobalesHTML) {
+            contenedorAlertasGlobales.innerHTML = alertasGlobalesHTML;
+            contenedorAlertasGlobales.classList.remove("hidden");
+          } else {
+            contenedorAlertasGlobales.innerHTML = "";
+            contenedorAlertasGlobales.classList.add("hidden");
           }
         }
 

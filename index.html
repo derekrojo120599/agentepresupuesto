@@ -3784,7 +3784,7 @@
           (tipo === "ahorro" && !esRetiroAhorro && origenAhorroVal === "balance" && monto > 0);
 
         if (requiereValidacionBalance) {
-          // Calcular balance actual: Ingresos - Gastos - Ahorros (donde origen !== 'externo') + Retiros
+          // Calcular balance actual: Ingresos - Gastos - Ahorros (donde origen === 'balance')
           let balance = 0;
           transacciones.forEach((t) => {
             if (
@@ -3796,14 +3796,8 @@
                 balance += m;
               } else if (t.tipo === "gasto") {
                 balance -= m;
-              } else if (t.tipo === "ahorro") {
-                const c = (t.categoria || "").toLowerCase();
-                const esRetiro = c.includes("retirar") || c.includes("usar") || c.includes("retiro") || c.includes("gasto");
-                if (esRetiro) {
-                  balance += m;
-                } else if (t.origen_ahorro === "balance") {
-                  balance -= m;
-                }
+              } else if (t.tipo === "ahorro" && t.origen_ahorro === "balance") {
+                balance -= m;
               }
             }
           });
@@ -5742,14 +5736,8 @@
               balance += m;
             } else if (t.tipo === "gasto") {
               balance -= m;
-            } else if (t.tipo === "ahorro") {
-              const c = (t.categoria || "").toLowerCase();
-              const esRetiro = c.includes("retirar") || c.includes("usar") || c.includes("retiro") || c.includes("gasto");
-              if (esRetiro) {
-                balance += m;
-              } else if (t.origen_ahorro === "balance") {
-                balance -= m;
-              }
+            } else if (t.tipo === "ahorro" && t.origen_ahorro === "balance") {
+              balance -= m;
             }
           }
         });

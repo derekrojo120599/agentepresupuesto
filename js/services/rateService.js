@@ -44,31 +44,19 @@ async function obtenerTasaBinance() {
     console.warn("Fallo al consultar Al Cambio:", e);
   }
 
-  // Fuente 2: LaTasa API (Binance P2P directo)
+    // Fuente 2: DolarVZLA (Tasa BCV Oficial CDN) - Respaldo
   if (!tasaObtenida) {
     try {
-      const res = await fetch("https://latasa.vercel.app/api/binance-p2p");
+      const res = await fetch('https://rates.dolarvzla.com/bcv/current.json');
       if (res.ok) {
         const data = await res.json();
-        tasaObtenida = data.buyRate || data.rate;
-        fuenteDetectada = "Binance P2P (LaTasa)";
+        if (data?.current?.usd) {
+          tasaObtenida = data.current.usd;
+          fuenteDetectada = 'DolarVZLA (BCV Oficial)';
+        }
       }
     } catch (e) {
-      console.warn("Fallo al consultar LaTasa:", e);
-    }
-  }
-
-  // Fuente 3: DolarAPI Paralelo (Con soporte nativo de CORS '*' para navegadores)
-  if (!tasaObtenida) {
-    try {
-      const res = await fetch("https://ve.dolarapi.com/v1/dolares/paralelo");
-      if (res.ok) {
-        const data = await res.json();
-        tasaObtenida = data.promedio || data.compra || data.venta;
-        fuenteDetectada = "Dólar Paralelo";
-      }
-    } catch (e) {
-      console.warn("Fallo al consultar fuente alternativa de tasa:", e);
+      console.warn('Fallo al consultar DolarVZLA:', e);
     }
   }
 

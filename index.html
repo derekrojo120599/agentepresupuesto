@@ -2890,6 +2890,7 @@
       let filtroTipoActual = "";
 
       let tasaBinanceCompra = null;
+      let fuenteTasaActual = "Binance P2P";
       let monedaIngresoActual = "USD"; // "USD" o "BS"
 
       let graficoMultilineaChart = null;
@@ -4221,11 +4222,11 @@
 
         if (monedaIngresoActual === "BS") {
           const usd = (valNum / tasaBinanceCompra).toFixed(2);
-          conversionMontoTexto.innerHTML = `Equivale a <strong class="text-emerald-600 dark:text-emerald-400 font-black font-mono-num">$${parseFloat(usd).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD</strong> (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
+          conversionMontoTexto.innerHTML = `Equivale a <strong class="text-emerald-600 dark:text-emerald-400 font-black font-mono-num">$${parseFloat(usd).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD</strong> (Tasa ${fuenteTasaActual}: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
           conversionMonto.classList.remove("hidden");
         } else {
           const bs = (valNum * tasaBinanceCompra).toFixed(2);
-          conversionMontoTexto.innerHTML = `Equivale a <strong class="text-azulcielo-dark dark:text-azulcielo font-black font-mono-num">${parseFloat(bs).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.</strong> (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
+          conversionMontoTexto.innerHTML = `Equivale a <strong class="text-azulcielo-dark dark:text-azulcielo font-black font-mono-num">${parseFloat(bs).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.</strong> (Tasa ${fuenteTasaActual}: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
           conversionMonto.classList.remove("hidden");
         }
       }
@@ -4502,6 +4503,8 @@
         // Cargar tasa en caché local primero para disponibilidad inmediata
         try {
           const tasaGuardada = localStorage.getItem("ultima_tasa_binance");
+          const fuenteGuardada = localStorage.getItem("ultima_fuente_tasa");
+          if (fuenteGuardada) fuenteTasaActual = fuenteGuardada;
           if (tasaGuardada) {
             const parsed = parseFloat(tasaGuardada);
             if (!isNaN(parsed) && parsed > 0) {
@@ -4513,16 +4516,18 @@
         } catch (e) {}
 
         let tasaObtenida = null;
+        let fuenteDetectada = "Binance P2P";
 
-        // Fuente 1: LaTasa API
+        // Fuente 1: LaTasa API (Binance P2P directo)
         try {
           const res = await fetch("https://latasa.vercel.app/api/binance-p2p");
           if (res.ok) {
             const data = await res.json();
             tasaObtenida = data.buyRate || data.rate;
+            fuenteDetectada = "Binance P2P";
           }
         } catch (e) {
-          // Si el navegador bloquea por CORS o hay fallo de red, recurrimos a la fuente con CORS habilitado
+          // Si el navegador bloquea por CORS en la fuente 1, recurrimos a la fuente abierta con CORS
         }
 
         // Fuente 2: DolarAPI Paralelo (Con soporte nativo de CORS '*' para navegadores)
@@ -4532,6 +4537,7 @@
             if (res.ok) {
               const data = await res.json();
               tasaObtenida = data.promedio || data.compra || data.venta;
+              fuenteDetectada = "Dólar Paralelo";
             }
           } catch (e) {
             console.warn("Fallo al consultar fuente alternativa de tasa:", e);
@@ -4540,8 +4546,10 @@
 
         if (tasaObtenida && !isNaN(tasaObtenida) && tasaObtenida > 0) {
           tasaBinanceCompra = tasaObtenida;
+          fuenteTasaActual = fuenteDetectada;
           try {
             localStorage.setItem("ultima_tasa_binance", String(tasaObtenida));
+            localStorage.setItem("ultima_fuente_tasa", fuenteDetectada);
           } catch (e) {}
           actualizarInterfaz();
           if (typeof actualizarConversionUI === "function") {
@@ -6350,7 +6358,7 @@
         
         if (tasaBinanceCompra) {
           const balBs = Math.abs(balance) * tasaBinanceCompra;
-          balanceBsEl.textContent = `≈ ${signoBal}${balBs.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs. (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+          balanceBsEl.textContent = `≈ ${signoBal}${balBs.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs. (Tasa ${fuenteTasaActual}: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
           balanceBsEl.classList.remove("hidden");
         } else {
           balanceBsEl.classList.add("hidden");

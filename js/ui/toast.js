@@ -56,7 +56,7 @@ function mostrarToastDeshacer(mensaje, onUndo) {
       <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">🗑️</span>
       <span>${escapeHTML(mensaje)}</span>
     </div>
-    <button type="button" class="btn-undo px-3 py-1 rounded-xl bg-azulelectrico hover:bg-azulelectrico-hover text-white text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm">
+    <button type="button" class="btn-undo px-3 py-1 rounded-xl bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 text-xs font-black transition active:scale-95 cursor-pointer shadow-sm">
       Deshacer
     </button>
   `;

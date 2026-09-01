@@ -34,7 +34,7 @@ function renderizarSeccionPresupuestos(gastosPorCat) {
     grid.innerHTML = `
     <div class="col-span-full text-center py-5 border border-dashed border-slate-300 dark:border-azulcielo/30 rounded-2xl p-5 bg-slate-50/50 dark:bg-slate-950/40">
       <p class="text-slate-500 dark:text-azulcielo text-xs mb-2">No has fijado límites de gasto mensual.</p>
-      <button onclick="mostrarModalPresupuestos()" class="text-xs bg-azulelectrico text-white font-bold px-3.5 py-1.5 rounded-xl transition shadow-md">
+      <button onclick="mostrarModalPresupuestos()" class="text-xs bg-azulelectrico text-slate-950 font-black px-3.5 py-1.5 rounded-xl transition shadow-md">
         Definir límites
       </button>
     </div>

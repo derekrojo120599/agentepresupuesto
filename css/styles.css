@@ -1,8 +1,8 @@
 :root {
-  --scrollbar-track: #020617;
-  --scrollbar-thumb: #0259dd;
-  --app-bg: #020617;
-  --app-color: #f8fafc;
+  --scrollbar-track: #06160e;
+  --scrollbar-thumb: #173d29;
+  --app-bg: #06160e;
+  --app-color: #f0fdf4;
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
@@ -10,7 +10,7 @@
 }
 html.light {
   --scrollbar-track: #f1f5f9;
-  --scrollbar-thumb: #94a3b8;
+  --scrollbar-thumb: #cbd5e1;
   --app-bg: #f8fafc;
   --app-color: #0f172a;
 }
@@ -18,7 +18,7 @@ html {
   background-color: var(--app-bg);
   color: var(--app-color);
   scrollbar-width: thin;
-  scrollbar-color: rgba(132, 175, 251, 0.4) var(--scrollbar-track);
+  scrollbar-color: rgba(163, 230, 53, 0.4) var(--scrollbar-track);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   -webkit-user-select: none;
@@ -64,8 +64,8 @@ body::-webkit-scrollbar-thumb {
   border-radius: 8px;
 }
 ::selection {
-  background: rgba(2, 89, 221, 0.35);
-  color: #ffe1d7;
+  background: rgba(163, 230, 53, 0.35);
+  color: #06160e;
 }
 @media screen and (max-width: 640px) {
   input,
@@ -136,7 +136,7 @@ body::-webkit-scrollbar-thumb {
   -webkit-backdrop-filter: blur(12px);
 }
 html.dark .glass-card {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(12, 36, 23, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -152,7 +152,7 @@ html.dark .glass-card {
 }
 .custom-select-options-list::-webkit-scrollbar-thumb,
 .custom-select-desktop-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(132, 175, 251, 0.35);
+  background: rgba(156, 211, 176, 0.35);
   border-radius: 6px;
 }
 .custom-select-options-list::-webkit-scrollbar-track,

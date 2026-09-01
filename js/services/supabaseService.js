@@ -13,7 +13,6 @@ function prepararTransaccionParaSupabase(t) {
     monto: t.monto,
     categoria: t.categoria,
     deuda_id: t.deuda_id !== undefined ? t.deuda_id : null,
-    origen_ahorro: t.origen_ahorro !== undefined ? t.origen_ahorro : null,
     descripcion: t.descripcion || "",
     fecha: t.fecha,
   };

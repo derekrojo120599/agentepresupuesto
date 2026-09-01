@@ -13,7 +13,7 @@ function seleccionarChipTipo(tipo) {
   };
 
   const claseActiva =
-    "chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-white shadow-sm transition shrink-0 cursor-pointer";
+    "chip-tipo px-3 py-1.5 rounded-xl text-xs font-black bg-azulelectrico text-slate-950 shadow-sm transition shrink-0 cursor-pointer";
   const claseInactiva =
     "chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo border border-slate-200 dark:border-azulcielo/20 hover:bg-slate-200 dark:hover:bg-slate-800 transition shrink-0 cursor-pointer";
 

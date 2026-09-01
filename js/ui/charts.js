@@ -437,7 +437,7 @@ function actualizarEstilosBotonesMetrica() {
 
   btnAll.className =
     activeEstadisticaMetrica === "all"
-      ? "metrica-chip px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-azulelectrico text-white shadow-sm shadow-azulelectrico/30 cursor-pointer"
+      ? "metrica-chip px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-azulelectrico text-slate-950 font-black shadow-sm shadow-azulelectrico/30 cursor-pointer"
       : `${baseInactive} hover:bg-azulelectrico/10 hover:text-azulelectrico`;
 
   btnInc.className =
@@ -463,9 +463,9 @@ function renderizarEstadisticasFinancieras(filtradasMes, fondosMapa) {
   actualizarEstilosBotonesMetrica();
 
   const esOscuro = document.documentElement.classList.contains("dark");
-  const colorTexto = esOscuro ? "#84AFFB" : "#475569";
+  const colorTexto = esOscuro ? "#9cd3b0" : "#475569";
   const colorGrid = esOscuro
-    ? "rgba(132, 175, 251, 0.12)"
+    ? "rgba(27, 71, 48, 0.3)"
     : "rgba(148, 163, 184, 0.18)";
 
   const mesFiltroEl = document.getElementById("mesFiltro");
@@ -579,7 +579,7 @@ function renderizarEstadisticasFinancieras(filtradasMes, fondosMapa) {
       pointHoverBorderWidth: 4,
       pointHoverBorderColor: "rgba(6, 182, 212, 0.35)",
       pointBackgroundColor: "#06b6d4",
-      pointBorderColor: esOscuro ? "#0f172a" : "#ffffff",
+      pointBorderColor: esOscuro ? "#0C2417" : "#ffffff",
       pointBorderWidth: 2,
       fill: isIncomes || isAll,
       tension: 0.35,
@@ -600,7 +600,7 @@ function renderizarEstadisticasFinancieras(filtradasMes, fondosMapa) {
       pointHoverBorderWidth: 4,
       pointHoverBorderColor: "rgba(244, 63, 94, 0.35)",
       pointBackgroundColor: "#f43f5e",
-      pointBorderColor: esOscuro ? "#0f172a" : "#ffffff",
+      pointBorderColor: esOscuro ? "#0C2417" : "#ffffff",
       pointBorderWidth: 2,
       fill: isExpenses || isAll,
       tension: 0.35,
@@ -621,7 +621,7 @@ function renderizarEstadisticasFinancieras(filtradasMes, fondosMapa) {
       pointHoverBorderWidth: 4,
       pointHoverBorderColor: "rgba(234, 179, 8, 0.35)",
       pointBackgroundColor: "#eab308",
-      pointBorderColor: esOscuro ? "#0f172a" : "#ffffff",
+      pointBorderColor: esOscuro ? "#0C2417" : "#ffffff",
       pointBorderWidth: 2,
       fill: isSavings || isAll,
       tension: 0.35,
@@ -664,12 +664,12 @@ function renderizarEstadisticasFinancieras(filtradasMes, fondosMapa) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: esOscuro ? "#0f172a" : "#ffffff",
-          titleColor: esOscuro ? "#FFE1D7" : "#0f172a",
-          bodyColor: esOscuro ? "#84AFFB" : "#0259DD",
+          backgroundColor: esOscuro ? "#0C2417" : "#ffffff",
+          titleColor: esOscuro ? "#F0FDF4" : "#0f172a",
+          bodyColor: esOscuro ? "#9cd3b0" : "#06160E",
           borderColor: esOscuro
-            ? "rgba(132, 175, 251, 0.25)"
-            : "rgba(2, 89, 221, 0.2)",
+            ? "rgba(27, 71, 48, 0.5)"
+            : "rgba(163, 230, 53, 0.3)",
           borderWidth: 1,
           padding: 10,
           cornerRadius: 12,

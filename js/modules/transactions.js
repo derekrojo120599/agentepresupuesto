@@ -280,11 +280,13 @@ function verificarMontoEnTiempoReal() {
         alertaMontoExcedido.textContent =
           tipo === "ahorro"
             ? "⚠️ No tienes suficiente balance disponible para este ahorro."
-            : "⚠️ Estás gastando más del saldo disponible.";
+            : "⚠️ Estás gastando más del saldo disponible (quedarás en saldo negativo).";
         alertaMontoExcedido.classList.remove("hidden");
       }
       if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
-      if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
+      if (btnGuardarMovimiento) {
+        btnGuardarMovimiento.disabled = tipo === "ahorro";
+      }
     } else {
       montoInput.classList.add(
         "border-slate-300",

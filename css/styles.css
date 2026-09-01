@@ -1,0 +1,161 @@
+:root {
+  --scrollbar-track: #020617;
+  --scrollbar-thumb: #0259dd;
+  --app-bg: #020617;
+  --app-color: #f8fafc;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+html.light {
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #94a3b8;
+  --app-bg: #f8fafc;
+  --app-color: #0f172a;
+}
+html {
+  background-color: var(--app-bg);
+  color: var(--app-color);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(132, 175, 251, 0.4) var(--scrollbar-track);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+body {
+  background-color: var(--app-bg);
+  color: var(--app-color);
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+/* Inputs permiten interacción y selección */
+input,
+select,
+textarea {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+body::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+}
+::selection {
+  background: rgba(2, 89, 221, 0.35);
+  color: #ffe1d7;
+}
+@media screen and (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+/* Animaciones fluidas */
+.fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.toast-enter {
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+/* Estilos Premium de UI */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+.font-mono-num {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.dark .glass-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+/* Componente Select Personalizado / Custom Select & Bottom Sheet */
+.custom-select-trigger {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.custom-select-options-list::-webkit-scrollbar,
+.custom-select-desktop-dropdown::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-select-options-list::-webkit-scrollbar-thumb,
+.custom-select-desktop-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(132, 175, 251, 0.35);
+  border-radius: 6px;
+}
+.custom-select-options-list::-webkit-scrollbar-track,
+.custom-select-desktop-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}

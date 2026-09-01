@@ -568,6 +568,9 @@
                   >.00</span
                 >
               </div>
+              <div id="balanceNetoBs" class="text-xs sm:text-sm font-semibold opacity-75 hidden mt-0.5">
+                ≈ 0,00 Bs.
+              </div>
               <p
                 id="tasaAhorro"
                 class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1"
@@ -864,10 +867,14 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label
-                  class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
-                  >Monto ($)</label
-                >
+                <div class="flex justify-between items-center mb-1">
+                  <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo"
+                    >Monto</label>
+                  <div class="flex bg-slate-200 dark:bg-slate-800 rounded-lg p-0.5">
+                    <button type="button" id="btnMonedaUSD" class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-crema shadow-sm transition">USD</button>
+                    <button type="button" id="btnMonedaBS" class="px-2 py-0.5 text-[10px] font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition">Bs</button>
+                  </div>
+                </div>
                 <input
                   type="number"
                   id="monto"
@@ -878,6 +885,9 @@
                   placeholder="0.00"
                   class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition"
                 />
+                <p id="conversionMonto" class="hidden text-[10px] font-bold text-slate-500 dark:text-azulcielo mt-1.5 flex items-start gap-1">
+                  <span>≈</span> <span id="conversionMontoTexto">Cargando tasa...</span>
+                </p>
                 <p id="alertaMontoExcedido" class="hidden text-[10px] font-bold text-coral mt-1.5 flex items-start gap-1">
                   <span>⚠️</span> Estás gastando más del saldo disponible.
                 </p>
@@ -2796,6 +2806,9 @@
       let metasAhorro = [];
       let filtroTipoActual = "";
 
+      let tasaBinanceCompra = null;
+      let monedaIngresoActual = "USD"; // "USD" o "BS"
+
       let graficoMultilineaChart = null;
       let activeEstadisticaMetrica = "all";
       let ultimasFiltradasMes = [];
@@ -4005,6 +4018,59 @@
       document
         .getElementById("formMovimiento")
         .addEventListener("submit", agregarTransaccion);
+        
+      // ---------- Lógica de Tasa y Moneda ----------
+      const btnMonedaUSD = document.getElementById("btnMonedaUSD");
+      const btnMonedaBS = document.getElementById("btnMonedaBS");
+      const inputMonto = document.getElementById("monto");
+      const conversionMontoTexto = document.getElementById("conversionMontoTexto");
+      const conversionMonto = document.getElementById("conversionMonto");
+
+      function actualizarConversionUI() {
+        if (!inputMonto.value || parseFloat(inputMonto.value) <= 0) {
+          conversionMonto.classList.add("hidden");
+          return;
+        }
+
+        if (monedaIngresoActual === "BS") {
+          if (!tasaBinanceCompra) {
+            conversionMontoTexto.textContent = "Obteniendo tasa Binance...";
+            conversionMonto.classList.remove("hidden");
+            return;
+          }
+          const bsStr = inputMonto.value.replace(",", ".");
+          const bs = parseFloat(bsStr);
+          if (!isNaN(bs)) {
+            const usd = (bs / tasaBinanceCompra).toFixed(2);
+            conversionMontoTexto.textContent = `$${usd} USD (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
+            conversionMonto.classList.remove("hidden");
+          }
+        } else {
+          conversionMonto.classList.add("hidden");
+        }
+      }
+
+      if (btnMonedaUSD && btnMonedaBS) {
+        btnMonedaUSD.addEventListener("click", () => {
+          monedaIngresoActual = "USD";
+          btnMonedaUSD.className = "px-2 py-0.5 text-[10px] font-bold rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-crema shadow-sm transition";
+          btnMonedaBS.className = "px-2 py-0.5 text-[10px] font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
+          actualizarConversionUI();
+        });
+
+        btnMonedaBS.addEventListener("click", () => {
+          monedaIngresoActual = "BS";
+          btnMonedaBS.className = "px-2 py-0.5 text-[10px] font-bold rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-crema shadow-sm transition";
+          btnMonedaUSD.className = "px-2 py-0.5 text-[10px] font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
+          actualizarConversionUI();
+        });
+
+        inputMonto.addEventListener("input", actualizarConversionUI);
+        
+        document.getElementById("formMovimiento").addEventListener("reset", () => {
+          setTimeout(actualizarConversionUI, 10);
+        });
+      }
       document
         .getElementById("formNuevaDeuda")
         .addEventListener("submit", crearDeuda);
@@ -4257,6 +4323,18 @@
       });
 
       // ---------- Carga de Datos Cloud ----------
+
+      async function obtenerTasaBinance() {
+        try {
+          const res = await fetch("https://latasa.vercel.app/api/binance-p2p");
+          if (!res.ok) throw new Error("Error fetching tasa");
+          const data = await res.json();
+          tasaBinanceCompra = data.buyRate;
+          actualizarInterfaz(); // Refrescar para mostrar la tasa en los balances
+        } catch (error) {
+          console.warn("No se pudo cargar la tasa de Binance:", error);
+        }
+      }
 
       let promesaCargaInicial = null;
       async function cargarDatosCloud() {
@@ -5347,7 +5425,11 @@
           const montoStr = (
             document.getElementById("monto").value || ""
           ).replace(",", ".");
-          const monto = parseFloat(montoStr);
+          let monto = parseFloat(montoStr);
+          
+          if (monedaIngresoActual === "BS" && tasaBinanceCompra) {
+            monto = monto / tasaBinanceCompra;
+          }
 
           if (
             esPagoDeuda &&
@@ -6031,12 +6113,21 @@
           }
         });
         const balanceEl = document.getElementById("balanceNeto");
+        const balanceBsEl = document.getElementById("balanceNetoBs");
         const signoBal = balance < 0 ? "-" : "";
         const partesBal = Math.abs(balance).toFixed(2).split(".");
         const enterosBal = parseInt(partesBal[0], 10).toLocaleString("en-US");
         const centavosBal = partesBal[1];
         balanceEl.innerHTML = `${signoBal}$${enterosBal}<span class="text-base sm:text-lg font-bold opacity-75">.${centavosBal}</span>`;
         balanceEl.className = `text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono-num ${balance >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-coral"}`;
+        
+        if (tasaBinanceCompra) {
+          const balBs = Math.abs(balance) * tasaBinanceCompra;
+          balanceBsEl.textContent = `≈ ${signoBal}${balBs.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs. (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+          balanceBsEl.classList.remove("hidden");
+        } else {
+          balanceBsEl.classList.add("hidden");
+        }
 
         const tasaAhorro =
           ingresosMes > 0
@@ -6710,6 +6801,7 @@
       inicializarPestanas();
       inicializarTodosLosCustomSelects();
       actualizarIndicadorConexion();
+      obtenerTasaBinance();
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

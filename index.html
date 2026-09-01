@@ -833,51 +833,101 @@
       <div id="tabContentRegistrar" class="hidden fade-in">
         <div
           id="seccionRegistrar"
-          class="max-w-2xl mx-auto bg-white dark:bg-slate-900 p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4"
+          class="max-w-xl mx-auto bg-white dark:bg-slate-900 p-5 sm:p-7 rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-xl shadow-slate-900/5 dark:shadow-none space-y-5 relative overflow-hidden"
         >
+          <!-- Brillo decorativo superior -->
           <div
-            class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/20 pb-3"
+            class="absolute -top-12 -right-12 w-32 h-32 bg-azulelectrico/10 dark:bg-azulelectrico/20 rounded-full blur-2xl pointer-events-none"
+          ></div>
+
+          <!-- Cabecera -->
+          <div
+            class="flex items-center justify-between border-b border-slate-100 dark:border-azulcielo/20 pb-3.5"
           >
-            <h2
-              class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2"
-            >
-              <span>✍️</span> Registrar Movimiento
-            </h2>
+            <div>
+              <h2
+                class="text-base sm:text-lg font-black text-slate-900 dark:text-crema flex items-center gap-2"
+              >
+                <span>✍️</span> Registrar Movimiento
+              </h2>
+              <p class="text-[11px] text-slate-500 dark:text-azulcielo/80 mt-0.5">
+                Ingresa tus transacciones en Dólares o Bolívares
+              </p>
+            </div>
             <span
-              class="text-[10px] font-bold text-azulelectrico bg-azulelectrico/10 px-2.5 py-1 rounded-full"
+              class="text-[10px] font-bold text-azulelectrico bg-azulelectrico/10 dark:bg-azulelectrico/20 px-2.5 py-1 rounded-full border border-azulelectrico/20"
               >Nuevo</span
             >
           </div>
 
           <form id="formMovimiento" class="space-y-4">
-            <div>
-              <label
-                class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
-                >Tipo de Operación</label
-              >
-              <select
-                id="tipo"
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm"
-              >
-                <option value="ingreso">🟢 Ingreso</option>
+            <!-- 1. Tipo de Movimiento Segmentado -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo">
+                Tipo de Operación
+              </label>
+              <div class="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-azulcielo/20">
+                <button
+                  type="button"
+                  id="btnTipoGasto"
+                  onclick="seleccionarTipoMovimiento('gasto')"
+                  class="chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 bg-rose-500 text-white shadow-md shadow-rose-500/25 active:scale-95 cursor-pointer"
+                >
+                  <span>🔴</span> Gasto
+                </button>
+                <button
+                  type="button"
+                  id="btnTipoIngreso"
+                  onclick="seleccionarTipoMovimiento('ingreso')"
+                  class="chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-crema hover:bg-slate-200/50 dark:hover:bg-slate-800/50 active:scale-95 cursor-pointer"
+                >
+                  <span>🟢</span> Ingreso
+                </button>
+                <button
+                  type="button"
+                  id="btnTipoAhorro"
+                  onclick="seleccionarTipoMovimiento('ahorro')"
+                  class="chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-crema hover:bg-slate-200/50 dark:hover:bg-slate-800/50 active:scale-95 cursor-pointer"
+                >
+                  <span>🟡</span> Ahorro
+                </button>
+              </div>
+              <select id="tipo" class="sr-only" aria-hidden="true" tabindex="-1">
                 <option value="gasto" selected>🔴 Gasto</option>
+                <option value="ingreso">🟢 Ingreso</option>
                 <option value="ahorro">🟡 Ahorro (Fondo)</option>
               </select>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
-                >Moneda de Registro</label>
-              <div class="flex p-1 bg-slate-200/70 dark:bg-slate-900/70 rounded-xl border border-slate-300 dark:border-azulcielo/30">
-                <button type="button" id="btnMonedaUSD" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition">Dólares (USD)</button>
-                <button type="button" id="btnMonedaBS" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition">Bolívares (Bs.)</button>
+            <!-- 2. Hero Box: Monto & Selector de Moneda -->
+            <div class="bg-slate-50 dark:bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-azulcielo/20 space-y-3 shadow-inner">
+              <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo flex items-center gap-1.5">
+                  <span>💵</span> Monto a Registrar
+                </label>
+                <!-- Selector de Moneda -->
+                <div class="flex p-0.5 bg-slate-200/90 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-azulcielo/30">
+                  <button
+                    type="button"
+                    id="btnMonedaUSD"
+                    class="px-3 py-1 text-xs font-black rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-crema shadow-sm transition cursor-pointer"
+                  >
+                    USD ($)
+                  </button>
+                  <button
+                    type="button"
+                    id="btnMonedaBS"
+                    class="px-3 py-1 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-crema transition cursor-pointer"
+                  >
+                    Bolívares (Bs.)
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
-                  >Monto</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <span id="simboloMonedaInput" class="text-xl sm:text-2xl font-black text-slate-400 dark:text-azulcielo/60 font-mono-num">$</span>
+                </div>
                 <input
                   type="number"
                   id="monto"
@@ -886,107 +936,134 @@
                   inputmode="decimal"
                   required
                   placeholder="0.00"
-                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition"
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 pl-9 sm:pl-10 pr-4 py-3 sm:py-3.5 rounded-xl text-slate-900 dark:text-crema font-black text-xl sm:text-2xl tracking-tight font-mono-num focus:border-azulelectrico focus:ring-4 focus:ring-azulelectrico/10 focus:outline-none transition shadow-sm"
                 />
-                <p id="conversionMonto" class="hidden text-[10.5px] font-bold text-slate-500 dark:text-azulcielo mt-2 flex items-start gap-1 bg-slate-100 dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-azulcielo/20">
-                  <span class="text-lg leading-none shrink-0 mt-0.5">ℹ️</span>
-                  <span id="conversionMontoTexto" class="leading-snug">Cargando tasa...</span>
-                </p>
-                <p id="alertaMontoExcedido" class="hidden text-[10px] font-bold text-coral mt-1.5 flex items-start gap-1">
-                  <span>⚠️</span> Estás gastando más del saldo disponible.
-                </p>
               </div>
+
+              <!-- Cápsula de Conversión Reactiva -->
+              <div
+                id="conversionMonto"
+                class="hidden text-xs font-bold text-slate-600 dark:text-azulcielo flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 py-2.5 px-3.5 rounded-xl border border-slate-200 dark:border-azulcielo/25 shadow-sm"
+              >
+                <span class="text-base leading-none shrink-0">✨</span>
+                <span id="conversionMontoTexto" class="leading-snug">Cargando tasa...</span>
+              </div>
+
+              <!-- Alerta de Saldo Excedido -->
+              <p
+                id="alertaMontoExcedido"
+                class="hidden text-xs font-bold text-coral flex items-center gap-1.5 bg-coral/10 py-2.5 px-3 rounded-xl border border-coral/30"
+              >
+                <span>⚠️</span> Estás gastando más del saldo disponible.
+              </p>
+              <p
+                id="alertaAhorroExcesivo"
+                class="hidden text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 bg-amber-500/10 py-2.5 px-3 rounded-xl border border-amber-500/30"
+              >
+                <span>⚠️</span> Este ahorro supera el 80% de tu balance disponible.
+              </p>
+            </div>
+
+            <!-- 3. Fecha & Categoría -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label
-                  class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
-                  >Fecha</label
+                  class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1 flex items-center gap-1"
                 >
+                  <span>📅</span> Fecha
+                </label>
                 <input
                   type="date"
                   id="fecha"
                   required
-                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-xs font-semibold focus:border-azulelectrico focus:outline-none transition"
+                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-xs font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition shadow-sm cursor-pointer"
                 />
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1 flex items-center gap-1"
+                >
+                  <span>🏷️</span> Categoría
+                </label>
+                <select
+                  id="categoria"
+                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm shadow-sm"
+                ></select>
               </div>
             </div>
 
-            <div>
-              <label
-                class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
-                >Categoría</label
-              >
-              <select
-                id="categoria"
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"
-              ></select>
-            </div>
-
             <!-- Selector dinámico de Deudas -->
-            <div id="contenedorDeudaSelect" class="hidden">
-              <label class="block text-xs text-coral font-bold mb-1"
-                >Deuda a Pagar</label
-              >
+            <div id="contenedorDeudaSelect" class="hidden p-3.5 rounded-2xl bg-coral/10 border border-coral/30 space-y-1.5 animate-fadeIn">
+              <label class="block text-xs text-coral font-black flex items-center gap-1.5">
+                <span>💳</span> Deuda a Amortizar
+              </label>
               <select
                 id="deudaObjetivo"
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-coral/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-coral focus:outline-none transition text-sm"
+                class="w-full bg-white dark:bg-slate-950 border border-coral/50 p-3 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-coral focus:outline-none transition text-sm"
               ></select>
             </div>
 
             <!-- Selector dinámico de Metas de Ahorro -->
-            <div id="contenedorMetaAhorroSelect" class="hidden">
+            <div id="contenedorMetaAhorroSelect" class="hidden p-3.5 rounded-2xl bg-azulcielo/10 border border-azulcielo/30 space-y-2 animate-fadeIn">
               <label
                 id="labelMetaAhorroSelect"
-                class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
-                >Meta Asociada (Opcional)</label
+                class="block text-xs text-azulcielo-dark dark:text-azulcielo font-black flex items-center gap-1.5"
               >
+                <span>🎯</span> Meta Asociada (Opcional)
+              </label>
               <select
                 id="metaAhorroSelect"
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"
+                class="w-full bg-white dark:bg-slate-950 border border-azulcielo/50 p-3 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm"
               ></select>
-              <div id="infoSaldoFondoAhorro" class="hidden mt-1.5 p-2 rounded-xl bg-azulcielo/10 border border-azulcielo/20 flex items-center justify-between text-xs">
-                <span class="text-slate-600 dark:text-azulcielo/90 font-medium">Disponible en esta meta:</span>
-                <span id="valorSaldoFondoAhorro" class="font-extrabold text-azulcielo-dark dark:text-azulcielo">$0.00</span>
+              <div id="infoSaldoFondoAhorro" class="hidden p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-azulcielo/20 flex items-center justify-between text-xs">
+                <span class="text-slate-600 dark:text-azulcielo/90 font-semibold">Disponible en esta meta:</span>
+                <span id="valorSaldoFondoAhorro" class="font-black text-azulcielo-dark dark:text-azulcielo font-mono-num text-sm">$0.00</span>
               </div>
             </div>
 
             <!-- Selector de Origen de Fondos para Ahorro -->
-            <div id="contenedorOrigenAhorroSelect" class="hidden">
+            <div id="contenedorOrigenAhorroSelect" class="hidden p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-azulcielo/20 space-y-1.5 animate-fadeIn">
               <label
-                class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
-                >Origen del Dinero</label
+                class="block text-xs text-slate-700 dark:text-azulcielo font-black flex items-center gap-1.5"
               >
+                <span>🏦</span> Origen de los Fondos
+              </label>
               <select
                 id="origenAhorro"
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-azulcielo/50 p-3 rounded-xl text-slate-900 dark:text-crema font-semibold focus:border-azulelectrico focus:outline-none transition text-sm"
+                class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/40 p-3 rounded-xl text-slate-900 dark:text-crema font-bold focus:border-azulelectrico focus:outline-none transition text-sm"
               >
                 <option value="balance" selected>💰 De mi balance actual</option>
                 <option value="externo">📦 Dinero externo / Ahorro antiguo</option>
               </select>
-              <p id="hintOrigenAhorro" class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-1">
+              <p id="hintOrigenAhorro" class="text-[11px] font-medium text-slate-500 dark:text-azulcielo/70">
                 Se descontará de tu balance disponible actual.
               </p>
             </div>
 
+            <!-- 4. Descripción -->
             <div>
               <label
-                class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
-                >Descripción / Concepto</label
+                class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1 flex items-center gap-1"
               >
+                <span>📝</span> Concepto o Descripción
+              </label>
               <input
                 type="text"
                 id="descripcion"
-                placeholder="Ej: Supermercado, Alquiler..."
+                placeholder="Ej: Supermercado, Corte de cabello, Honorarios..."
                 required
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition"
+                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3.5 rounded-xl text-slate-900 dark:text-crema text-sm font-semibold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-600"
               />
             </div>
 
+            <!-- Botón de Acción Principal -->
             <button
               id="btnGuardarMovimiento"
               type="submit"
-              class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold p-3.5 rounded-2xl shadow-lg shadow-azulelectrico/20 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-black py-4 px-5 rounded-2xl shadow-lg shadow-azulelectrico/25 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-azulelectrico/40"
             >
-              Guardar Movimiento
+              <span>💾</span> Guardar Movimiento
             </button>
           </form>
         </div>
@@ -2270,7 +2347,7 @@
       }
 
       function inicializarCustomSelect(select) {
-        if (!select || select._customSelectWrapper) return;
+        if (!select || select._customSelectWrapper || select.id === "tipo") return;
 
         // Ocultar el <select> nativo para eliminar el picker del SO, manteniendo su funcionalidad en formularios
         select.classList.add("sr-only");
@@ -4052,7 +4129,41 @@
         .getElementById("formMovimiento")
         .addEventListener("submit", agregarTransaccion);
         
-      // ---------- Lógica de Tasa y Moneda ----------
+      // ---------- Lógica de Tipo, Tasa y Moneda ----------
+      function seleccionarTipoMovimiento(tipo) {
+        tipoSelect.value = tipo;
+        sincronizarBotonesTipo();
+        actualizarOpcionesCategoria();
+        evaluarSeleccionesEspeciales();
+        verificarMontoEnTiempoReal();
+      }
+
+      function sincronizarBotonesTipo() {
+        const tipo = tipoSelect.value || "gasto";
+        const btnG = document.getElementById("btnTipoGasto");
+        const btnI = document.getElementById("btnTipoIngreso");
+        const btnA = document.getElementById("btnTipoAhorro");
+        if (!btnG || !btnI || !btnA) return;
+
+        const inactivoClase =
+          "chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-crema hover:bg-slate-200/50 dark:hover:bg-slate-800/50 active:scale-95 cursor-pointer";
+
+        btnG.className = inactivoClase;
+        btnI.className = inactivoClase;
+        btnA.className = inactivoClase;
+
+        if (tipo === "gasto") {
+          btnG.className =
+            "chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 bg-rose-500 text-white shadow-md shadow-rose-500/25 active:scale-95 cursor-pointer";
+        } else if (tipo === "ingreso") {
+          btnI.className =
+            "chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 bg-emerald-600 text-white shadow-md shadow-emerald-600/25 active:scale-95 cursor-pointer";
+        } else if (tipo === "ahorro") {
+          btnA.className =
+            "chip-tipo flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 bg-amber-500 text-white shadow-md shadow-amber-500/25 active:scale-95 cursor-pointer";
+        }
+      }
+
       const btnMonedaUSD = document.getElementById("btnMonedaUSD");
       const btnMonedaBS = document.getElementById("btnMonedaBS");
       const inputMonto = document.getElementById("monto");
@@ -4061,14 +4172,29 @@
 
       function seleccionarMonedaIngreso(moneda) {
         monedaIngresoActual = moneda;
+        const simboloEl = document.getElementById("simboloMonedaInput");
         if (!btnMonedaUSD || !btnMonedaBS) return;
 
         if (moneda === "USD") {
-          btnMonedaUSD.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition";
-          btnMonedaBS.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
+          btnMonedaUSD.className =
+            "px-3 py-1 text-xs font-black rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-crema shadow-sm transition cursor-pointer";
+          btnMonedaBS.className =
+            "px-3 py-1 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-crema transition cursor-pointer";
+          if (simboloEl) simboloEl.textContent = "$";
+          if (inputMonto) {
+            inputMonto.classList.remove("pl-14", "sm:pl-16");
+            inputMonto.classList.add("pl-9", "sm:pl-10");
+          }
         } else {
-          btnMonedaBS.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition";
-          btnMonedaUSD.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
+          btnMonedaBS.className =
+            "px-3 py-1 text-xs font-black rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-crema shadow-sm transition cursor-pointer";
+          btnMonedaUSD.className =
+            "px-3 py-1 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-crema transition cursor-pointer";
+          if (simboloEl) simboloEl.textContent = "Bs.";
+          if (inputMonto) {
+            inputMonto.classList.remove("pl-9", "sm:pl-10");
+            inputMonto.classList.add("pl-14", "sm:pl-16");
+          }
         }
         actualizarConversionUI();
         verificarMontoEnTiempoReal();
@@ -4112,6 +4238,7 @@
         document.getElementById("formMovimiento").addEventListener("reset", () => {
           setTimeout(() => {
             seleccionarMonedaIngreso("USD");
+            seleccionarTipoMovimiento("gasto");
             document.getElementById("fecha").value = obtenerFechaLocalISO();
             actualizarConversionUI();
             verificarMontoEnTiempoReal();
@@ -4692,6 +4819,7 @@
 
       function depositarEnMetaRapido(nombreMeta) {
         tipoSelect.value = "ahorro";
+        sincronizarBotonesTipo();
         actualizarOpcionesCategoria();
         categoriaSelect.value = "Depositar a Ahorro";
         document.getElementById("descripcion").value = nombreMeta;
@@ -5721,6 +5849,7 @@
         if (!t) return;
         cambiarPestana("registrar");
         tipoSelect.value = t.tipo;
+        sincronizarBotonesTipo();
         actualizarOpcionesCategoria();
         categoriaSelect.value = t.categoria;
         document.getElementById("monto").value = parseFloat(t.monto);

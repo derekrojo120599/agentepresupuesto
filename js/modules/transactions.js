@@ -550,33 +550,46 @@ function eliminarTransaccion(id) {
   guardarCacheLocal();
   actualizarInterfaz();
 
-  const temporizador = setTimeout(async () => {
-    if (transaccionesPendientesEliminar.has(id)) {
-      transaccionesPendientesEliminar.delete(id);
-      if (!navigator.onLine) {
-        encolarOperacion("delete", "transacciones", null, id);
-      } else {
-        await supabaseClient.from("transacciones").delete().eq("id", id);
-      }
-    }
-  }, 5000);
+  // Borrar en Supabase de inmediato (no esperar 5s)
+  // Si el usuario deshace, re-insertamos el registro
+  let deshecho = false;
 
-  transaccionesPendientesEliminar.set(id, {
-    transaccion: tEliminada,
-    index: idx,
-    temporizador: temporizador,
-  });
+  if (!navigator.onLine) {
+    encolarOperacion("delete", "transacciones", null, id);
+  } else {
+    supabaseClient.from("transacciones").delete().eq("id", id).then(({ error }) => {
+      if (error && !deshecho) {
+        console.warn("Error al eliminar en Supabase:", error);
+      }
+    });
+  }
 
   // Mostrar Toast interactivo con opción de Deshacer durante 5 segundos
-  mostrarToastDeshacer("Transacción eliminada", () => {
-    if (transaccionesPendientesEliminar.has(id)) {
-      const pending = transaccionesPendientesEliminar.get(id);
-      clearTimeout(pending.temporizador);
-      transacciones.splice(pending.index, 0, pending.transaccion);
-      transaccionesPendientesEliminar.delete(id);
-      guardarCacheLocal();
-      actualizarInterfaz();
-      mostrarToast("Transacción restaurada", "success");
+  mostrarToastDeshacer("Transacción eliminada", async () => {
+    deshecho = true;
+    // Restaurar localmente
+    transacciones.splice(idx, 0, tEliminada);
+    guardarCacheLocal();
+    actualizarInterfaz();
+
+    // Re-insertar en Supabase
+    if (navigator.onLine) {
+      const datos = prepararTransaccionParaSupabase(tEliminada);
+      // Usamos upsert para restaurar con el mismo id si la BD lo soporta,
+      // de lo contrario hacemos insert normal
+      const { error } = await supabaseClient
+        .from("transacciones")
+        .insert([datos])
+        .select();
+      if (error) {
+        console.warn("No se pudo restaurar en Supabase:", error);
+        mostrarToast("No se pudo restaurar en la nube, está guardado localmente", "warning");
+      } else {
+        mostrarToast("Transacción restaurada", "success");
+      }
+    } else {
+      encolarOperacion("insert", "transacciones", prepararTransaccionParaSupabase(tEliminada));
+      mostrarToast("Transacción restaurada localmente", "success");
     }
   });
 }

@@ -296,6 +296,9 @@ function guardarFormCategoria(e) {
   }
   actualizarInterfaz();
   renderizarConfiguracionCategorias();
+  if (typeof renderizarInputsPresupuesto === "function") {
+    renderizarInputsPresupuesto();
+  }
   ocultarModalCategoria();
 }
 

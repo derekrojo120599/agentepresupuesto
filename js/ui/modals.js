@@ -77,12 +77,17 @@ function ocultarModalIncremento() {
 function abrirModalCrearCategoria() {
   document.getElementById("catEditNombreOriginal").value = "";
   document.getElementById("catNombre").value = "";
-  document.getElementById("catIcono").value = "🏷️";
+  document.getElementById("catIcono").value = "�Y?���?";
   document.getElementById("catTipo").value = tipoConfigCategoriaActual;
   document.getElementById("tituloModalCategoria").innerHTML =
-    "<span>🏷️</span> Nueva Categoría";
+    "<span>�Y?���?</span> Nueva Categor��a";
   const el = document.getElementById("modalCategoria");
   if (el) el.classList.remove("hidden");
+}
+
+function abrirModalCrearCategoriaDesdePresupuestos() {
+  tipoConfigCategoriaActual = "gasto";
+  abrirModalCrearCategoria();
 }
 
 function abrirModalEditarCategoria(tipo, nombre) {

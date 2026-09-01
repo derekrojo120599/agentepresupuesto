@@ -2888,6 +2888,9 @@
         }
       }
 
+      let sincronizandoCloudTimeout = null;
+      let cargandoAjustesCloud = false;
+
       function guardarCategoriasEnStorage() {
         try {
           localStorage.setItem(
@@ -2906,62 +2909,72 @@
       }
 
       // Sincronización en la Nube de Preferencias, Categorías, Metas y Presupuestos (Supabase User Metadata)
-      async function sincronizarAjustesUsuarioCloud() {
-        if (!usuarioActualId || !navigator.onLine) return;
-        try {
-          await supabaseClient.auth.updateUser({
-            data: {
-              categoriasMap,
-              categoriaIconosMap,
-              presupuestos,
-              metasAhorro,
-            },
-          });
-        } catch (err) {
-          console.warn(
-            "No se pudieron sincronizar los ajustes en la nube:",
-            err,
-          );
-        }
+      function sincronizarAjustesUsuarioCloud() {
+        if (!usuarioActualId || !navigator.onLine || cargandoAjustesCloud) return;
+        if (sincronizandoCloudTimeout) clearTimeout(sincronizandoCloudTimeout);
+        sincronizandoCloudTimeout = setTimeout(async () => {
+          try {
+            await supabaseClient.auth.updateUser({
+              data: {
+                categoriasMap,
+                categoriaIconosMap,
+                presupuestos,
+                metasAhorro,
+              },
+            });
+          } catch (err) {
+            console.warn(
+              "No se pudieron sincronizar los ajustes en la nube:",
+              err,
+            );
+          }
+        }, 400);
       }
 
       function cargarAjustesDeUserMetadata(user) {
         if (!user || !user.user_metadata) return;
         const meta = user.user_metadata;
 
-        if (meta.categoriasMap && typeof meta.categoriasMap === "object") {
+        cargandoAjustesCloud = true;
+        try {
+          if (meta.categoriasMap && typeof meta.categoriasMap === "object") {
+            if (
+              Array.isArray(meta.categoriasMap.ingreso) &&
+              meta.categoriasMap.ingreso.length
+            )
+              categoriasMap.ingreso = meta.categoriasMap.ingreso;
+            if (
+              Array.isArray(meta.categoriasMap.gasto) &&
+              meta.categoriasMap.gasto.length
+            )
+              categoriasMap.gasto = meta.categoriasMap.gasto;
+            if (
+              Array.isArray(meta.categoriasMap.ahorro) &&
+              meta.categoriasMap.ahorro.length
+            )
+              categoriasMap.ahorro = meta.categoriasMap.ahorro;
+          }
           if (
-            Array.isArray(meta.categoriasMap.ingreso) &&
-            meta.categoriasMap.ingreso.length
-          )
-            categoriasMap.ingreso = meta.categoriasMap.ingreso;
-          if (
-            Array.isArray(meta.categoriasMap.gasto) &&
-            meta.categoriasMap.gasto.length
-          )
-            categoriasMap.gasto = meta.categoriasMap.gasto;
-          if (
-            Array.isArray(meta.categoriasMap.ahorro) &&
-            meta.categoriasMap.ahorro.length
-          )
-            categoriasMap.ahorro = meta.categoriasMap.ahorro;
-        }
-        if (
-          meta.categoriaIconosMap &&
-          typeof meta.categoriaIconosMap === "object"
-        ) {
-          Object.assign(categoriaIconosMap, meta.categoriaIconosMap);
-        }
-        if (meta.presupuestos && typeof meta.presupuestos === "object") {
-          presupuestos = { ...meta.presupuestos };
-        }
-        if (Array.isArray(meta.metasAhorro)) {
-          metasAhorro = [...meta.metasAhorro];
-        }
+            meta.categoriaIconosMap &&
+            typeof meta.categoriaIconosMap === "object"
+          ) {
+            Object.assign(categoriaIconosMap, meta.categoriaIconosMap);
+          }
+          if (meta.presupuestos && typeof meta.presupuestos === "object") {
+            presupuestos = { ...meta.presupuestos };
+          }
+          if (Array.isArray(meta.metasAhorro)) {
+            metasAhorro = [...meta.metasAhorro];
+          }
 
-        guardarCategoriasEnStorage();
-        guardarPresupuestosLocales();
-        guardarMetasLocales();
+          localStorage.setItem(claveCategorias(), JSON.stringify(categoriasMap));
+          localStorage.setItem(claveIconos(), JSON.stringify(categoriaIconosMap));
+          localStorage.setItem(clavePresupuestos(), JSON.stringify(presupuestos));
+          localStorage.setItem(claveMetas(), JSON.stringify(metasAhorro));
+          guardarCacheLocal();
+        } finally {
+          cargandoAjustesCloud = false;
+        }
       }
 
       cargarCategoriasGuardadas();
@@ -3506,6 +3519,18 @@
         }
       }
 
+      function prepararTransaccionParaSupabase(t) {
+        if (!t) return t;
+        return {
+          tipo: t.tipo,
+          monto: t.monto,
+          categoria: t.categoria,
+          deuda_id: t.deuda_id !== undefined ? t.deuda_id : null,
+          descripcion: t.descripcion || "",
+          fecha: t.fecha,
+        };
+      }
+
       async function sincronizarPendientes() {
         if (!usuarioActualId || !navigator.onLine) return;
         let cola = obtenerCola();
@@ -3516,14 +3541,22 @@
         for (const op of cola) {
           try {
             if (op.accion === "insert") {
+              let datosParaEnviar = op.datos;
+              if (op.tabla === "transacciones" && datosParaEnviar) {
+                datosParaEnviar = prepararTransaccionParaSupabase(datosParaEnviar);
+              }
               const { error } = await supabaseClient
                 .from(op.tabla)
-                .insert([op.datos]);
+                .insert([datosParaEnviar]);
               if (error) throw error;
             } else if (op.accion === "update") {
+              let datosParaEnviar = op.datos;
+              if (op.tabla === "transacciones" && datosParaEnviar) {
+                datosParaEnviar = prepararTransaccionParaSupabase(datosParaEnviar);
+              }
               const { error } = await supabaseClient
                 .from(op.tabla)
-                .update(op.datos)
+                .update(datosParaEnviar)
                 .eq("id", op.id);
               if (error) throw error;
             } else if (op.accion === "delete") {
@@ -3542,7 +3575,7 @@
             cola = cola.filter((o) => o !== op);
             guardarCola(cola);
           } catch (err) {
-            console.error(err);
+            console.error("Error al sincronizar operación pendiente:", err);
             actualizarIndicadorConexion();
             return;
           }
@@ -3686,8 +3719,9 @@
       // ---------- Categorías & Selectores ----------
 
       function actualizarOpcionesCategoria() {
-        const tipo = tipoSelect.value;
-        categoriaSelect.innerHTML = categoriasMap[tipo]
+        const tipo = tipoSelect.value || "gasto";
+        const lista = categoriasMap[tipo] || [];
+        categoriaSelect.innerHTML = lista
           .map(
             (cat) =>
               `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`,
@@ -4663,7 +4697,7 @@
           .getElementById("catEditNombreOriginal")
           .value.trim();
         const nuevoNombre = document.getElementById("catNombre").value.trim();
-        const nuevoTipo = document.getElementById("catTipo").value;
+        const nuevoTipo = document.getElementById("catTipo").value || "gasto";
         const nuevoIcono =
           document.getElementById("catIcono").value.trim() || "🏷️";
 
@@ -4674,19 +4708,21 @@
 
         // Si es edición
         if (nombreOriginal) {
-          const lista = categoriasMap[nuevoTipo] || [];
-          const index = lista.indexOf(nombreOriginal);
-          if (index !== -1) {
-            lista[index] = nuevoNombre;
-          } else {
-            lista.push(nuevoNombre);
-          }
+          ["ingreso", "gasto", "ahorro"].forEach((t) => {
+            if (Array.isArray(categoriasMap[t])) {
+              categoriasMap[t] = categoriasMap[t].filter(
+                (c) => c !== nombreOriginal,
+              );
+            }
+          });
+          if (!categoriasMap[nuevoTipo]) categoriasMap[nuevoTipo] = [];
+          categoriasMap[nuevoTipo].push(nuevoNombre);
           categoriaIconosMap[nuevoNombre] = nuevoIcono;
 
           // Actualizar transacciones existentes si cambió de nombre
           if (nombreOriginal !== nuevoNombre) {
             transacciones.forEach((t) => {
-              if (t.tipo === nuevoTipo && t.categoria === nombreOriginal) {
+              if (t.categoria === nombreOriginal) {
                 t.categoria = nuevoNombre;
               }
             });
@@ -4836,9 +4872,9 @@
           });
         } else {
           const todas = [
-            ...categoriasMap.ingreso,
-            ...categoriasMap.gasto,
-            ...categoriasMap.ahorro,
+            ...(categoriasMap.ingreso || []),
+            ...(categoriasMap.gasto || []),
+            ...(categoriasMap.ahorro || []),
           ];
           [...new Set(todas)].forEach((c) => {
             opciones += `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`;
@@ -5081,16 +5117,17 @@
           const nombreIngresado = document
             .getElementById("deudaNombre")
             .value.trim();
-          const montoIngresado = parseFloat(
-            document.getElementById("deudaMontoInicial").value,
-          );
+          const montoStr = (
+            document.getElementById("deudaMontoInicial").value || ""
+          ).replace(",", ".");
+          const montoIngresado = parseFloat(montoStr);
 
           if (
             !nombreIngresado ||
             isNaN(montoIngresado) ||
             montoIngresado <= 0
           ) {
-            mostrarToast("Ingresa un nombre y monto válido", "error");
+            mostrarToast("Ingresa un nombre y monto válido mayor a 0", "error");
             return;
           }
 
@@ -5134,7 +5171,23 @@
           }
 
           if (error) {
-            mostrarToast("Error al guardar deuda", "error");
+            console.warn("Fallo Supabase al guardar deuda, guardando offline:", error);
+            const tempId = -Date.now();
+            deudas.push({
+              id: tempId,
+              nombre: nombreIngresado,
+              montoInicial: montoIngresado,
+            });
+            encolarOperacion("insert", "deudas", {
+              nombre: nombreIngresado,
+              monto_inicial: montoIngresado,
+            });
+            guardarCacheLocal();
+            form.reset();
+            ocultarModalDeuda();
+            actualizarOpcionesCategoria();
+            actualizarInterfaz();
+            mostrarToast("Guardado localmente por fallo de red", "warning");
             return;
           }
 
@@ -5142,6 +5195,9 @@
           ocultarModalDeuda();
           await cargarDatosCloud();
           mostrarToast("Deuda registrada", "success");
+        } catch (err) {
+          console.error("Error al guardar deuda:", err);
+          mostrarToast("Error al registrar deuda: " + (err.message || ""), "error");
         } finally {
           desbloquearBoton(btn);
         }
@@ -5161,13 +5217,15 @@
         try {
           const id = parseInt(
             document.getElementById("incrementoDeudaId").value,
+            10,
           );
           const nombre = document
             .getElementById("incrementoNombre")
             .value.trim();
-          const val = parseFloat(
-            document.getElementById("incrementoMonto").value,
-          );
+          const valStr = (
+            document.getElementById("incrementoMonto").value || ""
+          ).replace(",", ".");
+          const val = parseFloat(valStr);
 
           if (!nombre || isNaN(val) || val < 0) {
             mostrarToast("Monto inválido", "error");
@@ -5195,13 +5253,26 @@
             .update(cambios)
             .eq("id", id);
           if (error) {
-            mostrarToast("Error al actualizar", "error");
+            console.warn("Fallo Supabase al actualizar deuda, guardando offline:", error);
+            const idx = deudas.findIndex((d) => d.id === id);
+            if (idx !== -1) {
+              deudas[idx].nombre = nombre;
+              deudas[idx].montoInicial = val;
+            }
+            encolarOperacion("update", "deudas", cambios, id);
+            guardarCacheLocal();
+            ocultarModalIncremento();
+            actualizarInterfaz();
+            mostrarToast("Actualizado localmente por fallo de red", "warning");
             return;
           }
 
           ocultarModalIncremento();
           await cargarDatosCloud();
           mostrarToast("Deuda actualizada", "success");
+        } catch (err) {
+          console.error("Error al actualizar deuda:", err);
+          mostrarToast("Error al actualizar deuda: " + (err.message || ""), "error");
         } finally {
           desbloquearBoton(btn);
         }
@@ -5221,10 +5292,15 @@
           return;
         }
 
-        await supabaseClient.from("transacciones").delete().eq("deuda_id", id);
-        await supabaseClient.from("deudas").delete().eq("id", id);
-        await cargarDatosCloud();
-        mostrarToast("Deuda eliminada", "success");
+        try {
+          await supabaseClient.from("transacciones").delete().eq("deuda_id", id);
+          await supabaseClient.from("deudas").delete().eq("id", id);
+          await cargarDatosCloud();
+          mostrarToast("Deuda eliminada", "success");
+        } catch (err) {
+          console.error("Error al eliminar deuda:", err);
+          mostrarToast("Error al eliminar deuda", "error");
+        }
       }
 
       // ---------- Transacciones CRUD ----------
@@ -5238,7 +5314,10 @@
           const esPagoDeuda =
             tipoSelect.value === "gasto" &&
             categoriaSelect.value === "Pago de Deuda";
-          const monto = parseFloat(document.getElementById("monto").value);
+          const montoStr = (
+            document.getElementById("monto").value || ""
+          ).replace(",", ".");
+          const monto = parseFloat(montoStr);
 
           if (
             esPagoDeuda &&
@@ -5249,7 +5328,7 @@
           }
 
           if (isNaN(monto) || monto <= 0) {
-            mostrarToast("Ingresa un monto válido", "error");
+            mostrarToast("Ingresa un monto válido mayor a 0", "error");
             return;
           }
 
@@ -5268,14 +5347,22 @@
             }
           }
 
+          const descripcion = document.getElementById("descripcion").value.trim();
+          if (!descripcion) {
+            mostrarToast("Ingresa una descripción o concepto", "error");
+            return;
+          }
+
+          const fecha = document.getElementById("fecha").value || new Date().toISOString().split("T")[0];
+
           const nueva = {
             tipo: tipoSelect.value,
             monto: monto,
             categoria: categoriaSelect.value,
-            deuda_id: esPagoDeuda ? parseInt(deudaObjetivoSelect.value) : null,
+            deuda_id: esPagoDeuda ? parseInt(deudaObjetivoSelect.value, 10) : null,
             origen_ahorro: esAhorro && !esRetiroAhorro ? (origenAhorroSelect ? origenAhorroSelect.value : "balance") : null,
-            descripcion: document.getElementById("descripcion").value.trim(),
-            fecha: document.getElementById("fecha").value,
+            descripcion: descripcion,
+            fecha: fecha,
           };
 
           if (!navigator.onLine) {
@@ -5308,11 +5395,28 @@
             }
             return;
           }
-          const { error } = await supabaseClient
+
+          const datosSupabase = prepararTransaccionParaSupabase(nueva);
+          const { data, error } = await supabaseClient
             .from("transacciones")
-            .insert([nueva]);
+            .insert([datosSupabase])
+            .select();
+
           if (error) {
-            mostrarToast("Error al guardar", "error");
+            console.warn("Fallo Supabase al guardar movimiento, guardando offline:", error);
+            const tempId = -Date.now();
+            transacciones.unshift({ ...nueva, id: tempId });
+            encolarOperacion("insert", "transacciones", nueva);
+            guardarCacheLocal();
+            form.reset();
+            document.getElementById("fecha").value = new Date()
+              .toISOString()
+              .split("T")[0];
+            actualizarOpcionesCategoria();
+            actualizarInterfaz();
+            mostrarToast("Guardado localmente. Se sincronizará en segundo plano", "warning");
+
+            verificarLimitesDespuesDeTransaccion(nueva);
             return;
           }
 
@@ -5336,10 +5440,19 @@
             }
           }
 
-          await cargarDatosCloud();
+          if (data && data[0]) {
+            transacciones.unshift({ ...nueva, id: data[0].id });
+            guardarCacheLocal();
+            actualizarInterfaz();
+          } else {
+            await cargarDatosCloud();
+          }
+
           mostrarToast("Movimiento registrado", "success");
-          
           verificarLimitesDespuesDeTransaccion(nueva);
+        } catch (err) {
+          console.error("Error al agregar transacción:", err);
+          mostrarToast("Error al registrar movimiento: " + (err.message || ""), "error");
         } finally {
           desbloquearBoton(btn);
         }
@@ -5485,14 +5598,15 @@
         document.getElementById("editOrigenAhorro");
 
       function actualizarOpcionesCategoriaEdit(categoriaActual) {
-        const tipo = editTipoSelect.value;
-        editCategoriaSelect.innerHTML = categoriasMap[tipo]
+        const tipo = editTipoSelect.value || "gasto";
+        const lista = categoriasMap[tipo] || [];
+        editCategoriaSelect.innerHTML = lista
           .map(
             (cat) =>
               `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`,
           )
           .join("");
-        if (categoriaActual && categoriasMap[tipo].includes(categoriaActual)) {
+        if (categoriaActual && lista.includes(categoriaActual)) {
           editCategoriaSelect.value = categoriaActual;
         }
         evaluarSeleccionDeudaEdit();
@@ -5564,14 +5678,17 @@
         const btn = bloquearBoton(form, "Guardando...");
 
         try {
-          const id = parseInt(document.getElementById("editId").value);
+          const id = parseInt(document.getElementById("editId").value, 10);
           const esPagoDeuda =
             editTipoSelect.value === "gasto" &&
             editCategoriaSelect.value === "Pago de Deuda";
-          const monto = parseFloat(document.getElementById("editMonto").value);
+          const montoStr = (
+            document.getElementById("editMonto").value || ""
+          ).replace(",", ".");
+          const monto = parseFloat(montoStr);
 
           if (isNaN(monto) || monto <= 0) {
-            mostrarToast("Monto inválido", "error");
+            mostrarToast("Monto inválido mayor a 0", "error");
             return;
           }
 
@@ -5595,18 +5712,24 @@
             }
           }
 
+          const descripcion = document
+            .getElementById("editDescripcion")
+            .value.trim();
+          if (!descripcion) {
+            mostrarToast("Ingresa una descripción", "error");
+            return;
+          }
+
           const cambios = {
             tipo: editTipoSelect.value,
             monto,
             categoria: editCategoriaSelect.value,
             deuda_id: esPagoDeuda
-              ? parseInt(editDeudaObjetivoSelect.value)
+              ? parseInt(editDeudaObjetivoSelect.value, 10)
               : null,
             origen_ahorro: esAhorro && !esRetiroAhorro ? (editOrigenAhorroSelect ? editOrigenAhorroSelect.value : "balance") : null,
-            descripcion: document
-              .getElementById("editDescripcion")
-              .value.trim(),
-            fecha: document.getElementById("editFecha").value,
+            descripcion: descripcion,
+            fecha: document.getElementById("editFecha").value || new Date().toISOString().split("T")[0],
           };
 
           if (!navigator.onLine) {
@@ -5621,13 +5744,31 @@
             return;
           }
 
-          await supabaseClient
+          const datosSupabase = prepararTransaccionParaSupabase(cambios);
+          const { error } = await supabaseClient
             .from("transacciones")
-            .update(cambios)
+            .update(datosSupabase)
             .eq("id", id);
+
+          if (error) {
+            console.warn("Fallo Supabase al actualizar movimiento, guardando offline:", error);
+            const idx = transacciones.findIndex((t) => t.id === id);
+            if (idx !== -1)
+              transacciones[idx] = { ...transacciones[idx], ...cambios };
+            encolarOperacion("update", "transacciones", cambios, id);
+            guardarCacheLocal();
+            ocultarModalEditarMovimiento();
+            actualizarInterfaz();
+            mostrarToast("Actualizado localmente por fallo de red", "warning");
+            return;
+          }
+
           ocultarModalEditarMovimiento();
           await cargarDatosCloud();
           mostrarToast("Movimiento actualizado", "success");
+        } catch (err) {
+          console.error("Error al editar movimiento:", err);
+          mostrarToast("Error al editar: " + (err.message || ""), "error");
         } finally {
           desbloquearBoton(btn);
         }

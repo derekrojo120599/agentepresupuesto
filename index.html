@@ -3379,6 +3379,9 @@
                 onDataReady();
               }
               actualizarIndicadorConexion();
+              // Iniciar sincronización de cola pendiente en caso de que existan operaciones offline 
+              // atascadas o de sesiones anteriores al cargar la aplicación.
+              sincronizarPendientes();
             } else {
               // Si la sesión ya estaba inicializada (ej. cambio rápido de tabs), mostrar directo
               appContainer.classList.remove("hidden");
@@ -3507,6 +3510,15 @@
         const el = document.getElementById("indicadorConexion");
         const pendientes = obtenerCola().length;
 
+        // Permitir reintentar manualmente al hacer clic
+        el.onclick = () => {
+          if (pendientes > 0) {
+            mostrarToast("Reintentando sincronización...", "info");
+            sincronizarPendientes();
+          }
+        };
+        el.style.cursor = pendientes > 0 ? "pointer" : "default";
+
         if (!navigator.onLine) {
           el.textContent =
             pendientes > 0 ? `🔴 Offline · ${pendientes} pend.` : "🔴 Offline";
@@ -3580,16 +3592,21 @@
             guardarCola(cola);
           } catch (err) {
             console.error("Error al sincronizar operación pendiente:", err);
-            // Si el error tiene un código (ej. validación, llave foránea), lo descartamos para no bloquear la cola.
-            // Si es un error de red, suele no tener código o ser un TypeError, en cuyo caso retenemos la cola.
-            if (err.code || (err.message && err.message.includes('JSON'))) {
-              console.warn("Descartando operación inválida que bloqueaba la cola:", op);
+            
+            // Incrementar contador de intentos
+            op.intentos = (op.intentos || 0) + 1;
+            
+            // Si el error tiene un código (ej. validación, llave foránea), o ya falló 3 veces, lo descartamos
+            if (err.code || (err.message && err.message.includes('JSON')) || op.intentos >= 3) {
+              console.warn("Descartando operación inválida o tras múltiples intentos fallidos:", op);
               cola = cola.filter((o) => o !== op);
               guardarCola(cola);
               continue; // Continuamos con el siguiente
             } else {
+              // Guardamos el contador de intentos y abortamos para reintentar luego
+              guardarCola(cola);
               actualizarIndicadorConexion();
-              return; // Si es error de red, abortamos y reintentamos luego
+              return;
             }
           }
         }

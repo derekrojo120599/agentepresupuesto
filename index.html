@@ -3647,6 +3647,14 @@
 
       // ---------- Utilidades ----------
 
+      function obtenerFechaLocalISO() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
       function bloquearBoton(form, texto) {
         const btn = form.querySelector('button[type="submit"]');
         if (!btn) return null;
@@ -3906,11 +3914,29 @@
       const btnGuardarMovimiento = document.getElementById("btnGuardarMovimiento");
 
       function verificarMontoEnTiempoReal() {
-        const monto = parseFloat(montoInput.value) || 0;
+        const montoRaw = (montoInput.value || "").replace(",", ".");
+        const montoNum = parseFloat(montoRaw) || 0;
         const tipo = tipoSelect.value;
         const cat = (categoriaSelect.value || "").toLowerCase();
         const esRetiroAhorro = cat.includes("retirar") || cat.includes("usar") || cat.includes("retiro") || cat.includes("gasto");
         const origenAhorroVal = origenAhorroSelect ? origenAhorroSelect.value : "balance";
+
+        // Convertir monto a USD si se ingresó en Bs para las comparaciones de saldo y límites
+        let monto = montoNum;
+        if (monedaIngresoActual === "BS") {
+          if (tasaBinanceCompra && tasaBinanceCompra > 0) {
+            monto = montoNum / tasaBinanceCompra;
+          } else if (montoNum > 0) {
+            // Si está en Bs pero no hay tasa cargada, advertir y deshabilitar guardar
+            montoInput.classList.remove("border-slate-300", "dark:border-azulcielo/30", "focus:border-azulelectrico", "border-amber-500", "focus:border-amber-500", "text-amber-500");
+            montoInput.classList.add("border-coral", "focus:border-coral", "text-coral");
+            alertaMontoExcedido.textContent = "⚠️ No se ha podido obtener la tasa Binance. Cambia a USD o verifica tu conexión.";
+            alertaMontoExcedido.classList.remove("hidden");
+            if (alertaAhorroExcesivo) alertaAhorroExcesivo.classList.add("hidden");
+            if (btnGuardarMovimiento) btnGuardarMovimiento.disabled = true;
+            return;
+          }
+        }
 
         // Actualizar hint de texto
         if (hintOrigenAhorro) {
@@ -4017,7 +4043,7 @@
       const hoy = new Date();
       document.getElementById("mesFiltro").value =
         `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
-      document.getElementById("fecha").value = hoy.toISOString().split("T")[0];
+      document.getElementById("fecha").value = obtenerFechaLocalISO();
 
       tipoSelect.addEventListener("change", actualizarOpcionesCategoria);
       categoriaSelect.addEventListener("change", evaluarSeleccionesEspeciales);
@@ -4032,49 +4058,63 @@
       const conversionMontoTexto = document.getElementById("conversionMontoTexto");
       const conversionMonto = document.getElementById("conversionMonto");
 
+      function seleccionarMonedaIngreso(moneda) {
+        monedaIngresoActual = moneda;
+        if (!btnMonedaUSD || !btnMonedaBS) return;
+
+        if (moneda === "USD") {
+          btnMonedaUSD.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition";
+          btnMonedaBS.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
+        } else {
+          btnMonedaBS.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition";
+          btnMonedaUSD.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
+        }
+        actualizarConversionUI();
+        verificarMontoEnTiempoReal();
+      }
+
       function actualizarConversionUI() {
-        if (!inputMonto.value || parseFloat(inputMonto.value) <= 0) {
+        const valStr = (inputMonto.value || "").replace(",", ".");
+        const valNum = parseFloat(valStr);
+
+        if (isNaN(valNum) || valNum <= 0) {
           conversionMonto.classList.add("hidden");
           return;
         }
 
-        if (monedaIngresoActual === "BS") {
-          if (!tasaBinanceCompra) {
+        if (!tasaBinanceCompra) {
+          if (monedaIngresoActual === "BS") {
             conversionMontoTexto.textContent = "Obteniendo tasa Binance...";
             conversionMonto.classList.remove("hidden");
-            return;
+          } else {
+            conversionMonto.classList.add("hidden");
           }
-          const bsStr = inputMonto.value.replace(",", ".");
-          const bs = parseFloat(bsStr);
-          if (!isNaN(bs)) {
-            const usd = (bs / tasaBinanceCompra).toFixed(2);
-            conversionMontoTexto.textContent = `$${usd} USD (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
-            conversionMonto.classList.remove("hidden");
-          }
+          return;
+        }
+
+        if (monedaIngresoActual === "BS") {
+          const usd = (valNum / tasaBinanceCompra).toFixed(2);
+          conversionMontoTexto.innerHTML = `Equivale a <strong class="text-emerald-600 dark:text-emerald-400 font-black font-mono-num">$${parseFloat(usd).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD</strong> (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
+          conversionMonto.classList.remove("hidden");
         } else {
-          conversionMonto.classList.add("hidden");
+          const bs = (valNum * tasaBinanceCompra).toFixed(2);
+          conversionMontoTexto.innerHTML = `Equivale a <strong class="text-azulcielo-dark dark:text-azulcielo font-black font-mono-num">${parseFloat(bs).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.</strong> (Tasa Binance: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })})`;
+          conversionMonto.classList.remove("hidden");
         }
       }
 
       if (btnMonedaUSD && btnMonedaBS) {
-        btnMonedaUSD.addEventListener("click", () => {
-          monedaIngresoActual = "USD";
-          btnMonedaUSD.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition";
-          btnMonedaBS.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
-          actualizarConversionUI();
-        });
-
-        btnMonedaBS.addEventListener("click", () => {
-          monedaIngresoActual = "BS";
-          btnMonedaBS.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-crema shadow-sm transition";
-          btnMonedaUSD.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-crema transition";
-          actualizarConversionUI();
-        });
-
+        btnMonedaUSD.addEventListener("click", () => seleccionarMonedaIngreso("USD"));
+        btnMonedaBS.addEventListener("click", () => seleccionarMonedaIngreso("BS"));
         inputMonto.addEventListener("input", actualizarConversionUI);
         
         document.getElementById("formMovimiento").addEventListener("reset", () => {
-          setTimeout(actualizarConversionUI, 10);
+          setTimeout(() => {
+            seleccionarMonedaIngreso("USD");
+            document.getElementById("fecha").value = obtenerFechaLocalISO();
+            actualizarConversionUI();
+            verificarMontoEnTiempoReal();
+          }, 10);
         });
       }
       document
@@ -5440,10 +5480,22 @@
           const montoStr = (
             document.getElementById("monto").value || ""
           ).replace(",", ".");
-          let monto = parseFloat(montoStr);
-          
-          if (monedaIngresoActual === "BS" && tasaBinanceCompra) {
-            monto = monto / tasaBinanceCompra;
+          const montoIngresado = parseFloat(montoStr);
+
+          if (isNaN(montoIngresado) || montoIngresado <= 0) {
+            mostrarToast("Ingresa un monto válido mayor a 0", "error");
+            return;
+          }
+
+          let monto = montoIngresado;
+          if (monedaIngresoActual === "BS") {
+            if (!tasaBinanceCompra || tasaBinanceCompra <= 0) {
+              mostrarToast("No se pudo obtener la tasa Binance para convertir Bs. Por favor ingresa el monto en USD o verifica tu conexión.", "error");
+              return;
+            }
+            monto = Math.round((montoIngresado / tasaBinanceCompra) * 100) / 100;
+          } else {
+            monto = Math.round(montoIngresado * 100) / 100;
           }
 
           if (
@@ -5451,11 +5503,6 @@
             (!deudaObjetivoSelect.value || deudaObjetivoSelect.value === "")
           ) {
             mostrarToast("Selecciona una deuda válida", "error");
-            return;
-          }
-
-          if (isNaN(monto) || monto <= 0) {
-            mostrarToast("Ingresa un monto válido mayor a 0", "error");
             return;
           }
 
@@ -5480,7 +5527,7 @@
             return;
           }
 
-          const fecha = document.getElementById("fecha").value || new Date().toISOString().split("T")[0];
+          const fecha = document.getElementById("fecha").value || obtenerFechaLocalISO();
 
           const nueva = {
             tipo: tipoSelect.value,
@@ -5498,9 +5545,7 @@
             encolarOperacion("insert", "transacciones", nueva);
             guardarCacheLocal();
             form.reset();
-            document.getElementById("fecha").value = new Date()
-              .toISOString()
-              .split("T")[0];
+            document.getElementById("fecha").value = obtenerFechaLocalISO();
             actualizarOpcionesCategoria();
             actualizarInterfaz();
             mostrarToast("Guardado localmente", "info");
@@ -5536,9 +5581,7 @@
             encolarOperacion("insert", "transacciones", nueva);
             guardarCacheLocal();
             form.reset();
-            document.getElementById("fecha").value = new Date()
-              .toISOString()
-              .split("T")[0];
+            document.getElementById("fecha").value = obtenerFechaLocalISO();
             actualizarOpcionesCategoria();
             actualizarInterfaz();
             mostrarToast("Guardado localmente. Se sincronizará en segundo plano", "warning");
@@ -5548,9 +5591,7 @@
           }
 
           form.reset();
-          document.getElementById("fecha").value = new Date()
-            .toISOString()
-            .split("T")[0];
+          document.getElementById("fecha").value = obtenerFechaLocalISO();
           actualizarOpcionesCategoria();
 
           if (
@@ -5642,9 +5683,9 @@
         categoriaSelect.value = t.categoria;
         document.getElementById("monto").value = parseFloat(t.monto);
         document.getElementById("descripcion").value = t.descripcion || "";
-        document.getElementById("fecha").value = new Date()
-          .toISOString()
-          .split("T")[0];
+        document.getElementById("fecha").value = obtenerFechaLocalISO();
+        seleccionarMonedaIngreso("USD");
+        actualizarConversionUI();
         evaluarSeleccionesEspeciales();
         if (t.deuda_id && deudaObjetivoSelect)
           deudaObjetivoSelect.value = t.deuda_id;
@@ -5856,7 +5897,7 @@
               : null,
             origen_ahorro: esAhorro && !esRetiroAhorro ? (editOrigenAhorroSelect ? editOrigenAhorroSelect.value : "balance") : null,
             descripcion: descripcion,
-            fecha: document.getElementById("editFecha").value || new Date().toISOString().split("T")[0],
+            fecha: document.getElementById("editFecha").value || obtenerFechaLocalISO(),
           };
 
           if (!navigator.onLine) {
@@ -6348,7 +6389,7 @@
 
         const mesSeleccionado =
           document.getElementById("mesFiltro")?.value ||
-          new Date().toISOString().slice(0, 7);
+          obtenerFechaLocalISO().slice(0, 7);
         const [anoStr, mesStr] = mesSeleccionado.split("-");
         const anoNum = parseInt(anoStr, 10) || new Date().getFullYear();
         const mesNum = parseInt(mesStr, 10) || new Date().getMonth() + 1;

@@ -13,6 +13,16 @@
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
 
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
 # Los íconos casi nunca cambian, esos sí pueden cachearse largo tiempo
 [[headers]]
   for = "/icons/*"

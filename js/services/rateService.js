@@ -21,19 +21,44 @@ async function obtenerTasaBinance() {
   let tasaObtenida = null;
   let fuenteDetectada = "Binance P2P";
 
-  // Fuente 1: LaTasa API (Binance P2P directo)
+  // Fuente 1: Al Cambio (GraphQL API)
   try {
-    const res = await fetch("https://latasa.vercel.app/api/binance-p2p");
+    const res = await fetch("https://api.alcambio.app/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: "query getBinanceP2PAverages { getBinanceP2PAverages { sellAverage buyAverage } }"
+      })
+    });
     if (res.ok) {
       const data = await res.json();
-      tasaObtenida = data.buyRate || data.rate;
-      fuenteDetectada = "Binance P2P";
+      const binanceData = data?.data?.getBinanceP2PAverages;
+      if (binanceData) {
+        tasaObtenida = binanceData.buyAverage || binanceData.sellAverage;
+        fuenteDetectada = "Al Cambio (Binance)";
+      }
     }
   } catch (e) {
-    // Si el navegador bloquea por CORS en la fuente 1, recurrimos a la fuente abierta con CORS
+    console.warn("Fallo al consultar Al Cambio:", e);
   }
 
-  // Fuente 2: DolarAPI Paralelo (Con soporte nativo de CORS '*' para navegadores)
+  // Fuente 2: LaTasa API (Binance P2P directo)
+  if (!tasaObtenida) {
+    try {
+      const res = await fetch("https://latasa.vercel.app/api/binance-p2p");
+      if (res.ok) {
+        const data = await res.json();
+        tasaObtenida = data.buyRate || data.rate;
+        fuenteDetectada = "Binance P2P (LaTasa)";
+      }
+    } catch (e) {
+      console.warn("Fallo al consultar LaTasa:", e);
+    }
+  }
+
+  // Fuente 3: DolarAPI Paralelo (Con soporte nativo de CORS '*' para navegadores)
   if (!tasaObtenida) {
     try {
       const res = await fetch("https://ve.dolarapi.com/v1/dolares/paralelo");

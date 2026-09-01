@@ -15,6 +15,7 @@ function cambiarPestana(tabName) {
     "presupuestos",
     "metas",
     "deudas",
+    "comparar",
     "configuracion",
   ];
   pestanas.forEach((p) => {
@@ -74,6 +75,11 @@ function cambiarPestana(tabName) {
       renderizarConfiguracionCategorias();
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (tabName === "comparar") {
+    if (typeof renderizarComparacion === "function") {
+      renderizarComparacion();
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
 
@@ -86,6 +92,7 @@ function inicializarPestanas() {
     "presupuestos",
     "metas",
     "deudas",
+    "comparar",
     "configuracion",
   ];
   if (guardada && pestanasValidas.includes(guardada)) {

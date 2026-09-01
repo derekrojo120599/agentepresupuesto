@@ -394,6 +394,17 @@
             <span aria-hidden="true">💳</span>
             <span>Deudas</span>
           </button>
+          <button
+            id="navTabComparar"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabContentComparar"
+            onclick="cambiarPestana('comparar')"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema focus:outline-none focus:ring-2 focus:ring-azulelectrico"
+          >
+            <span aria-hidden="true">⚖️</span>
+            <span>Comparar</span>
+          </button>
         </div>
       </nav>
 
@@ -1201,6 +1212,70 @@
         </div>
       </div>
 
+      <!-- PESTAÑA: Comparación Mensual -->
+      <div id="tabContentComparar" role="tabpanel" aria-labelledby="navTabComparar" class="hidden fade-in">
+        <div
+          class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-5"
+        >
+          <!-- Cabecera -->
+          <div
+            class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-azulcielo/20 pb-4"
+          >
+            <div>
+              <h2
+                class="text-sm sm:text-base font-bold text-slate-900 dark:text-crema flex items-center gap-2"
+              >
+                <span>⚖️</span> Comparación Mensual
+              </h2>
+              <p class="text-[11px] text-slate-500 dark:text-azulcielo mt-0.5">
+                Compara tus gastos e ingresos por categoría entre dos meses
+                consecutivos.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 self-start sm:self-auto">
+              <label for="compararMes" class="text-xs font-bold text-slate-500 dark:text-azulcielo">
+                Mes:
+              </label>
+              <input
+                type="month"
+                id="compararMes"
+                class="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 text-slate-900 dark:text-crema px-3 py-1.5 rounded-xl font-bold cursor-pointer focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition text-xs shadow-sm"
+              />
+            </div>
+          </div>
+
+          <!-- Resumen de totales: Mes actual vs Mes anterior -->
+          <div id="resumenComparacion" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Render dinámico -->
+          </div>
+
+          <!-- Selector de tipo de operación -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 border-b border-slate-100 dark:border-azulcielo/20 pb-3">
+            <button
+              type="button"
+              id="btnCompGasto"
+              onclick="cambiarTipoComparacion('gasto')"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-coral text-white shadow-sm cursor-pointer"
+            >
+              <span>🔴</span> Gastos
+            </button>
+            <button
+              type="button"
+              id="btnCompIngreso"
+              onclick="cambiarTipoComparacion('ingreso')"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-azulcielo/20 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
+            >
+              <span>🟢</span> Ingresos
+            </button>
+          </div>
+
+          <!-- Comparación por categoría -->
+          <div id="listaComparacion" class="space-y-2.5">
+            <!-- Render dinámico -->
+          </div>
+        </div>
+      </div>
+
       <!-- PESTAÑA 7: Configuración de Categorías -->
       <div
         id="tabContentConfiguracion"
@@ -1368,6 +1443,14 @@
       >
         <span class="text-base">💳</span>
         <span class="text-[9px] font-semibold mt-0.5">Deudas</span>
+      </button>
+      <button
+        onclick="cambiarPestana('comparar')"
+        id="mobileNavComparar"
+        class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition text-slate-500 dark:text-azulcielo font-semibold flex-1 cursor-pointer"
+      >
+        <span class="text-base">⚖️</span>
+        <span class="text-[9px] font-semibold mt-0.5">Comparar</span>
       </button>
     </nav>
 
@@ -2172,7 +2255,8 @@
     <script src="./js/modules/debts.js"></script>
     <script src="./js/modules/goals.js"></script>
     <script src="./js/modules/budgets.js"></script>
-    <script src="./js/modules/history.js"></script>
+<script src="./js/modules/history.js"></script>
+    <script src="./js/modules/comparison.js"></script>
     <script src="./js/ui/charts.js"></script>
     <script src="./js/modules/transactions.js"></script>
     <script src="./js/app.js"></script>

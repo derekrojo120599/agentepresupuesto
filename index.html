@@ -3580,8 +3580,17 @@
             guardarCola(cola);
           } catch (err) {
             console.error("Error al sincronizar operación pendiente:", err);
-            actualizarIndicadorConexion();
-            return;
+            // Si el error tiene un código (ej. validación, llave foránea), lo descartamos para no bloquear la cola.
+            // Si es un error de red, suele no tener código o ser un TypeError, en cuyo caso retenemos la cola.
+            if (err.code || (err.message && err.message.includes('JSON'))) {
+              console.warn("Descartando operación inválida que bloqueaba la cola:", op);
+              cola = cola.filter((o) => o !== op);
+              guardarCola(cola);
+              continue; // Continuamos con el siguiente
+            } else {
+              actualizarIndicadorConexion();
+              return; // Si es error de red, abortamos y reintentamos luego
+            }
           }
         }
 

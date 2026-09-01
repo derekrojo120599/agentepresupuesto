@@ -2,7 +2,7 @@
 // para que abra instantáneamente y funcione sin internet.
 // Los DATOS (transacciones, deudas) se manejan aparte con localStorage y Supabase.
 
-const CACHE_NAME = 'presupuesto-shell-v23';
+const CACHE_NAME = 'presupuesto-shell-v24';
 
 const ARCHIVOS_CASCARON = [
   './',
@@ -67,8 +67,8 @@ self.addEventListener('fetch', (event) => {
   // Nunca interceptar llamadas a Supabase ni a la API de tasas
   if (
     request.url.includes('supabase.co') ||
-    request.url.includes('latasa.vercel.app') ||
-    request.url.includes('dolarapi.com')
+    request.url.includes('api.alcambio.app') ||
+    request.url.includes('rates.dolarvzla.com')
   ) {
     return;
   }

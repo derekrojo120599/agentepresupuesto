@@ -2776,8 +2776,10 @@
         document.querySelectorAll("select").forEach((select) => {
           inicializarCustomSelect(select);
         });
+      };
 
-        // Inicializar Flatpickr en todos los inputs de fecha/mes para evitar escribir a mano
+      // Inicializar Flatpickr SOLO UNA VEZ al arrancar la app
+      function inicializarFlatpickrsGlobales() {
         flatpickr("#fecha", { locale: "es", disableMobile: false });
         flatpickr("#editFecha", { locale: "es", disableMobile: false });
         flatpickr("#metaFechaLimite", { locale: "es", disableMobile: false });
@@ -2794,7 +2796,7 @@
           ],
           disableMobile: false,
         });
-      };
+      }
 
       // =========================================================================
       // CONFIGURACIÓN DE LA APLICACIÓN
@@ -6812,6 +6814,7 @@
 
       inicializarTema();
       inicializarPestanas();
+      inicializarFlatpickrsGlobales();
       inicializarTodosLosCustomSelects();
       actualizarIndicadorConexion();
       obtenerTasaBinance();

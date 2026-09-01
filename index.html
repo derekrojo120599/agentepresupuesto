@@ -3639,6 +3639,7 @@
       window.addEventListener("online", () => {
         actualizarIndicadorConexion();
         sincronizarPendientes();
+        obtenerTasaBinance();
       });
       window.addEventListener("offline", () => {
         actualizarIndicadorConexion();
@@ -4371,21 +4372,62 @@
       // ---------- Carga de Datos Cloud ----------
 
       async function obtenerTasaBinance() {
+        // Cargar tasa en caché local primero para disponibilidad inmediata
+        try {
+          const tasaGuardada = localStorage.getItem("ultima_tasa_binance");
+          if (tasaGuardada) {
+            const parsed = parseFloat(tasaGuardada);
+            if (!isNaN(parsed) && parsed > 0) {
+              tasaBinanceCompra = parsed;
+              actualizarInterfaz();
+              if (typeof actualizarConversionUI === "function") actualizarConversionUI();
+            }
+          }
+        } catch (e) {}
+
+        let tasaObtenida = null;
+
+        // Fuente 1: LaTasa API
         try {
           const res = await fetch("https://latasa.vercel.app/api/binance-p2p");
-          if (!res.ok) throw new Error("Error fetching tasa");
-          const data = await res.json();
-          tasaBinanceCompra = data.buyRate;
-          actualizarInterfaz(); // Refrescar para mostrar la tasa en los balances
-          if (typeof actualizarConversionUI === 'function') {
+          if (res.ok) {
+            const data = await res.json();
+            tasaObtenida = data.buyRate || data.rate;
+          }
+        } catch (e) {
+          // Si el navegador bloquea por CORS o hay fallo de red, recurrimos a la fuente con CORS habilitado
+        }
+
+        // Fuente 2: DolarAPI Paralelo (Con soporte nativo de CORS '*' para navegadores)
+        if (!tasaObtenida) {
+          try {
+            const res = await fetch("https://ve.dolarapi.com/v1/dolares/paralelo");
+            if (res.ok) {
+              const data = await res.json();
+              tasaObtenida = data.promedio || data.compra || data.venta;
+            }
+          } catch (e) {
+            console.warn("Fallo al consultar fuente alternativa de tasa:", e);
+          }
+        }
+
+        if (tasaObtenida && !isNaN(tasaObtenida) && tasaObtenida > 0) {
+          tasaBinanceCompra = tasaObtenida;
+          try {
+            localStorage.setItem("ultima_tasa_binance", String(tasaObtenida));
+          } catch (e) {}
+          actualizarInterfaz();
+          if (typeof actualizarConversionUI === "function") {
             actualizarConversionUI();
           }
-        } catch (error) {
-          console.warn("No se pudo cargar la tasa de Binance:", error);
-          if (typeof actualizarConversionUI === 'function') {
+          if (typeof verificarMontoEnTiempoReal === "function") {
+            verificarMontoEnTiempoReal();
+          }
+        } else if (!tasaBinanceCompra) {
+          if (typeof actualizarConversionUI === "function") {
             const conversionMontoTexto = document.getElementById("conversionMontoTexto");
             if (conversionMontoTexto && monedaIngresoActual === "BS") {
-              conversionMontoTexto.textContent = "Error al obtener la tasa";
+              conversionMontoTexto.textContent = "Error al obtener la tasa. Revisa tu conexión.";
             }
           }
         }

@@ -216,6 +216,167 @@ function actualizarSelectDeudas() {
     : '<option value="">Sin deudas registradas</option>';
 }
 
+function obtenerPagadoDeuda(id) {
+  let pagado = 0;
+  transacciones.forEach((t) => {
+    if (
+      t.tipo === "gasto" &&
+      t.categoria === "Pago de Deuda" &&
+      t.deuda_id === id
+    ) {
+      pagado += parseFloat(t.monto) || 0;
+    }
+  });
+  return pagado;
+}
+
+function abonarDeuda(id) {
+  const deuda = deudas.find((d) => d.id === id);
+  if (!deuda) return;
+
+  const pagado = obtenerPagadoDeuda(id);
+  const restante = Math.max(0, (deuda.montoInicial || 0) - pagado);
+
+  document.getElementById("abonoDeudaId").value = id;
+  document.getElementById("abonoNombre").value = deuda.nombre || "";
+  document.getElementById("abonoMonto").value = "";
+  document.getElementById("abonoDescripcion").value = "";
+  const restanteEl = document.getElementById("abonoRestanteValor");
+  if (restanteEl) restanteEl.textContent = `$${restante.toFixed(2)}`;
+  mostrarModalAbono();
+}
+
+function mostrarModalAbono() {
+  const el = document.getElementById("modalAbonoDeuda");
+  if (el) el.classList.remove("hidden");
+  setTimeout(() => {
+    const monto = document.getElementById("abonoMonto");
+    if (monto) monto.focus();
+  }, 100);
+}
+
+function ocultarModalAbono() {
+  const el = document.getElementById("modalAbonoDeuda");
+  if (el) el.classList.add("hidden");
+}
+
+async function confirmarAbonoDeuda(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = bloquearBoton(form, "Abonando...");
+
+  try {
+    const id = parseInt(document.getElementById("abonoDeudaId").value, 10);
+    const deuda = deudas.find((d) => d.id === id);
+    if (!deuda) {
+      mostrarToast("No se encontró la deuda", "error");
+      return;
+    }
+
+    const montoStr = (
+      document.getElementById("abonoMonto").value || ""
+    ).replace(",", ".");
+    const monto = Math.round((parseFloat(montoStr) || 0) * 100) / 100;
+
+    if (isNaN(monto) || monto <= 0) {
+      mostrarToast("Ingresa un monto válido mayor a 0", "error");
+      return;
+    }
+
+    const pagado = obtenerPagadoDeuda(id);
+    const restante = Math.max(0, (deuda.montoInicial || 0) - pagado);
+    if (monto > restante + 0.001) {
+      mostrarToast(
+        `El abono supera el saldo restante ($${restante.toFixed(2)}).`,
+        "error",
+      );
+      return;
+    }
+
+    const descripcion = (
+      document.getElementById("abonoDescripcion").value || ""
+    ).trim();
+    const fecha = obtenerFechaLocalISO();
+
+    const nueva = {
+      tipo: "gasto",
+      monto: monto,
+      categoria: "Pago de Deuda",
+      deuda_id: id,
+      origen_ahorro: null,
+      descripcion: descripcion || `Abono a ${deuda.nombre}`,
+      fecha: fecha,
+    };
+
+    if (!navigator.onLine) {
+      const tempId = -Date.now();
+      transacciones.unshift({ ...nueva, id: tempId });
+      encolarOperacion("insert", "transacciones", nueva);
+      guardarCacheLocal();
+      ocultarModalAbono();
+      actualizarInterfaz();
+      mostrarToast("Abono guardado localmente", "info");
+      if (typeof verificarLimitesDespuesDeTransaccion === "function") {
+        verificarLimitesDespuesDeTransaccion(nueva);
+      }
+      return;
+    }
+
+    const datosSupabase = prepararTransaccionParaSupabase(nueva);
+    const { data, error } = await supabaseClient
+      .from("transacciones")
+      .insert([datosSupabase])
+      .select();
+
+    if (error) {
+      console.warn(
+        "Fallo Supabase al registrar abono, guardando offline:",
+        error,
+      );
+      const tempId = -Date.now();
+      transacciones.unshift({ ...nueva, id: tempId });
+      encolarOperacion("insert", "transacciones", nueva);
+      guardarCacheLocal();
+      ocultarModalAbono();
+      actualizarInterfaz();
+      mostrarToast(
+        "Abono guardado localmente. Se sincronizará en segundo plano",
+        "warning",
+      );
+      if (typeof verificarLimitesDespuesDeTransaccion === "function") {
+        verificarLimitesDespuesDeTransaccion(nueva);
+      }
+      return;
+    }
+
+    ocultarModalAbono();
+    if (data && data[0]) {
+      transacciones.unshift({ ...nueva, id: data[0].id });
+      guardarCacheLocal();
+      actualizarInterfaz();
+    } else {
+      await cargarDatosCloud();
+    }
+    mostrarToast("Abono registrado", "success");
+    if (typeof verificarLimitesDespuesDeTransaccion === "function") {
+      verificarLimitesDespuesDeTransaccion(nueva);
+    }
+  } catch (err) {
+    console.error("Error al abonar deuda:", err);
+    mostrarToast("Error al registrar el abono: " + (err.message || ""), "error");
+  } finally {
+    desbloquearBoton(btn);
+  }
+}
+
+// Vincular submit del formulario de abono
+document.addEventListener("DOMContentLoaded", () => {
+  const formAbono = document.getElementById("formAbonoDeuda");
+  if (formAbono) {
+    formAbono.addEventListener("submit", confirmarAbonoDeuda);
+  }
+});
+
 function renderizarDeudas(deudasConCalculo) {
   const grid = document.getElementById("gridDeudas");
   if (!grid) return;
@@ -247,6 +408,7 @@ function renderizarDeudas(deudasConCalculo) {
           <span class="text-[11px] font-bold text-slate-400 dark:text-azulcielo/80">Inicial: $${total.toFixed(2)}</span>
         </div>
         <div class="flex items-center gap-1">
+          <button onclick="abonarDeuda(${d.id})" class="text-[11px] font-bold px-2 py-1 rounded-lg bg-coral/10 text-coral hover:bg-coral hover:text-white transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral" title="Abonar a la deuda">💸 Abonar</button>
           <button onclick="incrementarDeudaDirecta(${d.id})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-azulelectrico rounded-lg text-xs font-bold transition cursor-pointer" title="Modificar monto inicial o nombre">
             ✏️
           </button>

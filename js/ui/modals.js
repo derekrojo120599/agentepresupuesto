@@ -154,6 +154,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     ocultarModalDeuda();
     ocultarModalIncremento();
+    ocultarModalAbono();
     ocultarModalEditarMovimiento();
     ocultarModalPresupuestos();
     ocultarModalMetaAhorro();

@@ -1813,6 +1813,111 @@
       </div>
     </div>
 
+    <!-- Modal Abonar a Deuda -->
+    <div
+      id="modalAbonoDeuda"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Abonar a Deuda"
+      class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto"
+      >
+        <div
+          class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3"
+        >
+          <h3
+            class="text-base sm:text-lg font-bold text-coral flex items-center gap-2"
+          >
+            <span>💸</span> Abonar a Deuda
+          </h3>
+          <button
+            onclick="ocultarModalAbono()"
+            aria-label="Cerrar modal"
+            class="p-2 text-slate-500 hover:text-coral transition font-bold text-base focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form id="formAbonoDeuda" class="space-y-3.5">
+          <input type="hidden" id="abonoDeudaId" />
+          <div>
+            <label for="abonoNombre"
+              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
+              >Deuda</label
+            >
+            <input
+              type="text"
+              id="abonoNombre"
+              readonly
+              tabindex="-1"
+              class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-azulcielo/20 p-2.5 rounded-xl text-slate-700 dark:text-azulcielo text-sm font-bold focus:outline-none"
+            />
+          </div>
+          <div
+            id="abonoInfoRestante"
+            class="flex items-center justify-between p-3 rounded-xl bg-coral/10 border border-coral/30 text-xs"
+          >
+            <span class="text-slate-600 dark:text-azulcielo font-semibold">
+              Saldo restante:
+            </span>
+            <span
+              id="abonoRestanteValor"
+              class="font-black text-coral font-mono-num"
+              >$0.00</span
+            >
+          </div>
+          <div>
+            <label for="abonoMonto"
+              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
+              >Monto a abonar ($)</label
+            >
+            <input
+              type="number"
+              id="abonoMonto"
+              step="0.01"
+              min="0.01"
+              inputmode="decimal"
+              required
+              placeholder="0.00"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-sm focus:border-azulelectrico focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label for="abonoDescripcion"
+              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
+              >Concepto (opcional)</label
+            >
+            <input
+              type="text"
+              id="abonoDescripcion"
+              placeholder="Ej: Abono parcial de la deuda"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2.5 rounded-xl text-slate-900 dark:text-crema text-sm focus:border-azulelectrico focus:outline-none transition"
+            />
+          </div>
+          <div
+            class="flex gap-2 pt-3 border-t border-slate-100 dark:border-azulcielo/20"
+          >
+            <button
+              type="button"
+              onclick="ocultarModalAbono()"
+              class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="flex-1 py-3 bg-coral hover:bg-coral-hover text-white font-bold rounded-xl text-xs transition shadow-md"
+            >
+              Abonar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal Editar Movimiento -->
     <div
       id="modalEditarMovimiento"

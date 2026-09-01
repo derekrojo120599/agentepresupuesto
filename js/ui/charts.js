@@ -115,8 +115,8 @@ function actualizarInterfaz() {
               <td class="p-3 text-right font-black ${restante === 0 ? "text-slate-400 line-through" : "text-coral"}">$${restante.toFixed(2)}</td>
               <td class="p-3 text-center">
                 <div class="flex justify-center items-center gap-1">
-                  <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs p-1 cursor-pointer">✏️</button>
-                  <button onclick="eliminarDeuda(${d.id})" class="text-slate-400 hover:text-coral p-1 cursor-pointer">🗑️</button>
+                  <button onclick="incrementarDeudaDirecta(${d.id})" aria-label="Editar deuda" class="text-xs p-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-azulelectrico rounded-xl">✏️</button>
+                  <button onclick="eliminarDeuda(${d.id})" aria-label="Eliminar deuda" class="text-slate-500 hover:text-coral p-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral rounded-xl">🗑️</button>
                 </div>
               </td>
             </tr>
@@ -136,8 +136,8 @@ function actualizarInterfaz() {
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-900 dark:text-crema">${escapeHTML(d.nombre)}</span>
                 <div class="flex items-center gap-1">
-                  <button onclick="incrementarDeudaDirecta(${d.id})" class="text-xs p-1 cursor-pointer">✏️</button>
-                  <button onclick="eliminarDeuda(${d.id})" class="text-xs p-1 text-coral cursor-pointer">🗑️</button>
+                  <button onclick="incrementarDeudaDirecta(${d.id})" aria-label="Editar deuda" class="text-xs p-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-azulelectrico rounded-xl">✏️</button>
+                  <button onclick="eliminarDeuda(${d.id})" aria-label="Eliminar deuda" class="text-xs p-1 text-coral cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral rounded-xl">🗑️</button>
                 </div>
               </div>
               <div class="flex justify-between text-xs font-semibold">

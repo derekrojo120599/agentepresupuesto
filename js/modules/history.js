@@ -202,8 +202,8 @@ function renderizarHistorialFiltrado() {
       <td class="p-3 text-center">
         <div class="flex items-center justify-center gap-1">
           <button onclick="duplicarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1 cursor-pointer" title="Duplicar">📋</button>
-          <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1 cursor-pointer" title="Editar">✏️</button>
-          <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1 cursor-pointer" title="Eliminar">🗑️</button>
+          <button onclick="editarTransaccion(${t.id})" class="text-slate-500 focus:outline-none focus:ring-2 focus:ring-azulelectrico rounded-xl hover:text-azulelectrico p-1 cursor-pointer" title="Editar" aria-label="Editar transacción">✏️</button>
+          <button onclick="eliminarTransaccion(${t.id})" class="text-slate-500 focus:outline-none focus:ring-2 focus:ring-coral rounded-xl hover:text-coral p-1 cursor-pointer" title="Eliminar" aria-label="Eliminar transacción">🗑️</button>
         </div>
       </td>
     </tr>
@@ -256,8 +256,8 @@ function renderizarHistorialFiltrado() {
       <div class="flex items-center gap-1.5 shrink-0">
         <span class="text-sm font-black ${colorMonto}">${signo}$${montoNum.toFixed(2)}</span>
         <button onclick="duplicarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5 cursor-pointer" title="Duplicar">📋</button>
-        <button onclick="editarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5 cursor-pointer" title="Editar">✏️</button>
-        <button onclick="eliminarTransaccion(${t.id})" class="text-slate-400 hover:text-coral p-1.5 cursor-pointer" title="Eliminar">🗑️</button>
+        <button onclick="editarTransaccion(${t.id})" class="text-slate-500 focus:outline-none focus:ring-2 focus:ring-azulelectrico rounded-xl hover:text-azulelectrico p-1.5 cursor-pointer" title="Editar" aria-label="Editar transacción">✏️</button>
+        <button onclick="eliminarTransaccion(${t.id})" class="text-slate-500 focus:outline-none focus:ring-2 focus:ring-coral rounded-xl hover:text-coral p-1.5 cursor-pointer" title="Eliminar" aria-label="Eliminar transacción">🗑️</button>
       </div>
     </div>
   `;

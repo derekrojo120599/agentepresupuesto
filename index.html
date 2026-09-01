@@ -105,12 +105,14 @@
 
         <div
           id="avisoAuth"
+          role="alert"
           class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"
         ></div>
 
         <form id="formAuth" class="space-y-4">
           <div>
             <label
+              for="authEmail"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
               >Correo Electrónico</label
             >
@@ -120,11 +122,12 @@
               required
               autocomplete="email"
               placeholder="tu@correo.com"
-              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition"
             />
           </div>
           <div>
             <label
+              for="authPassword"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
               >Contraseña</label
             >
@@ -135,7 +138,7 @@
               minlength="6"
               autocomplete="current-password"
               placeholder="••••••••"
-              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition"
             />
           </div>
           <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
@@ -164,7 +167,7 @@
               ></div>
             </div>
             <div
-              class="relative px-4 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+              class="relative px-4 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
             >
               O ingresar con
             </div>
@@ -264,24 +267,27 @@
               id="btnHeaderConfiguracion"
               onclick="cambiarPestana('configuracion')"
               title="Configuración de Categorías"
-              class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+              aria-label="Configuración de Categorías"
+              class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-azulelectrico transition active:scale-95 cursor-pointer"
             >
-              <span>⚙️</span>
+              <span aria-hidden="true">⚙️</span>
             </button>
             <!-- Toggle Tema -->
             <button
               id="btnToggleTema"
               onclick="alternarTema()"
               title="Cambiar tema"
-              class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+              aria-label="Alternar modo claro o oscuro"
+              class="p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-azulelectrico transition active:scale-95 cursor-pointer"
             >
-              <span id="iconoTema">🌙</span>
+              <span id="iconoTema" aria-hidden="true">🌙</span>
             </button>
             <!-- Cerrar sesión -->
             <button
               type="button"
               onclick="cerrarSesion()"
-              class="text-xs font-bold text-coral bg-coral/10 hover:bg-coral hover:text-white border border-coral/30 px-3 py-2 rounded-xl transition active:scale-95 cursor-pointer"
+              aria-label="Cerrar Sesión"
+              class="text-xs font-bold text-coral bg-coral/10 hover:bg-coral hover:text-white border border-coral/30 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-coral transition active:scale-95 cursor-pointer"
             >
               Salir
             </button>
@@ -293,13 +299,13 @@
           class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-azulcielo/15"
         >
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-500 dark:text-azulcielo"
-              >Periodo:</span
+            <label for="mesFiltro" class="text-xs font-bold text-slate-500 dark:text-azulcielo"
+              >Periodo:</label
             >
             <input
               type="month"
               id="mesFiltro"
-              class="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 text-slate-900 dark:text-crema px-3 py-1.5 rounded-xl font-bold cursor-pointer focus:border-azulelectrico focus:outline-none transition text-xs shadow-sm"
+              class="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 text-slate-900 dark:text-crema px-3 py-1.5 rounded-xl font-bold cursor-pointer focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition text-xs shadow-sm"
             />
           </div>
           <span
@@ -312,67 +318,87 @@
       <!-- Aviso de estado global -->
       <div
         id="avisoEstado"
+        role="alert"
         class="hidden text-xs sm:text-sm p-3.5 rounded-2xl border font-medium"
       ></div>
 
       <!-- Barra de Navegación por Pestañas (Desktop) -->
       <nav
         class="hidden sm:block bg-white dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 shadow-sm overflow-x-auto no-scrollbar"
+        aria-label="Navegación principal"
       >
-        <div class="flex items-center gap-1 sm:gap-1.5 min-w-max">
+        <div class="flex items-center gap-1 sm:gap-1.5 min-w-max" role="tablist">
           <button
             id="navTabResumen"
+            role="tab"
+            aria-selected="true"
+            aria-controls="tabContentResumen"
             onclick="cambiarPestana('resumen')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25 focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
-            <span>📊</span>
+            <span aria-hidden="true">📊</span>
             <span>Resumen</span>
           </button>
           <button
             id="navTabRegistrar"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabContentRegistrar"
             onclick="cambiarPestana('registrar')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
-            <span>✍️</span>
+            <span aria-hidden="true">✍️</span>
             <span>Registrar</span>
           </button>
           <button
             id="navTabHistorial"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabContentHistorial"
             onclick="cambiarPestana('historial')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
-            <span>📜</span>
+            <span aria-hidden="true">📜</span>
             <span>Historial</span>
           </button>
           <button
             id="navTabPresupuestos"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabContentPresupuestos"
             onclick="cambiarPestana('presupuestos')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
-            <span>📉</span>
+            <span aria-hidden="true">📉</span>
             <span>Presupuestos</span>
           </button>
           <button
             id="navTabMetas"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabContentMetas"
             onclick="cambiarPestana('metas')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
-            <span>🎯</span>
+            <span aria-hidden="true">🎯</span>
             <span>Metas</span>
           </button>
           <button
             id="navTabDeudas"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabContentDeudas"
             onclick="cambiarPestana('deudas')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
-            <span>💳</span>
+            <span aria-hidden="true">💳</span>
             <span>Deudas</span>
           </button>
         </div>
       </nav>
 
       <!-- PESTAÑA 1: Resumen (Métricas + Gráficos) -->
-      <div id="tabContentResumen" class="space-y-5 sm:space-y-6 fade-in">
+      <div id="tabContentResumen" role="tabpanel" aria-labelledby="navTabResumen" class="space-y-5 sm:space-y-6 fade-in">
         <!-- 1. Resumen de Métricas Financieras (Layout adaptable 2 columnas en mobile) -->
         <div class="grid grid-cols-2 lg:grid-cols-6 gap-2.5 sm:gap-4">
           <!-- Balance Neto (Hero Card con iluminación y status pill) -->
@@ -442,7 +468,7 @@
               </p>
               <p
                 id="subIngresos"
-                class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate"
+                class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-0.5 truncate"
               >
                 0 mov.
               </p>
@@ -473,7 +499,7 @@
               </p>
               <p
                 id="subGastos"
-                class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5"
+                class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-0.5"
               >
                 0 mov.
               </p>
@@ -504,7 +530,7 @@
               </p>
               <p
                 id="subAhorro"
-                class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate"
+                class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-0.5 truncate"
               >
                 En fondos
               </p>
@@ -535,7 +561,7 @@
               </p>
               <p
                 id="subDeudas"
-                class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-0.5 truncate"
+                class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-0.5 truncate"
               >
                 Por pagar
               </p>
@@ -668,7 +694,7 @@
       </div>
 
       <!-- PESTAÑA 2: Registrar Movimiento -->
-      <div id="tabContentRegistrar" class="hidden fade-in">
+      <div id="tabContentRegistrar" role="tabpanel" aria-labelledby="navTabRegistrar" class="hidden fade-in">
         <div
           id="seccionRegistrar"
           class="max-w-xl mx-auto bg-white dark:bg-slate-900 p-5 sm:p-7 rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-xl shadow-slate-900/5 dark:shadow-none space-y-5 relative overflow-hidden"
@@ -701,7 +727,7 @@
           <form id="formMovimiento" class="space-y-4">
             <!-- 1. Tipo de Movimiento Segmentado -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo">
+              <label for="tipo" class="block text-xs font-bold text-slate-600 dark:text-azulcielo">
                 Tipo de Operación
               </label>
               <div class="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-azulcielo/20">
@@ -740,7 +766,7 @@
             <!-- 2. Hero Box: Monto & Selector de Moneda -->
             <div class="bg-slate-50 dark:bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-azulcielo/20 space-y-3 shadow-inner">
               <div class="flex justify-between items-center">
-                <label class="block text-xs font-bold text-slate-600 dark:text-azulcielo flex items-center gap-1.5">
+                <label for="monto" class="block text-xs font-bold text-slate-600 dark:text-azulcielo flex items-center gap-1.5">
                   <span>💵</span> Monto a Registrar
                 </label>
                 <!-- Selector de Moneda -->
@@ -764,7 +790,7 @@
 
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <span id="simboloMonedaInput" class="text-xl sm:text-2xl font-black text-slate-400 dark:text-azulcielo/60 font-mono-num">$</span>
+                  <span id="simboloMonedaInput" class="text-xl sm:text-2xl font-black text-slate-500 dark:text-azulcielo/60 font-mono-num">$</span>
                 </div>
                 <input
                   type="number"
@@ -774,7 +800,7 @@
                   inputmode="decimal"
                   required
                   placeholder="0.00"
-                  class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 pl-9 sm:pl-10 pr-4 py-3 sm:py-3.5 rounded-xl text-slate-900 dark:text-crema font-black text-xl sm:text-2xl tracking-tight font-mono-num focus:border-azulelectrico focus:ring-4 focus:ring-azulelectrico/10 focus:outline-none transition shadow-sm"
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-azulcielo/30 pl-9 sm:pl-10 pr-4 py-3 sm:py-3.5 rounded-xl text-slate-900 dark:text-crema font-black text-xl sm:text-2xl tracking-tight font-mono-num focus:border-azulelectrico focus:ring-4 focus:ring-azulelectrico/40 focus:outline-none transition shadow-sm"
                 />
               </div>
 
@@ -805,7 +831,7 @@
             <!-- 3. Fecha & Categoría -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label
+                <label for="fecha"
                   class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1 flex items-center gap-1"
                 >
                   <span>📅</span> Fecha
@@ -814,12 +840,12 @@
                   type="date"
                   id="fecha"
                   required
-                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-xs font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition shadow-sm cursor-pointer"
+                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-xl text-slate-900 dark:text-crema text-xs font-bold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition shadow-sm cursor-pointer"
                 />
               </div>
 
               <div>
-                <label
+                <label for="categoria"
                   class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1 flex items-center gap-1"
                 >
                   <span>🏷️</span> Categoría
@@ -833,7 +859,7 @@
 
             <!-- Selector dinámico de Deudas -->
             <div id="contenedorDeudaSelect" class="hidden p-3.5 rounded-2xl bg-coral/10 border border-coral/30 space-y-1.5 animate-fadeIn">
-              <label class="block text-xs text-coral font-black flex items-center gap-1.5">
+              <label for="deudaObjetivo" class="block text-xs text-coral font-black flex items-center gap-1.5">
                 <span>💳</span> Deuda a Amortizar
               </label>
               <select
@@ -844,7 +870,7 @@
 
             <!-- Selector dinámico de Metas de Ahorro -->
             <div id="contenedorMetaAhorroSelect" class="hidden p-3.5 rounded-2xl bg-azulcielo/10 border border-azulcielo/30 space-y-2 animate-fadeIn">
-              <label
+              <label for="metaAhorroSelect"
                 id="labelMetaAhorroSelect"
                 class="block text-xs text-azulcielo-dark dark:text-azulcielo font-black flex items-center gap-1.5"
               >
@@ -862,7 +888,7 @@
 
             <!-- Selector de Origen de Fondos para Ahorro -->
             <div id="contenedorOrigenAhorroSelect" class="hidden p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-azulcielo/20 space-y-1.5 animate-fadeIn">
-              <label
+              <label for="origenAhorro"
                 class="block text-xs text-slate-700 dark:text-azulcielo font-black flex items-center gap-1.5"
               >
                 <span>🏦</span> Origen de los Fondos
@@ -881,7 +907,7 @@
 
             <!-- 4. Descripción -->
             <div>
-              <label
+              <label for="descripcion"
                 class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1 flex items-center gap-1"
               >
                 <span>📝</span> Concepto o Descripción
@@ -891,7 +917,7 @@
                 id="descripcion"
                 placeholder="Ej: Supermercado, Corte de cabello, Honorarios..."
                 required
-                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3.5 rounded-xl text-slate-900 dark:text-crema text-sm font-semibold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/20 focus:outline-none transition shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3.5 rounded-xl text-slate-900 dark:text-crema text-sm font-semibold focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-600"
               />
             </div>
 
@@ -908,7 +934,7 @@
       </div>
 
       <!-- PESTAÑA 3: Historial de Transacciones -->
-      <div id="tabContentHistorial" class="hidden fade-in">
+      <div id="tabContentHistorial" role="tabpanel" aria-labelledby="navTabHistorial" class="hidden fade-in">
         <div
           class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4"
         >
@@ -1057,7 +1083,7 @@
       </div>
 
       <!-- PESTAÑA 4: Sección Presupuestos Límites Mensuales -->
-      <div id="tabContentPresupuestos" class="hidden fade-in">
+      <div id="tabContentPresupuestos" role="tabpanel" aria-labelledby="navTabPresupuestos" class="hidden fade-in">
         <div
           class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5"
         >
@@ -1092,7 +1118,7 @@
       </div>
 
       <!-- PESTAÑA 5: Metas de Ahorro -->
-      <div id="tabContentMetas" class="hidden fade-in">
+      <div id="tabContentMetas" role="tabpanel" aria-labelledby="navTabMetas" class="hidden fade-in">
         <div
           class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-3.5"
         >
@@ -1124,7 +1150,7 @@
       </div>
 
       <!-- PESTAÑA 6: Control de Deudas -->
-      <div id="tabContentDeudas" class="hidden fade-in">
+      <div id="tabContentDeudas" role="tabpanel" aria-labelledby="navTabDeudas" class="hidden fade-in">
         <div
           class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-azulcielo/20 shadow-sm space-y-4"
         >
@@ -1178,6 +1204,8 @@
       <!-- PESTAÑA 7: Configuración de Categorías -->
       <div
         id="tabContentConfiguracion"
+        role="tabpanel"
+        aria-labelledby="btnHeaderConfiguracion"
         class="hidden fade-in space-y-4 sm:space-y-6"
       >
         <div class="flex items-center justify-between">
@@ -1269,7 +1297,7 @@
           <div
             class="pt-4 border-t border-slate-100 dark:border-azulcielo/15 flex items-center justify-between"
           >
-            <p class="text-[11px] text-slate-400 dark:text-azulcielo/70">
+            <p class="text-[11px] text-slate-500 dark:text-azulcielo/70">
               ¿Deseas restaurar la lista original?
             </p>
             <button
@@ -1348,6 +1376,9 @@
     <!-- Modal Configurar Presupuestos -->
     <div
       id="modalPresupuestos"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloModalPresupuestos"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
     >
       <div
@@ -1361,10 +1392,11 @@
           >
             <span>⚙️</span> Límites de Presupuesto
           </h3>
-          <button
-            onclick="ocultarModalPresupuestos()"
-            class="p-2 text-slate-400 hover:text-coral transition font-bold text-base"
-          >
+            <button
+              onclick="ocultarModalPresupuestos()"
+              aria-label="Cerrar modal"
+              class="p-2 text-slate-500 hover:text-coral transition font-bold text-base focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+            >
             ✕
           </button>
         </div>
@@ -1399,6 +1431,9 @@
     <!-- Modal Meta de Ahorro -->
     <div
       id="modalMetaAhorro"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Meta de Ahorro"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
     >
       <div
@@ -1413,10 +1448,11 @@
           >
             <span>🎯</span> Nueva Meta
           </h3>
-          <button
-            onclick="ocultarModalMetaAhorro()"
-            class="p-2 text-slate-400 hover:text-coral transition font-bold text-base"
-          >
+            <button
+              onclick="ocultarModalMetaAhorro()"
+              aria-label="Cerrar modal"
+              class="p-2 text-slate-500 hover:text-coral transition font-bold text-base focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+            >
             ✕
           </button>
         </div>
@@ -1424,7 +1460,7 @@
         <form id="formMetaAhorro" class="space-y-3.5">
           <input type="hidden" id="metaId" />
           <div>
-            <label
+            <label for="metaNombre"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Nombre del Objetivo</label
             >
@@ -1439,7 +1475,7 @@
 
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label
+              <label for="metaMonto"
                 class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
                 >Monto Objetivo ($)</label
               >
@@ -1455,7 +1491,7 @@
               />
             </div>
             <div>
-              <label
+              <label for="metaIcono"
                 class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
                 >Ícono</label
               >
@@ -1474,7 +1510,7 @@
           </div>
 
           <div>
-            <label
+            <label for="metaFechaLimite"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Fecha Límite (Opcional)</label
             >
@@ -1509,6 +1545,10 @@
     <!-- Modal Alerta Inteligente -->
     <div
       id="modalAlertaInteligente"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="modalAlertaTitulo"
+      aria-describedby="modalAlertaMensaje"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-[60] fade-in"
     >
       <div
@@ -1529,6 +1569,9 @@
     <!-- Modal Crear Deuda -->
     <div
       id="modalDeuda"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Deuda"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
     >
       <div
@@ -1542,17 +1585,18 @@
           >
             <span>💳</span> Registrar Deuda
           </h3>
-          <button
-            onclick="ocultarModalDeuda()"
-            class="p-2 text-slate-400 hover:text-coral transition font-bold text-base"
-          >
+            <button
+              onclick="ocultarModalDeuda()"
+              aria-label="Cerrar modal"
+              class="p-2 text-slate-500 hover:text-coral transition font-bold text-base focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+            >
             ✕
           </button>
         </div>
 
         <form id="formNuevaDeuda" class="space-y-3.5">
           <div>
-            <label
+            <label for="deudaNombre"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Acreedor / Concepto</label
             >
@@ -1565,7 +1609,7 @@
             />
           </div>
           <div>
-            <label
+            <label for="deudaMontoInicial"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Monto Inicial ($)</label
             >
@@ -1604,6 +1648,9 @@
     <!-- Modal Editar Deuda -->
     <div
       id="modalIncrementoDeuda"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Editar Deuda"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
     >
       <div
@@ -1617,10 +1664,11 @@
           >
             <span>✏️</span> Editar Deuda
           </h3>
-          <button
-            onclick="ocultarModalIncremento()"
-            class="p-2 text-slate-400 hover:text-coral transition font-bold text-base"
-          >
+            <button
+              onclick="ocultarModalIncremento()"
+              aria-label="Cerrar modal"
+              class="p-2 text-slate-500 hover:text-coral transition font-bold text-base focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+            >
             ✕
           </button>
         </div>
@@ -1628,7 +1676,7 @@
         <form id="formIncrementoDeuda" class="space-y-3.5">
           <input type="hidden" id="incrementoDeudaId" />
           <div>
-            <label
+            <label for="incrementoNombre"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Nombre</label
             >
@@ -1640,7 +1688,7 @@
             />
           </div>
           <div>
-            <label
+            <label for="incrementoMonto"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Monto acumulado total ($)</label
             >
@@ -1678,6 +1726,9 @@
     <!-- Modal Editar Movimiento -->
     <div
       id="modalEditarMovimiento"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Editar Movimiento"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
     >
       <div
@@ -1691,10 +1742,11 @@
           >
             <span>✏️</span> Editar Movimiento
           </h3>
-          <button
-            onclick="ocultarModalEditarMovimiento()"
-            class="p-2 text-slate-400 hover:text-coral transition font-bold text-base"
-          >
+            <button
+              onclick="ocultarModalEditarMovimiento()"
+              aria-label="Cerrar modal"
+              class="p-2 text-slate-500 hover:text-coral transition font-bold text-base focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+            >
             ✕
           </button>
         </div>
@@ -1702,7 +1754,7 @@
         <form id="formEditarMovimiento" class="space-y-3.5">
           <input type="hidden" id="editId" />
           <div>
-            <label
+            <label for="editTipo"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Tipo</label
             >
@@ -1717,7 +1769,7 @@
           </div>
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label
+              <label for="editMonto"
                 class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
                 >Monto ($)</label
               >
@@ -1732,7 +1784,7 @@
               />
             </div>
             <div>
-              <label
+              <label for="editFecha"
                 class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
                 >Fecha</label
               >
@@ -1745,7 +1797,7 @@
             </div>
           </div>
           <div>
-            <label
+            <label for="editCategoria"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Categoría</label
             >
@@ -1755,7 +1807,7 @@
             ></select>
           </div>
           <div id="editContenedorDeudaSelect" class="hidden">
-            <label class="block text-xs text-coral font-bold mb-1"
+            <label for="editDeudaObjetivo" class="block text-xs text-coral font-bold mb-1"
               >Deuda a Pagar</label
             >
             <select
@@ -1764,7 +1816,7 @@
             ></select>
           </div>
           <div id="editContenedorOrigenAhorroSelect" class="hidden">
-            <label class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
+            <label for="editOrigenAhorro" class="block text-xs text-azulcielo-dark dark:text-azulcielo font-bold mb-1"
               >Origen del Dinero</label
             >
             <select
@@ -1776,7 +1828,7 @@
             </select>
           </div>
           <div>
-            <label
+            <label for="editDescripcion"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Descripción</label
             >
@@ -1809,8 +1861,11 @@
     </div>
 
     <!-- Modal Crear / Editar Categoría -->
-    <div
+      <div
       id="modalCategoria"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Categoría"
       class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
     >
       <div
@@ -1825,11 +1880,12 @@
           >
             <span>🏷️</span> Nueva Categoría
           </h3>
-          <button
-            type="button"
-            onclick="ocultarModalCategoria()"
-            class="p-2 text-slate-400 hover:text-coral transition font-bold text-base cursor-pointer"
-          >
+            <button
+              type="button"
+              onclick="ocultarModalCategoria()"
+              aria-label="Cerrar modal"
+              class="p-2 text-slate-500 hover:text-coral transition font-bold text-base cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+            >
             ✕
           </button>
         </div>
@@ -1838,7 +1894,7 @@
           <input type="hidden" id="catEditNombreOriginal" />
 
           <div>
-            <label
+            <label for="catNombre"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Nombre de la Categoría</label
             >
@@ -1852,7 +1908,7 @@
           </div>
 
           <div>
-            <label
+            <label for="catTipo"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
               >Tipo de Operación</label
             >
@@ -1867,7 +1923,7 @@
           </div>
 
           <div>
-            <label
+            <label for="catIcono"
               class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
               >Ícono / Emoji</label
             >
@@ -1880,7 +1936,7 @@
                 maxlength="4"
                 class="w-14 text-center text-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-2 rounded-xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:outline-none transition"
               />
-              <span class="text-xs text-slate-400 dark:text-azulcielo"
+              <span class="text-xs text-slate-500 dark:text-azulcielo"
                 >Elige un emoji rápido o escribe el tuyo:</span
               >
             </div>

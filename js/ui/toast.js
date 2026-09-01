@@ -22,6 +22,8 @@ function mostrarToast(mensaje, tipo = "info", duracion = 3200) {
   };
 
   toast.className = `p-3.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center justify-between gap-3 pointer-events-auto border toast-enter ${estilos[tipo] || estilos.info}`;
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
   toast.innerHTML = `
     <div class="flex items-center gap-2.5">
       <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">${iconos[tipo] || "•"}</span>
@@ -46,6 +48,8 @@ function mostrarToastDeshacer(mensaje, onUndo) {
   const toast = document.createElement("div");
   toast.className =
     "p-3.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center justify-between gap-3 pointer-events-auto border toast-enter bg-slate-900 dark:bg-slate-800 text-white border-slate-700";
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
 
   toast.innerHTML = `
     <div class="flex items-center gap-2.5">

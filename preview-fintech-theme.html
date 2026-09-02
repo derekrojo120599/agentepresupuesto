@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Presupuesto Mensual — Vista Previa del Sistema Visual Real</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              950: '#06160E', // Fondo principal modo oscuro
+              900: '#0C2417', // Tarjetas / contenedores elevados
+              850: '#112F1F', // Superficies interactivas hover
+              800: '#173D29', // Bordes e inputs
+              border: '#1B4730', // Separadores
+            },
+            lime: {
+              accent: '#A3E635', // lime-400 acento vibrante constante
+              hover: '#BEF264',
+              glow: 'rgba(163, 230, 53, 0.25)',
+              text: '#05160E',   // Texto oscuro estricto (11.5:1 contraste AAA)
+            },
+            mint: {
+              DEFAULT: '#10B981', // Ingresos / Verde semántico frío
+              light: '#D1FAE5',
+              dark: '#065F46',
+            },
+            coral: {
+              DEFAULT: '#F87171', // Gastos / Pérdidas / Deudas
+              light: '#FEE2E2',
+              dark: '#991B1B',
+            },
+            amber: {
+              DEFAULT: '#F59E0B', // Ahorros / Metas
+              light: '#FEF3C7',
+            },
+            tint: {
+              primary: '#F0FDF4',   // Blanco menta suave (cero halación en OLED)
+              secondary: '#94A89C', // Gris verdoso calmado
+              muted: '#637A6D',     // Labels y fechas
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-forest-950 text-gray-900 dark:text-tint-primary min-h-screen flex flex-col md:flex-row transition-colors duration-200">
+
+  <!-- ================= SIDEBAR (DESKTOP: md:flex) ================= -->
+  <aside class="hidden md:flex flex-col justify-between w-72 bg-white dark:bg-forest-950 border-r border-gray-200/80 dark:border-forest-border/40 p-5 sm:p-6 shrink-0 min-h-screen sticky top-0 h-screen">
+    <div class="space-y-6">
+      <!-- Logo e Identidad de Presupuesto Mensual -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-lime-accent flex items-center justify-center text-lime-text font-black text-xl shadow-md shadow-lime-accent/20">
+            $
+          </div>
+          <div>
+            <h1 class="font-black text-lg tracking-tight text-gray-900 dark:text-white leading-tight">Presupuesto</h1>
+            <p class="text-[11px] font-semibold text-gray-500 dark:text-tint-secondary">Gestión Personal & P2P</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pestañas de Navegación del Proyecto Real -->
+      <nav class="space-y-1.5" role="tablist">
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-tint-muted">
+          Vistas del Proyecto
+        </div>
+
+        <button onclick="cambiarPestana('resumen')" id="tabBtn-resumen" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all text-left bg-gray-100 dark:bg-forest-900 text-gray-900 dark:text-tint-primary shadow-sm">
+          <span class="text-base">📊</span>
+          <span class="flex-1">Resumen General</span>
+          <div class="w-2 h-4 rounded-full bg-lime-accent"></div>
+        </button>
+
+        <button onclick="cambiarPestana('registrar')" id="tabBtn-registrar" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left text-gray-600 dark:text-tint-secondary hover:bg-gray-50 dark:hover:bg-forest-900/60 hover:text-gray-900 dark:hover:text-white">
+          <span class="text-base">✍️</span>
+          <span class="flex-1">Registrar Movimiento</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-lime-accent/20 text-lime-800 dark:text-lime-accent">Nuevo</span>
+        </button>
+
+        <button onclick="cambiarPestana('historial')" id="tabBtn-historial" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left text-gray-600 dark:text-tint-secondary hover:bg-gray-50 dark:hover:bg-forest-900/60 hover:text-gray-900 dark:hover:text-white">
+          <span class="text-base">📜</span>
+          <span class="flex-1">Historial & Filtros</span>
+        </button>
+
+        <button onclick="cambiarPestana('presupuestos')" id="tabBtn-presupuestos" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left text-gray-600 dark:text-tint-secondary hover:bg-gray-50 dark:hover:bg-forest-900/60 hover:text-gray-900 dark:hover:text-white">
+          <span class="text-base">📉</span>
+          <span class="flex-1">Presupuestos</span>
+        </button>
+
+        <button onclick="cambiarPestana('metas')" id="tabBtn-metas" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left text-gray-600 dark:text-tint-secondary hover:bg-gray-50 dark:hover:bg-forest-900/60 hover:text-gray-900 dark:hover:text-white">
+          <span class="text-base">🎯</span>
+          <span class="flex-1">Metas de Ahorro</span>
+        </button>
+
+        <button onclick="cambiarPestana('deudas')" id="tabBtn-deudas" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left text-gray-600 dark:text-tint-secondary hover:bg-gray-50 dark:hover:bg-forest-900/60 hover:text-gray-900 dark:hover:text-white">
+          <span class="text-base">💳</span>
+          <span class="flex-1">Deudas & Cuotas</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Toggle de Modo Oscuro / Claro y Usuario -->
+    <div class="pt-6 border-t border-gray-100 dark:border-forest-border/40 space-y-3">
+      <div class="p-3 rounded-2xl bg-gray-100/70 dark:bg-forest-900 border border-gray-200/60 dark:border-forest-border/40 flex items-center justify-between">
+        <span class="text-xs font-bold text-gray-700 dark:text-tint-secondary">Tema Visual</span>
+        <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-xl bg-white dark:bg-forest-800 text-xs font-bold shadow-sm hover:scale-105 transition-transform flex items-center gap-1.5 text-gray-800 dark:text-white border border-gray-200/50 dark:border-forest-border">
+          <span id="themeIcon">🌙</span>
+          <span id="themeLabel">Modo Oscuro</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 px-1">
+        <div class="w-9 h-9 rounded-2xl bg-gray-200 dark:bg-forest-900 flex items-center justify-center font-bold text-xs text-gray-700 dark:text-tint-primary border border-gray-200 dark:border-forest-border/50">
+          DR
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-bold text-gray-900 dark:text-white truncate">derekrojo@gmail.com</p>
+          <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Conectado a Supabase
+          </p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= CONTENEDOR PRINCIPAL ================= -->
+  <main class="flex-1 flex flex-col min-w-0">
+
+    <!-- Header Superior Real -->
+    <header class="h-20 px-4 sm:px-10 border-b border-gray-200/80 dark:border-forest-border/40 bg-white/80 dark:bg-forest-950/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Logo solo en móvil (en desktop está en sidebar) -->
+        <div class="md:hidden w-9 h-9 rounded-xl bg-lime-accent flex items-center justify-center text-lime-text font-black text-base shadow-sm">
+          $
+        </div>
+        <div>
+          <h2 id="viewTitle" class="text-base sm:text-xl font-black text-gray-900 dark:text-tint-primary tracking-tight">Resumen General</h2>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="text-[11px] text-gray-500 dark:text-tint-muted">Período:</span>
+            <input type="month" value="2026-09" class="bg-gray-100 dark:bg-forest-900 border border-gray-200 dark:border-forest-border/60 text-[11px] font-bold rounded-lg px-2 py-0.5 text-gray-800 dark:text-tint-primary cursor-pointer" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Tasa de Cambio P2P -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-gray-100 dark:bg-forest-900 border border-gray-200 dark:border-forest-border/50 text-xs">
+          <span class="text-xs">⚡</span>
+          <span class="text-gray-500 dark:text-tint-muted font-semibold">Tasa P2P:</span>
+          <strong class="text-gray-900 dark:text-white font-mono-num tabular-nums">41.85 Bs.</strong>
+        </div>
+
+        <!-- Botón Toggle de Tema en Header (móvil y desktop) -->
+        <button onclick="toggleTheme()" title="Cambiar tema" class="p-2.5 rounded-2xl bg-gray-100 dark:bg-forest-900 border border-gray-200 dark:border-forest-border/50 text-gray-700 dark:text-white hover:scale-105 transition-transform">
+          <span id="themeHeaderIcon">🌙</span>
+        </button>
+
+        <!-- Botón de Acción Principal (Lima Neón con texto oscuro) -->
+        <button onclick="cambiarPestana('registrar')" class="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-lime-accent hover:bg-lime-hover text-lime-text font-black text-xs sm:text-sm shadow-md shadow-lime-accent/20 transition-all hover:scale-[1.02] active:scale-[0.98] border border-lime-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span class="hidden sm:inline">Registrar Movimiento</span>
+          <span class="sm:hidden">Nuevo</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Área de Contenido por Vistas -->
+    <div class="p-4 sm:p-10 pb-28 md:pb-10 space-y-8 flex-1 overflow-y-auto">
+
+      <!-- ================= VISTA 1: RESUMEN GENERAL REAL ================= -->
+      <div id="vista-resumen" class="space-y-8">
+        
+        <!-- Tarjetas de Métricas Principales (Fintech Hero) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+          <!-- 1. Balance Neto Disponible -->
+          <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-tint-muted">Balance Disponible</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-lime-accent/20 text-lime-800 dark:text-lime-accent border border-lime-500/20">
+                Líquido
+              </span>
+            </div>
+            <div class="my-4">
+              <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight">
+                $3,485.50
+              </div>
+              <p class="text-xs text-gray-500 dark:text-tint-secondary mt-1">Saldo consolidado del mes</p>
+            </div>
+            <div class="pt-3 border-t border-gray-100 dark:border-forest-border/40 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span>🟢</span> Salud Financiera: Excelente
+            </div>
+          </div>
+
+          <!-- 2. Ingresos del Mes (Verde Menta frío) -->
+          <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-tint-muted">Ingresos Totales</span>
+              <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-forest-950 flex items-center justify-center text-mint font-black">
+                ↓
+              </div>
+            </div>
+            <div class="my-4">
+              <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight">
+                +$4,200.00
+              </div>
+              <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1">▲ +12% vs mes anterior</p>
+            </div>
+            <div class="pt-3 border-t border-gray-100 dark:border-forest-border/40 text-[11px] text-gray-500 dark:text-tint-muted">
+              5 movimientos registrados
+            </div>
+          </div>
+
+          <!-- 3. Gastos del Mes (Coral Cálido) -->
+          <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-tint-muted">Gastos Totales</span>
+              <div class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-forest-950 flex items-center justify-center text-coral font-black">
+                ↑
+              </div>
+            </div>
+            <div class="my-4">
+              <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight">
+                -$714.50
+              </div>
+              <p class="text-xs text-rose-500 dark:text-coral font-bold mt-1">▼ 17% de la meta planificada</p>
+            </div>
+            <div class="pt-3 border-t border-gray-100 dark:border-forest-border/40 text-[11px] text-gray-500 dark:text-tint-muted">
+              Mayor gasto: Comida & Supermercado
+            </div>
+          </div>
+
+          <!-- 4. Ahorros y Metas Acumuladas -->
+          <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-tint-muted">Ahorro Acumulado</span>
+              <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-forest-950 flex items-center justify-center text-amber-500 font-black">
+                ★
+              </div>
+            </div>
+            <div class="my-4">
+              <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight">
+                $1,850.00
+              </div>
+              <p class="text-xs text-gray-500 dark:text-tint-secondary mt-1">Repartido en 3 metas activas</p>
+            </div>
+            <div class="pt-3 border-t border-gray-100 dark:border-forest-border/40">
+              <div class="w-full bg-gray-100 dark:bg-forest-950 h-2 rounded-full overflow-hidden">
+                <div class="bg-lime-accent h-full rounded-full" style="width: 74%"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Gráfico Diario y Comparativa de Movimientos -->
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">Flujo Financiero Diario</h3>
+              <p class="text-xs text-gray-500 dark:text-tint-muted">Evolución de ingresos, gastos y ahorro a lo largo del mes</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-mint">
+                <span class="w-2.5 h-2.5 rounded-full bg-mint"></span> Ingresos
+              </span>
+              <span class="flex items-center gap-1 text-xs font-bold text-rose-500 dark:text-coral ml-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-coral"></span> Gastos
+              </span>
+              <span class="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 ml-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Ahorro
+              </span>
+            </div>
+          </div>
+
+          <div class="h-64 w-full">
+            <canvas id="graficoPreviewFlujo"></canvas>
+          </div>
+        </div>
+
+        <!-- Desglose por Categorías -->
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">Desglose de Gastos por Categoría</h3>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <div class="p-4 rounded-2xl bg-gray-50 dark:bg-forest-950 border border-gray-200/60 dark:border-forest-border/50 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-800 dark:text-tint-primary flex items-center gap-2">
+                  <span>🍔</span> Comida
+                </span>
+                <span class="text-xs font-black tabular-nums text-gray-900 dark:text-white">$320.00</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-gray-200 dark:bg-forest-900 overflow-hidden">
+                <div class="h-full bg-coral rounded-full" style="width: 44%"></div>
+              </div>
+              <p class="text-[11px] text-gray-400 dark:text-tint-muted">44% del total gastado</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-gray-50 dark:bg-forest-950 border border-gray-200/60 dark:border-forest-border/50 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-800 dark:text-tint-primary flex items-center gap-2">
+                  <span>💡</span> Servicios
+                </span>
+                <span class="text-xs font-black tabular-nums text-gray-900 dark:text-white">$180.50</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-gray-200 dark:bg-forest-900 overflow-hidden">
+                <div class="h-full bg-coral rounded-full" style="width: 25%"></div>
+              </div>
+              <p class="text-[11px] text-gray-400 dark:text-tint-muted">25% del total gastado</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-gray-50 dark:bg-forest-950 border border-gray-200/60 dark:border-forest-border/50 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-800 dark:text-tint-primary flex items-center gap-2">
+                  <span>🚗</span> Transporte
+                </span>
+                <span class="text-xs font-black tabular-nums text-gray-900 dark:text-white">$114.00</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-gray-200 dark:bg-forest-900 overflow-hidden">
+                <div class="h-full bg-coral rounded-full" style="width: 16%"></div>
+              </div>
+              <p class="text-[11px] text-gray-400 dark:text-tint-muted">16% del total gastado</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= VISTA 2: REGISTRAR MOVIMIENTO REAL (CORREGIDO) ================= -->
+      <div id="vista-registrar" class="hidden max-w-xl mx-auto space-y-6">
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          
+          <div class="border-b border-gray-100 dark:border-forest-border/40 pb-4">
+            <h3 class="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <span>✍️</span> Registrar Transacción
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-tint-muted mt-1">
+              Ingresa tus ingresos, gastos o aportes a fondos en Dólares o Bolívares
+            </p>
+          </div>
+
+          <form id="formDemoMovimiento" onsubmit="demoGuardarMovimiento(event)" class="space-y-5">
+
+            <!-- 1. Segmented Tipo -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-tint-secondary mb-1.5">
+                Tipo de Operación
+              </label>
+              <div class="grid grid-cols-3 gap-2 p-1.5 bg-gray-100 dark:bg-forest-950 rounded-2xl border border-gray-200/80 dark:border-forest-border">
+                <button type="button" onclick="seleccionarDemoTipo('gasto')" id="demoBtnGasto" class="py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-rose-500 text-white shadow-sm">
+                  🔴 Gasto
+                </button>
+                <button type="button" onclick="seleccionarDemoTipo('ingreso')" id="demoBtnIngreso" class="py-2.5 px-3 rounded-xl text-xs font-bold text-gray-600 dark:text-tint-secondary hover:text-gray-900 dark:hover:text-white">
+                  🟢 Ingreso
+                </button>
+                <button type="button" onclick="seleccionarDemoTipo('ahorro')" id="demoBtnAhorro" class="py-2.5 px-3 rounded-xl text-xs font-bold text-gray-600 dark:text-tint-secondary hover:text-gray-900 dark:hover:text-white">
+                  🟡 Ahorro
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Hero Box: Monto & Moneda -->
+            <div class="bg-gray-50 dark:bg-forest-950 p-4 sm:p-5 rounded-2xl border border-gray-200/80 dark:border-forest-border space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-600 dark:text-tint-secondary">Monto a Registrar</span>
+                <div class="flex p-0.5 bg-gray-200/80 dark:bg-forest-900 rounded-xl border border-gray-300 dark:border-forest-border">
+                  <button type="button" id="demoMonedaUSD" onclick="setDemoMoneda('USD')" class="px-3 py-1 text-xs font-black rounded-lg bg-white dark:bg-forest-800 text-gray-900 dark:text-white shadow-sm">
+                    USD ($)
+                  </button>
+                  <button type="button" id="demoMonedaBS" onclick="setDemoMoneda('BS')" class="px-3 py-1 text-xs font-semibold rounded-lg text-gray-500 dark:text-tint-muted">
+                    Bs.
+                  </button>
+                </div>
+              </div>
+
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-2xl font-black text-gray-400 dark:text-tint-muted font-mono-num" id="demoSimboloMoneda">$</span>
+                <input type="number" step="0.01" min="0.01" id="demoMonto" required placeholder="0.00" class="w-full bg-white dark:bg-forest-900 border border-gray-300 dark:border-forest-border pl-10 pr-4 py-3.5 rounded-2xl text-2xl font-black text-gray-900 dark:text-white font-mono-num tabular-nums focus:border-lime-500 focus:ring-4 focus:ring-lime-accent/20 focus:outline-none transition" />
+              </div>
+
+              <p id="demoAvisoExcedido" class="hidden text-xs font-bold text-coral p-2.5 rounded-xl bg-coral/10 border border-coral/30">
+                ⚠️ Estás gastando más del saldo disponible (quedarás en saldo negativo).
+              </p>
+            </div>
+
+            <!-- 3. Fecha & Categoría -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-tint-secondary mb-1">📅 Fecha</label>
+                <input type="date" value="2026-09-01" required class="w-full bg-gray-50 dark:bg-forest-950 border border-gray-300 dark:border-forest-border p-3 rounded-2xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-lime-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-tint-secondary mb-1">🏷️ Categoría</label>
+                <select id="demoCategoriaSelect" class="w-full bg-gray-50 dark:bg-forest-950 border border-gray-300 dark:border-forest-border p-3 rounded-2xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-lime-500">
+                  <option value="Comida">🍔 Comida</option>
+                  <option value="Ocio">🎮 Ocio</option>
+                  <option value="Servicios">💡 Servicios</option>
+                  <option value="Transporte">🚗 Transporte</option>
+                  <option value="Salud">🏥 Salud</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 4. Descripción -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-tint-secondary mb-1">📝 Concepto o Descripción</label>
+              <input type="text" id="demoDescripcion" required placeholder="Ej: Compra de supermercado, Almuerzo..." class="w-full bg-gray-50 dark:bg-forest-950 border border-gray-300 dark:border-forest-border p-3.5 rounded-2xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-lime-500 placeholder:text-gray-400 dark:placeholder:text-tint-muted" />
+            </div>
+
+            <!-- Botón Principal Lima (No bloqueado para gastos) -->
+            <button type="submit" id="demoBtnGuardar" class="w-full py-4 rounded-2xl bg-lime-accent hover:bg-lime-hover text-lime-text font-black text-sm sm:text-base shadow-lg shadow-lime-accent/20 transition-all hover:scale-[1.01] active:scale-[0.99] border border-lime-500/20 flex items-center justify-center gap-2 cursor-pointer">
+              <span>💾</span> Guardar Movimiento
+            </button>
+          </form>
+
+          <div id="demoToast" class="hidden p-3 rounded-2xl bg-emerald-500 text-white font-bold text-xs text-center shadow-lg animate-bounce">
+            ✅ ¡Movimiento guardado exitosamente!
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= VISTA 3: HISTORIAL & ACCIONES ================= -->
+      <div id="vista-historial" class="hidden space-y-6">
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">Historial de Operaciones</h3>
+              <p class="text-xs text-gray-500 dark:text-tint-muted">Filtra por tipo, categoría o período</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="px-3.5 py-1.5 rounded-xl bg-gray-100 dark:bg-forest-850 text-xs font-bold text-gray-800 dark:text-tint-primary border border-gray-200 dark:border-forest-border">
+                Exportar CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de Items del Historial -->
+          <div class="divide-y divide-gray-100 dark:divide-forest-border/40">
+            <div class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-forest-950 text-mint font-black flex items-center justify-center text-sm">
+                  ↓
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-gray-900 dark:text-tint-primary">Sueldo Quincenal</p>
+                  <p class="text-xs text-gray-400 dark:text-tint-muted">Sueldo / Salario • 01 Sep</p>
+                </div>
+              </div>
+              <span class="text-sm font-black text-emerald-600 dark:text-mint tabular-nums">+$2,100.00</span>
+            </div>
+
+            <div class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-forest-950 text-coral font-black flex items-center justify-center text-sm">
+                  ↑
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-gray-900 dark:text-tint-primary">Supermercado semanal</p>
+                  <p class="text-xs text-gray-400 dark:text-tint-muted">Comida • Ayer</p>
+                </div>
+              </div>
+              <span class="text-sm font-black text-gray-900 dark:text-tint-primary tabular-nums">-$84.50</span>
+            </div>
+
+            <div class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-forest-950 text-amber-500 font-black flex items-center justify-center text-sm">
+                  ★
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-gray-900 dark:text-tint-primary">Aporte a Fondo Vacaciones</p>
+                  <p class="text-xs text-gray-400 dark:text-tint-muted">Ahorro • 28 Ago</p>
+                </div>
+              </div>
+              <span class="text-sm font-black text-amber-600 dark:text-amber-400 tabular-nums">$150.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= VISTAS RESTANTES (PRESUPUESTOS, METAS, DEUDAS) ================= -->
+      <div id="vista-presupuestos" class="hidden space-y-6">
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">Límites Presupuestarios</h3>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>🍔 Comida ($320 / $500)</span>
+                <span class="text-gray-500">64%</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-gray-100 dark:bg-forest-950 overflow-hidden">
+                <div class="h-full bg-lime-accent rounded-full" style="width: 64%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>🎮 Ocio ($150 / $150)</span>
+                <span class="text-coral">100% Límite</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-gray-100 dark:bg-forest-950 overflow-hidden">
+                <div class="h-full bg-coral rounded-full" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="vista-metas" class="hidden space-y-6">
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">Metas de Ahorro Activas</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 rounded-2xl bg-gray-50 dark:bg-forest-950 border border-gray-200 dark:border-forest-border space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-sm">🏖️ Vacaciones 2027</span>
+                <span class="text-xs font-black text-lime-700 dark:text-lime-accent">85%</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-gray-200 dark:bg-forest-900 overflow-hidden">
+                <div class="h-full bg-lime-accent rounded-full" style="width: 85%"></div>
+              </div>
+              <p class="text-xs text-gray-500">$850.00 acumulados de $1,000.00 objetivo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="vista-deudas" class="hidden space-y-6">
+        <div class="bg-white dark:bg-forest-900 border border-gray-100 dark:border-forest-border/60 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">Control de Deudas y Cuotas</h3>
+          <div class="p-4 rounded-2xl bg-gray-50 dark:bg-forest-950 border border-gray-200 dark:border-forest-border flex justify-between items-center">
+            <div>
+              <p class="font-bold text-sm text-gray-900 dark:text-white">Tarjeta de Crédito Banco</p>
+              <p class="text-xs text-gray-400">Cuota 2 de 6 • Próximo pago: 15 Sep</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-black text-coral tabular-nums">$320.00 Restante</p>
+              <span class="text-[10px] font-bold text-emerald-600 dark:text-mint">Al día</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= BARRA DE NAVEGACIÓN INFERIOR MÓVIL (MOBILE BOTTOM DOCK) ================= -->
+  <!-- En móviles (pantallas pequeñas), el sidebar se oculta y aparece este dock flotante -->
+  <nav
+    id="mobileBottomNav"
+    class="md:hidden fixed z-40 bg-white/95 dark:bg-forest-900/95 backdrop-blur-xl border border-gray-200/90 dark:border-forest-border/60 px-2 py-1.5 flex justify-around items-center shadow-xl dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.5)] rounded-3xl"
+    style="
+      bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      left: 0.75rem;
+      right: 0.75rem;
+    "
+  >
+    <button
+      onclick="cambiarPestana('resumen')"
+      id="mobileNav-resumen"
+      class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition font-black flex-1 bg-lime-accent text-lime-text shadow-sm cursor-pointer"
+    >
+      <span class="text-base">📊</span>
+      <span class="text-[9px] font-bold mt-0.5">Resumen</span>
+    </button>
+    <button
+      onclick="cambiarPestana('registrar')"
+      id="mobileNav-registrar"
+      class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition text-gray-500 dark:text-tint-secondary font-semibold flex-1 cursor-pointer"
+    >
+      <span class="text-base">✍️</span>
+      <span class="text-[9px] font-semibold mt-0.5">Registrar</span>
+    </button>
+    <button
+      onclick="cambiarPestana('historial')"
+      id="mobileNav-historial"
+      class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition text-gray-500 dark:text-tint-secondary font-semibold flex-1 cursor-pointer"
+    >
+      <span class="text-base">📜</span>
+      <span class="text-[9px] font-semibold mt-0.5">Historial</span>
+    </button>
+    <button
+      onclick="cambiarPestana('presupuestos')"
+      id="mobileNav-presupuestos"
+      class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition text-gray-500 dark:text-tint-secondary font-semibold flex-1 cursor-pointer"
+    >
+      <span class="text-base">📉</span>
+      <span class="text-[9px] font-semibold mt-0.5">Límites</span>
+    </button>
+    <button
+      onclick="cambiarPestana('metas')"
+      id="mobileNav-metas"
+      class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition text-gray-500 dark:text-tint-secondary font-semibold flex-1 cursor-pointer"
+    >
+      <span class="text-base">🎯</span>
+      <span class="text-[9px] font-semibold mt-0.5">Metas</span>
+    </button>
+    <button
+      onclick="cambiarPestana('deudas')"
+      id="mobileNav-deudas"
+      class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition text-gray-500 dark:text-tint-secondary font-semibold flex-1 cursor-pointer"
+    >
+      <span class="text-base">💳</span>
+      <span class="text-[9px] font-semibold mt-0.5">Deudas</span>
+    </button>
+  </nav>
+
+  <!-- Script de Interactividad Completa -->
+  <script>
+    // 1. Cambio de Modo Claro / Oscuro
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      const icon = document.getElementById('themeIcon');
+      const label = document.getElementById('themeLabel');
+      const headerIcon = document.getElementById('themeHeaderIcon');
+      if (isDark) {
+        if (icon) icon.textContent = '🌙';
+        if (label) label.textContent = 'Modo Oscuro';
+        if (headerIcon) headerIcon.textContent = '🌙';
+      } else {
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Modo Claro';
+        if (headerIcon) headerIcon.textContent = '☀️';
+      }
+      actualizarGraficoTema(isDark);
+    }
+
+    // 2. Navegación entre Pestañas Reales (Sincroniza Sidebar y Dock Móvil)
+    const vistas = ['resumen', 'registrar', 'historial', 'presupuestos', 'metas', 'deudas'];
+    const titulos = {
+      resumen: 'Resumen General',
+      registrar: 'Registrar Movimiento',
+      historial: 'Historial de Operaciones',
+      presupuestos: 'Presupuestos Mensuales',
+      metas: 'Metas de Ahorro',
+      deudas: 'Deudas & Amortizaciones'
+    };
+
+    function cambiarPestana(id) {
+      vistas.forEach(v => {
+        const el = document.getElementById('vista-' + v);
+        const btn = document.getElementById('tabBtn-' + v);
+        const mBtn = document.getElementById('mobileNav-' + v);
+
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-xs sm:text-sm transition-all text-left text-gray-600 dark:text-tint-secondary hover:bg-gray-50 dark:hover:bg-forest-900/60 hover:text-gray-900 dark:hover:text-white";
+          const indicador = btn.querySelector('.bg-lime-accent');
+          if (indicador) indicador.remove();
+        }
+        if (mBtn) {
+          mBtn.className = "mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition text-gray-500 dark:text-tint-secondary font-semibold flex-1 cursor-pointer";
+        }
+      });
+
+      const activeEl = document.getElementById('vista-' + id);
+      const activeBtn = document.getElementById('tabBtn-' + id);
+      const activeMBtn = document.getElementById('mobileNav-' + id);
+
+      if (activeEl) activeEl.classList.remove('hidden');
+      
+      // Activar en Desktop
+      if (activeBtn) {
+        activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all text-left bg-gray-100 dark:bg-forest-900 text-gray-900 dark:text-tint-primary shadow-sm";
+        if (!activeBtn.querySelector('.bg-lime-accent')) {
+          const dot = document.createElement('div');
+          dot.className = "w-2 h-4 rounded-full bg-lime-accent";
+          activeBtn.appendChild(dot);
+        }
+      }
+
+      // Activar en Móvil (Píldora Lima)
+      if (activeMBtn) {
+        activeMBtn.className = "mobile-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl transition font-black flex-1 bg-lime-accent text-lime-text shadow-sm cursor-pointer";
+      }
+
+      document.getElementById('viewTitle').textContent = titulos[id] || 'Panel';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 3. Interacción del Formulario de Movimiento
+    let tipoActual = 'gasto';
+    let monedaActual = 'USD';
+
+    function seleccionarDemoTipo(tipo) {
+      tipoActual = tipo;
+      const btnG = document.getElementById('demoBtnGasto');
+      const btnI = document.getElementById('demoBtnIngreso');
+      const btnA = document.getElementById('demoBtnAhorro');
+      const select = document.getElementById('demoCategoriaSelect');
+
+      btnG.className = "py-2.5 px-3 rounded-xl text-xs font-bold text-gray-600 dark:text-tint-secondary";
+      btnI.className = "py-2.5 px-3 rounded-xl text-xs font-bold text-gray-600 dark:text-tint-secondary";
+      btnA.className = "py-2.5 px-3 rounded-xl text-xs font-bold text-gray-600 dark:text-tint-secondary";
+
+      if (tipo === 'gasto') {
+        btnG.className = "py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-rose-500 text-white shadow-sm";
+        select.innerHTML = '<option value="Comida">🍔 Comida</option><option value="Ocio">🎮 Ocio</option><option value="Servicios">💡 Servicios</option><option value="Transporte">🚗 Transporte</option>';
+      } else if (tipo === 'ingreso') {
+        btnI.className = "py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-sm";
+        select.innerHTML = '<option value="Sueldo">💵 Sueldo / Salario</option><option value="Proyecto">💼 Proyecto / Cliente</option><option value="Ventas">📈 Ventas</option>';
+      } else {
+        btnA.className = "py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-amber-500 text-white shadow-sm";
+        select.innerHTML = '<option value="Fondo">🏦 Depositar a Ahorro</option><option value="Retiro">💸 Retirar / Usar Ahorro</option>';
+      }
+    }
+
+    function setDemoMoneda(m) {
+      monedaActual = m;
+      const bUSD = document.getElementById('demoMonedaUSD');
+      const bBS = document.getElementById('demoMonedaBS');
+      const sim = document.getElementById('demoSimboloMoneda');
+
+      if (m === 'USD') {
+        bUSD.className = "px-3 py-1 text-xs font-black rounded-lg bg-white dark:bg-forest-800 text-gray-900 dark:text-white shadow-sm";
+        bBS.className = "px-3 py-1 text-xs font-semibold rounded-lg text-gray-500 dark:text-tint-muted";
+        sim.textContent = '$';
+      } else {
+        bBS.className = "px-3 py-1 text-xs font-black rounded-lg bg-white dark:bg-forest-800 text-gray-900 dark:text-white shadow-sm";
+        bUSD.className = "px-3 py-1 text-xs font-semibold rounded-lg text-gray-500 dark:text-tint-muted";
+        sim.textContent = 'Bs';
+      }
+    }
+
+    function demoGuardarMovimiento(e) {
+      e.preventDefault();
+      const toast = document.getElementById('demoToast');
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        document.getElementById('demoMonto').value = '';
+        document.getElementById('demoDescripcion').value = '';
+        cambiarPestana('resumen');
+      }, 1200);
+    }
+
+    // 4. Inicializar Gráfico Chart.js
+    let chartInstance = null;
+    function initChart() {
+      const ctx = document.getElementById('graficoPreviewFlujo').getContext('2d');
+      const isDark = document.documentElement.classList.contains('dark');
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['D1', 'D5', 'D10', 'D15', 'D20', 'D25', 'D30'],
+          datasets: [
+            {
+              label: 'Ingresos',
+              data: [1500, 1500, 1500, 3200, 3200, 4200, 4200],
+              borderColor: '#10B981',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: '#10B981'
+            },
+            {
+              label: 'Gastos',
+              data: [80, 140, 290, 450, 520, 680, 714],
+              borderColor: '#F87171',
+              backgroundColor: 'rgba(248, 113, 113, 0.08)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: '#F87171'
+            },
+            {
+              label: 'Ahorro',
+              data: [200, 200, 500, 500, 1200, 1500, 1850],
+              borderColor: '#F59E0B',
+              backgroundColor: 'transparent',
+              borderWidth: 2.5,
+              borderDash: [5, 5],
+              pointRadius: 3,
+              pointBackgroundColor: '#F59E0B'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: isDark ? 'rgba(27, 71, 48, 0.3)' : '#E5E7EB' },
+              ticks: { color: isDark ? '#94A89C' : '#6B7280', font: { weight: 'bold', size: 10 } }
+            },
+            y: {
+              grid: { color: isDark ? 'rgba(27, 71, 48, 0.3)' : '#E5E7EB' },
+              ticks: {
+                color: isDark ? '#94A89C' : '#6B7280',
+                font: { weight: '600', size: 10 },
+                callback: v => '$' + v
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function actualizarGraficoTema(isDark) {
+      if (!chartInstance) return;
+      chartInstance.options.scales.x.grid.color = isDark ? 'rgba(27, 71, 48, 0.3)' : '#E5E7EB';
+      chartInstance.options.scales.y.grid.color = isDark ? 'rgba(27, 71, 48, 0.3)' : '#E5E7EB';
+      chartInstance.options.scales.x.ticks.color = isDark ? '#94A89C' : '#6B7280';
+      chartInstance.options.scales.y.ticks.color = isDark ? '#94A89C' : '#6B7280';
+      chartInstance.update();
+    }
+
+    document.addEventListener('DOMContentLoaded', initChart);
+  </script>
+</body>
+</html>

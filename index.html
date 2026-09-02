@@ -8,7 +8,7 @@
     />
     <title>Presupuesto Mensual</title>
     <link rel="manifest" href="./manifest.json" />
-    <meta name="theme-color" content="#020617" />
+    <meta name="theme-color" content="#06160E" />
     <link rel="icon" href="./icons/icon-192.png" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -27,17 +27,31 @@
         theme: {
           extend: {
             colors: {
-              crema: "#FFE1D7",
+              crema: "#F0FDF4",
               azulcielo: {
-                DEFAULT: "#84AFFB",
-                light: "#b3cdfc",
-                dark: "#5a90e8",
+                DEFAULT: "#9cd3b0",
+                light: "#c2e7cf",
+                dark: "#72b58b",
               },
               azulelectrico: {
-                DEFAULT: "#0259DD",
-                hover: "#0249b5",
-                dark: "#01388a",
-                light: "#3b82f6",
+                DEFAULT: "#A3E635",
+                hover: "#bef264",
+                dark: "#84cc16",
+                light: "#d9f99d",
+              },
+              slate: {
+                950: "#06160E",
+                900: "#0C2417",
+                850: "#112F1F",
+                800: "#173D29",
+                700: "#334155",
+                600: "#475569",
+                500: "#64748B",
+                400: "#94A89C",
+                300: "#CBD5E1",
+                200: "#E2E8F0",
+                100: "#F1F5F9",
+                50: "#F8FAFC",
               },
               coral: {
                 DEFAULT: "#FF6648",
@@ -154,7 +168,7 @@
             <button
               type="submit"
               id="btnIngresar"
-              class="w-full sm:flex-1 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-azulelectrico/25 transition active:scale-[0.98] disabled:opacity-50"
+              class="w-full sm:flex-1 bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 font-black py-3.5 px-4 rounded-2xl shadow-lg shadow-azulelectrico/25 transition active:scale-[0.98] disabled:opacity-50"
             >
               Ingresar
             </button>
@@ -343,7 +357,7 @@
             aria-selected="true"
             aria-controls="tabContentResumen"
             onclick="cambiarPestana('resumen')"
-            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25 focus:outline-none focus:ring-2 focus:ring-azulelectrico"
+            class="tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-slate-950 font-black shadow-md shadow-azulelectrico/25 focus:outline-none focus:ring-2 focus:ring-azulelectrico"
           >
             <span aria-hidden="true">📊</span>
             <span>Resumen</span>
@@ -624,7 +638,7 @@
                 type="button"
                 onclick="seleccionarMetricaEstadistica('all')"
                 id="btnMetricaAll"
-                class="metrica-chip px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-azulelectrico text-white shadow-sm shadow-azulelectrico/30"
+                class="metrica-chip px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-azulelectrico text-slate-950 font-black shadow-sm shadow-azulelectrico/30"
               >
                 <span>Todas</span>
               </button>
@@ -945,7 +959,7 @@
             <button
               id="btnGuardarMovimiento"
               type="submit"
-              class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-white font-black py-4 px-5 rounded-2xl shadow-lg shadow-azulelectrico/25 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-azulelectrico/40"
+              class="w-full bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 font-black py-4 px-5 rounded-2xl shadow-lg shadow-azulelectrico/25 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-azulelectrico/40"
             >
               <span>💾</span> Guardar Movimiento
             </button>
@@ -1000,7 +1014,7 @@
               <button
                 onclick="seleccionarChipTipo('')"
                 id="chipTipoTodos"
-                class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-white shadow-sm transition shrink-0"
+                class="chip-tipo px-3 py-1.5 rounded-xl text-xs font-bold bg-azulelectrico text-slate-950 font-black shadow-sm transition shrink-0"
               >
                 Todos
               </button>
@@ -1120,7 +1134,7 @@
             </div>
             <button
               onclick="mostrarModalPresupuestos()"
-              class="bg-azulelectrico/10 dark:bg-azulelectrico/20 hover:bg-azulelectrico hover:text-white text-azulelectrico dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulelectrico/30 active:scale-95 shrink-0"
+              class="bg-azulelectrico/10 dark:bg-azulelectrico/20 hover:bg-azulelectrico hover:text-slate-950 text-azulelectrico dark:text-azulcielo text-xs px-3 py-1.5 rounded-xl font-bold transition border border-azulelectrico/30 active:scale-95 shrink-0"
             >
               ⚙️ Ajustar
             </button>
@@ -1321,7 +1335,7 @@
 
             <button
               onclick="abrirModalCrearCategoria()"
-              class="bg-azulelectrico hover:bg-azulelectrico-hover text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-md shadow-azulelectrico/20 transition active:scale-95 flex items-center gap-1.5 self-start sm:self-auto shrink-0 cursor-pointer"
+              class="bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl shadow-md shadow-azulelectrico/20 transition active:scale-95 flex items-center gap-1.5 self-start sm:self-auto shrink-0 cursor-pointer"
             >
               <span>+</span> Nueva Categoría
             </button>
@@ -1518,7 +1532,7 @@
             </button>
             <button
               type="submit"
-              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white rounded-xl text-xs font-bold transition shadow-md"
+              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 font-black rounded-xl text-xs transition shadow-md"
             >
               Guardar
             </button>
@@ -2055,7 +2069,7 @@
             </button>
             <button
               type="submit"
-              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md"
+              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 font-black rounded-xl text-xs transition shadow-md"
             >
               Guardar
             </button>
@@ -2346,7 +2360,7 @@
             </button>
             <button
               type="submit"
-              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer"
+              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-slate-950 font-black rounded-xl text-xs transition shadow-md cursor-pointer"
             >
               Guardar Categoría
             </button>

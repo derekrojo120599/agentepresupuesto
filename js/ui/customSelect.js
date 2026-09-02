@@ -462,7 +462,7 @@ function renderizarOpcionesCustomSelect(select, container, query = "") {
       btn.className = `custom-select-option-item w-full text-left ${padding} rounded-xl flex items-center justify-between ${textSize} font-bold bg-azulelectrico/10 text-azulelectrico dark:bg-azulelectrico/20 dark:text-crema border border-azulelectrico/30 shadow-sm transition active:scale-[0.99] cursor-pointer`;
       btn.innerHTML = `
         <span class="truncate pr-2">${escapeHTML(opt.text)}</span>
-        <span class="w-5 h-5 rounded-full bg-azulelectrico text-white flex items-center justify-center text-[11px] font-black shrink-0 ml-2 shadow-sm">✓</span>
+        <span class="w-5 h-5 rounded-full bg-azulelectrico text-slate-950 flex items-center justify-center text-[11px] font-black shrink-0 ml-2 shadow-sm">✓</span>
       `;
     } else {
       btn.className = `custom-select-option-item w-full text-left ${padding} rounded-xl flex items-center justify-between ${textSize} font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700 active:scale-[0.99] border border-transparent transition cursor-pointer`;

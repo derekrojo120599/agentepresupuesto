@@ -23,7 +23,7 @@ function aplicarTema(modo) {
     html.classList.add("dark");
     html.classList.remove("light");
     if (icono) icono.textContent = "🌙";
-    if (metaTheme) metaTheme.setAttribute("content", "#020617");
+    if (metaTheme) metaTheme.setAttribute("content", "#06160E");
     if (metaStatus) metaStatus.setAttribute("content", "black-translucent");
     localStorage.setItem("tema_presupuesto", "dark");
   } else {

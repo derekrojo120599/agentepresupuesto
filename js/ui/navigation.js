@@ -35,7 +35,7 @@ function cambiarPestana(tabName) {
     if (btn) {
       if (p === tabName) {
         btn.className =
-          "tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-azulelectrico text-white shadow-md shadow-azulelectrico/25";
+          "tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition bg-azulelectrico text-slate-950 shadow-md shadow-azulelectrico/25";
       } else {
         btn.className =
           "tab-btn flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 dark:text-azulcielo hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-crema";
@@ -59,7 +59,7 @@ function cambiarPestana(tabName) {
   if (btnHeaderConfig) {
     if (tabName === "configuracion") {
       btnHeaderConfig.className =
-        "p-2.5 rounded-xl border border-azulelectrico bg-azulelectrico text-white shadow-sm shadow-azulelectrico/30 transition active:scale-95 cursor-pointer";
+        "p-2.5 rounded-xl border border-azulelectrico bg-azulelectrico text-slate-950 font-black shadow-sm shadow-azulelectrico/30 transition active:scale-95 cursor-pointer";
     } else {
       btnHeaderConfig.className =
         "p-2.5 rounded-xl border border-slate-200 dark:border-azulcielo/30 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-azulcielo hover:bg-slate-200 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm cursor-pointer";

@@ -2,6 +2,38 @@
 // PUNTO DE ENTRADA PRINCIPAL & INICIALIZACIÓN DE LA APLICACIÓN
 // =========================================================================
 
+// ---------- Traductor de Errores de Autenticación Supabase ----------
+
+function traducirErrorAuth(errorMsg) {
+  if (!errorMsg) return "Ha ocurrido un error inesperado.";
+  const msg = errorMsg.toLowerCase();
+
+  if (msg.includes("security purposes") || msg.includes("only request this after")) {
+    const match = errorMsg.match(/(\d+)\s*second/i);
+    const segs = match ? match[1] : "unos";
+    return `Por seguridad, debes esperar ${segs} segundos para reenviar otro correo. Si ya lo solicitaste, revisa tu bandeja de entrada o spam.`;
+  }
+  if (msg.includes("rate limit") || msg.includes("too many requests")) {
+    return "Has superado el límite de intentos. Por favor espera un momento antes de volver a intentar.";
+  }
+  if (msg.includes("invalid login credentials")) {
+    return "Correo o contraseña incorrectos.";
+  }
+  if (msg.includes("user not found")) {
+    return "No se encontró ninguna cuenta con este correo electrónico.";
+  }
+  if (msg.includes("email not confirmed")) {
+    return "Tu correo electrónico no ha sido confirmado aún. Revisa tu bandeja de entrada.";
+  }
+  if (msg.includes("password should be at least")) {
+    return "La contraseña debe tener al menos 6 caracteres.";
+  }
+  if (msg.includes("user already registered")) {
+    return "Ya existe una cuenta con este correo electrónico.";
+  }
+  return errorMsg;
+}
+
 // ---------- Autenticación ----------
 
 async function iniciarSesion(e) {
@@ -20,12 +52,7 @@ async function iniciarSesion(e) {
       password,
     });
     if (error) {
-      mostrarAvisoAuth(
-        error.message === "Invalid login credentials"
-          ? "Correo o contraseña incorrectos."
-          : "Error al iniciar sesión: " + error.message,
-        "error",
-      );
+      mostrarAvisoAuth(traducirErrorAuth(error.message), "error");
     } else {
       mostrarToast("¡Sesión iniciada!", "success");
     }
@@ -60,7 +87,7 @@ async function crearCuenta() {
       password,
     });
     if (error) {
-      mostrarAvisoAuth("Error: " + error.message, "error");
+      mostrarAvisoAuth(traducirErrorAuth(error.message), "error");
       return;
     }
 
@@ -78,6 +105,30 @@ async function crearCuenta() {
     btnCrear.disabled = false;
     btnCrear.textContent = "Crear cuenta";
   }
+}
+
+let temporizadorRecuperacion = null;
+
+function iniciarCooldownRecuperacion(segundos = 60) {
+  const btn = document.getElementById("btnEnviarRecuperacion");
+  if (!btn) return;
+  if (temporizadorRecuperacion) clearInterval(temporizadorRecuperacion);
+
+  let restante = segundos;
+  btn.disabled = true;
+  btn.textContent = `Reintentar en ${restante}s`;
+
+  temporizadorRecuperacion = setInterval(() => {
+    restante--;
+    if (restante <= 0) {
+      clearInterval(temporizadorRecuperacion);
+      temporizadorRecuperacion = null;
+      btn.disabled = false;
+      btn.textContent = "Enviar enlace";
+    } else {
+      btn.textContent = `Reintentar en ${restante}s`;
+    }
+  }, 1000);
 }
 
 async function solicitarRecuperacionClave(e) {
@@ -103,10 +154,22 @@ async function solicitarRecuperacionClave(e) {
     });
 
     if (error) {
-      mostrarToast("Error: " + error.message, "error");
-      mostrarAvisoAuth("Error al recuperar clave: " + error.message, "error");
+      const mensajeTraducido = traducirErrorAuth(error.message);
+      mostrarToast(mensajeTraducido, "info");
+      mostrarAvisoAuth(mensajeTraducido, "info");
+
+      const match = error.message.match(/(\d+)\s*second/i);
+      if (match && match[1]) {
+        iniciarCooldownRecuperacion(parseInt(match[1], 10));
+      } else {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Enviar enlace";
+        }
+      }
     } else {
       ocultarModalRecuperarClave();
+      iniciarCooldownRecuperacion(60);
       mostrarToast("¡Correo de recuperación enviado!", "success");
       mostrarAvisoAuth(
         "Te enviamos un enlace por correo para restablecer tu contraseña. Revisa la bandeja de entrada o spam.",
@@ -116,7 +179,6 @@ async function solicitarRecuperacionClave(e) {
   } catch (err) {
     console.error("Error al solicitar recuperación:", err);
     mostrarToast("Error al procesar la solicitud", "error");
-  } finally {
     if (btn) {
       btn.disabled = false;
       btn.textContent = "Enviar enlace";

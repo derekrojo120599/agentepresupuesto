@@ -126,11 +126,20 @@
             />
           </div>
           <div>
-            <label
-              for="authPassword"
-              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
-              >Contraseña</label
-            >
+            <div class="flex items-center justify-between mb-1.5">
+              <label
+                for="authPassword"
+                class="block text-xs font-bold text-slate-600 dark:text-azulcielo"
+                >Contraseña</label
+              >
+              <button
+                type="button"
+                id="btnOlvidoClave"
+                class="text-xs text-azulelectrico hover:text-azulelectrico-hover dark:text-azulcielo hover:underline font-semibold focus:outline-none transition cursor-pointer"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
             <input
               type="password"
               id="authPassword"
@@ -2340,6 +2349,156 @@
               class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer"
             >
               Guardar Categoría
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Solicitar Recuperación de Contraseña -->
+    <div
+      id="modalRecuperarClave"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Recuperar Contraseña"
+      class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none"
+      >
+        <div
+          class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3"
+        >
+          <h3
+            class="text-base sm:text-lg font-bold text-slate-900 dark:text-crema flex items-center gap-2"
+          >
+            <span>🔑</span> Recuperar Contraseña
+          </h3>
+          <button
+            type="button"
+            onclick="ocultarModalRecuperarClave()"
+            aria-label="Cerrar modal"
+            class="p-2 text-slate-500 hover:text-coral transition font-bold text-base cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+          >
+            ✕
+          </button>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-azulcielo leading-relaxed">
+          Ingresa tu correo electrónico registrado y te enviaremos un enlace seguro para restablecer tu contraseña.
+        </p>
+
+        <form id="formRecuperarClave" class="space-y-4">
+          <div>
+            <label
+              for="emailRecuperacion"
+              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
+              >Correo Electrónico</label
+            >
+            <input
+              type="email"
+              id="emailRecuperacion"
+              required
+              autocomplete="email"
+              placeholder="tu@correo.com"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition text-sm"
+            />
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <button
+              type="button"
+              onclick="ocultarModalRecuperarClave()"
+              class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              id="btnEnviarRecuperacion"
+              class="flex-1 py-3 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer disabled:opacity-50"
+            >
+              Enviar enlace
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Restablecer Nueva Contraseña -->
+    <div
+      id="modalNuevaClave"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Restablecer Contraseña"
+      class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none"
+      >
+        <div
+          class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3"
+        >
+          <h3
+            class="text-base sm:text-lg font-bold text-slate-900 dark:text-crema flex items-center gap-2"
+          >
+            <span>🔒</span> Restablecer Contraseña
+          </h3>
+          <button
+            type="button"
+            onclick="ocultarModalNuevaClave()"
+            aria-label="Cerrar modal"
+            class="p-2 text-slate-500 hover:text-coral transition font-bold text-base cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+          >
+            ✕
+          </button>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-azulcielo leading-relaxed">
+          Ingresa tu nueva contraseña para tu cuenta (mínimo 6 caracteres).
+        </p>
+
+        <form id="formNuevaClave" class="space-y-3.5">
+          <div>
+            <label
+              for="nuevaClaveAuth"
+              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
+              >Nueva Contraseña</label
+            >
+            <input
+              type="password"
+              id="nuevaClaveAuth"
+              required
+              minlength="6"
+              autocomplete="new-password"
+              placeholder="••••••••"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition text-sm"
+            />
+          </div>
+          <div>
+            <label
+              for="confirmarNuevaClaveAuth"
+              class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1.5"
+              >Confirmar Nueva Contraseña</label
+            >
+            <input
+              type="password"
+              id="confirmarNuevaClaveAuth"
+              required
+              minlength="6"
+              autocomplete="new-password"
+              placeholder="••••••••"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 p-3 rounded-2xl text-slate-900 dark:text-crema focus:border-azulelectrico focus:ring-2 focus:ring-azulelectrico/50 focus:outline-none transition text-sm"
+            />
+          </div>
+
+          <div class="pt-2">
+            <button
+              type="submit"
+              id="btnGuardarNuevaClave"
+              class="w-full py-3.5 bg-azulelectrico hover:bg-azulelectrico-hover text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer disabled:opacity-50"
+            >
+              Guardar Contraseña
             </button>
           </div>
         </form>

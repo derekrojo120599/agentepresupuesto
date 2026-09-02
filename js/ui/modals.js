@@ -149,6 +149,36 @@ function ocultarModalAlertaInteligente() {
   if (modal) modal.classList.add("hidden");
 }
 
+function mostrarModalRecuperarClave() {
+  const el = document.getElementById("modalRecuperarClave");
+  const authEmail = document.getElementById("authEmail");
+  const emailRecup = document.getElementById("emailRecuperacion");
+  if (emailRecup && authEmail && authEmail.value) {
+    emailRecup.value = authEmail.value.trim();
+  }
+  if (el) el.classList.remove("hidden");
+  if (emailRecup) emailRecup.focus();
+}
+
+function ocultarModalRecuperarClave() {
+  const el = document.getElementById("modalRecuperarClave");
+  if (el) el.classList.add("hidden");
+}
+
+function mostrarModalNuevaClave() {
+  const el = document.getElementById("modalNuevaClave");
+  const form = document.getElementById("formNuevaClave");
+  if (form) form.reset();
+  if (el) el.classList.remove("hidden");
+  const passEl = document.getElementById("nuevaClaveAuth");
+  if (passEl) passEl.focus();
+}
+
+function ocultarModalNuevaClave() {
+  const el = document.getElementById("modalNuevaClave");
+  if (el) el.classList.add("hidden");
+}
+
 // Cierre global de modales con Escape
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
@@ -160,5 +190,7 @@ document.addEventListener("keydown", (e) => {
     ocultarModalMetaAhorro();
     ocultarModalCategoria();
     ocultarModalAlertaInteligente();
+    ocultarModalRecuperarClave();
+    ocultarModalNuevaClave();
   }
 });

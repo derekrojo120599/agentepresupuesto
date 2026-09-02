@@ -80,6 +80,96 @@ async function crearCuenta() {
   }
 }
 
+async function solicitarRecuperacionClave(e) {
+  if (e) e.preventDefault();
+  const inputEmail = document.getElementById("emailRecuperacion");
+  const email = (inputEmail ? inputEmail.value : "").trim();
+  const btn = document.getElementById("btnEnviarRecuperacion");
+
+  if (!email) {
+    mostrarToast("Por favor ingresa tu correo electrónico", "error");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Enviando...";
+  }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      mostrarToast("Error: " + error.message, "error");
+      mostrarAvisoAuth("Error al recuperar clave: " + error.message, "error");
+    } else {
+      ocultarModalRecuperarClave();
+      mostrarToast("¡Correo de recuperación enviado!", "success");
+      mostrarAvisoAuth(
+        "Te enviamos un enlace por correo para restablecer tu contraseña. Revisa la bandeja de entrada o spam.",
+        "ok",
+      );
+    }
+  } catch (err) {
+    console.error("Error al solicitar recuperación:", err);
+    mostrarToast("Error al procesar la solicitud", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Enviar enlace";
+    }
+  }
+}
+
+async function guardarNuevaClave(e) {
+  if (e) e.preventDefault();
+  const pass1 = (document.getElementById("nuevaClaveAuth")?.value || "").trim();
+  const pass2 = (document.getElementById("confirmarNuevaClaveAuth")?.value || "").trim();
+  const btn = document.getElementById("btnGuardarNuevaClave");
+
+  if (!pass1 || pass1.length < 6) {
+    mostrarToast("La contraseña debe tener al menos 6 caracteres", "error");
+    return;
+  }
+
+  if (pass1 !== pass2) {
+    mostrarToast("Las contraseñas no coinciden", "error");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+  }
+
+  try {
+    const { error } = await supabaseClient.auth.updateUser({
+      password: pass1,
+    });
+
+    if (error) {
+      mostrarToast("Error al actualizar contraseña: " + error.message, "error");
+    } else {
+      ocultarModalNuevaClave();
+      mostrarToast("¡Contraseña actualizada con éxito!", "success");
+      if (window.location.hash) {
+        window.history.replaceState(null, null, window.location.pathname);
+      }
+    }
+  } catch (err) {
+    console.error("Error al actualizar contraseña:", err);
+    mostrarToast("Error al actualizar contraseña", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Guardar Contraseña";
+    }
+  }
+}
+
 async function loginConGoogle() {
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) btnGoogle.disabled = true;
@@ -121,6 +211,15 @@ function vincularEventosDOM() {
 
   const btnCrearCuenta = document.getElementById("btnCrearCuenta");
   if (btnCrearCuenta) btnCrearCuenta.addEventListener("click", crearCuenta);
+
+  const btnOlvidoClave = document.getElementById("btnOlvidoClave");
+  if (btnOlvidoClave) btnOlvidoClave.addEventListener("click", mostrarModalRecuperarClave);
+
+  const formRecuperarClave = document.getElementById("formRecuperarClave");
+  if (formRecuperarClave) formRecuperarClave.addEventListener("submit", solicitarRecuperacionClave);
+
+  const formNuevaClave = document.getElementById("formNuevaClave");
+  if (formNuevaClave) formNuevaClave.addEventListener("submit", guardarNuevaClave);
 
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) btnGoogle.addEventListener("click", loginConGoogle);
@@ -319,6 +418,10 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
       "error",
     );
     window.history.replaceState(null, null, window.location.pathname);
+  }
+
+  if (event === "PASSWORD_RECOVERY" || window.location.hash.includes("type=recovery")) {
+    mostrarModalNuevaClave();
   }
 
   if (session) {

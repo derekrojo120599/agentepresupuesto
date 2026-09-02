@@ -149,6 +149,7 @@
               <button
                 type="button"
                 id="btnOlvidoClave"
+                onclick="mostrarModalRecuperarClave()"
                 class="text-xs text-azulelectrico hover:text-azulelectrico-hover dark:text-azulcielo hover:underline font-semibold focus:outline-none transition cursor-pointer"
               >
                 ¿Olvidaste tu contraseña?
@@ -2402,7 +2403,7 @@
           Ingresa tu correo electrónico registrado y te enviaremos un enlace seguro para restablecer tu contraseña.
         </p>
 
-        <form id="formRecuperarClave" class="space-y-4">
+        <form id="formRecuperarClave" onsubmit="solicitarRecuperacionClave(event)" class="space-y-4">
           <div>
             <label
               for="emailRecuperacion"
@@ -2472,7 +2473,7 @@
           Ingresa tu nueva contraseña para tu cuenta (mínimo 6 caracteres).
         </p>
 
-        <form id="formNuevaClave" class="space-y-3.5">
+        <form id="formNuevaClave" onsubmit="guardarNuevaClave(event)" class="space-y-3.5">
           <div>
             <label
               for="nuevaClaveAuth"

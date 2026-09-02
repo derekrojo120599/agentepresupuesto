@@ -179,6 +179,11 @@ function ocultarModalNuevaClave() {
   if (el) el.classList.add("hidden");
 }
 
+window.mostrarModalRecuperarClave = mostrarModalRecuperarClave;
+window.ocultarModalRecuperarClave = ocultarModalRecuperarClave;
+window.mostrarModalNuevaClave = mostrarModalNuevaClave;
+window.ocultarModalNuevaClave = ocultarModalNuevaClave;
+
 // Cierre global de modales con Escape
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {

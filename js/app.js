@@ -170,6 +170,9 @@ async function guardarNuevaClave(e) {
   }
 }
 
+window.solicitarRecuperacionClave = solicitarRecuperacionClave;
+window.guardarNuevaClave = guardarNuevaClave;
+
 async function loginConGoogle() {
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) btnGoogle.disabled = true;

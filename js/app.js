@@ -153,9 +153,10 @@ async function guardarNuevaClave(e) {
     if (error) {
       mostrarToast("Error al actualizar contraseña: " + error.message, "error");
     } else {
+      esRecuperandoClave = false;
       ocultarModalNuevaClave();
       mostrarToast("¡Contraseña actualizada con éxito!", "success");
-      if (window.location.hash) {
+      if (window.location.hash || window.location.search.includes("type=recovery")) {
         window.history.replaceState(null, null, window.location.pathname);
       }
     }
@@ -172,6 +173,115 @@ async function guardarNuevaClave(e) {
 
 window.solicitarRecuperacionClave = solicitarRecuperacionClave;
 window.guardarNuevaClave = guardarNuevaClave;
+
+function actualizarUIPerfilUsuario(user = null) {
+  const emailEl = document.getElementById("usuarioEmail");
+  const nombreEl = document.getElementById("usuarioNombre");
+  const configEmail = document.getElementById("configEmailUsuario");
+  const configNombre = document.getElementById("configNombrePerfil");
+
+  const email = user?.email || (emailEl ? emailEl.textContent.trim() : "");
+  if (emailEl && email) emailEl.textContent = email;
+  if (configEmail && email) configEmail.value = email;
+
+  if (nombreEl) {
+    if (nombrePerfilUsuario) {
+      nombreEl.textContent = `${nombrePerfilUsuario} • `;
+      nombreEl.classList.remove("hidden");
+    } else {
+      nombreEl.textContent = "";
+      nombreEl.classList.add("hidden");
+    }
+  }
+
+  if (configNombre) {
+    configNombre.value = nombrePerfilUsuario || "";
+  }
+}
+
+async function guardarNombrePerfil(e) {
+  if (e) e.preventDefault();
+  const inputNombre = document.getElementById("configNombrePerfil");
+  const btn = document.getElementById("btnGuardarNombrePerfil");
+  const nuevoNombre = (inputNombre ? inputNombre.value : "").trim();
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.updateUser({
+      data: {
+        nombrePerfil: nuevoNombre,
+      },
+    });
+
+    if (error) {
+      mostrarToast("Error al guardar nombre: " + error.message, "error");
+    } else {
+      nombrePerfilUsuario = nuevoNombre;
+      actualizarUIPerfilUsuario(data?.user);
+      mostrarToast("¡Nombre de perfil guardado con éxito!", "success");
+    }
+  } catch (err) {
+    console.error("Error al actualizar nombre de perfil:", err);
+    mostrarToast("Error al guardar perfil", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Guardar Nombre";
+    }
+  }
+}
+
+async function cambiarClaveDesdeConfig(e) {
+  if (e) e.preventDefault();
+  const p1 = (document.getElementById("configNuevaClave")?.value || "").trim();
+  const p2 = (document.getElementById("configConfirmarNuevaClave")?.value || "").trim();
+  const btn = document.getElementById("btnActualizarClaveConfig");
+
+  if (!p1 || p1.length < 6) {
+    mostrarToast("La nueva contraseña debe tener al menos 6 caracteres", "error");
+    return;
+  }
+
+  if (p1 !== p2) {
+    mostrarToast("Las contraseñas no coinciden", "error");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Actualizando...";
+  }
+
+  try {
+    const { error } = await supabaseClient.auth.updateUser({
+      password: p1,
+    });
+
+    if (error) {
+      mostrarToast("Error al actualizar contraseña: " + error.message, "error");
+    } else {
+      mostrarToast("¡Contraseña actualizada con éxito!", "success");
+      const form = document.getElementById("formCambiarClaveConfig");
+      if (form) form.reset();
+    }
+  } catch (err) {
+    console.error("Error al cambiar contraseña:", err);
+    mostrarToast("Error al actualizar contraseña", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Actualizar Contraseña";
+    }
+  }
+}
+
+window.actualizarUIPerfilUsuario = actualizarUIPerfilUsuario;
+window.guardarNombrePerfil = guardarNombrePerfil;
+window.cambiarClaveDesdeConfig = cambiarClaveDesdeConfig;
 
 async function loginConGoogle() {
   const btnGoogle = document.getElementById("btnGoogleLogin");
@@ -223,6 +333,12 @@ function vincularEventosDOM() {
 
   const formNuevaClave = document.getElementById("formNuevaClave");
   if (formNuevaClave) formNuevaClave.addEventListener("submit", guardarNuevaClave);
+
+  const formPerfil = document.getElementById("formPerfilUsuario");
+  if (formPerfil) formPerfil.addEventListener("submit", guardarNombrePerfil);
+
+  const formCambiarClave = document.getElementById("formCambiarClaveConfig");
+  if (formCambiarClave) formCambiarClave.addEventListener("submit", cambiarClaveDesdeConfig);
 
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) btnGoogle.addEventListener("click", loginConGoogle);
@@ -423,8 +539,16 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     window.history.replaceState(null, null, window.location.pathname);
   }
 
-  if (event === "PASSWORD_RECOVERY" || window.location.hash.includes("type=recovery")) {
-    mostrarModalNuevaClave();
+  const esLinkRecuperacion =
+    event === "PASSWORD_RECOVERY" ||
+    window.location.hash.includes("type=recovery") ||
+    window.location.search.includes("type=recovery");
+
+  if (esLinkRecuperacion) {
+    esRecuperandoClave = true;
+    setTimeout(() => {
+      mostrarModalNuevaClave();
+    }, 100);
   }
 
   if (session) {
@@ -455,6 +579,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
       cargarPresupuestosYMetasLocales();
       if (session.user) {
         cargarAjustesDeUserMetadata(session.user);
+        actualizarUIPerfilUsuario(session.user);
       }
 
       if (!sesionInicializada) {
@@ -472,7 +597,12 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
                 mobileNav.classList.remove("hidden");
                 mobileNav.classList.add("flex");
               }
+              if (esRecuperandoClave) {
+                mostrarModalNuevaClave();
+              }
             }, 400);
+          } else if (esRecuperandoClave) {
+            mostrarModalNuevaClave();
           }
         };
 
@@ -492,6 +622,9 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         if (mobileNav) {
           mobileNav.classList.remove("hidden");
           mobileNav.classList.add("flex");
+        }
+        if (esRecuperandoClave) {
+          mostrarModalNuevaClave();
         }
       }
     } catch (errorLogueo) {
@@ -525,6 +658,15 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 // ---------- Bootstrap Inicial ----------
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (
+    window.location.hash.includes("type=recovery") ||
+    window.location.search.includes("type=recovery")
+  ) {
+    esRecuperandoClave = true;
+    setTimeout(() => {
+      mostrarModalNuevaClave();
+    }, 200);
+  }
   inicializarTema();
   inicializarPestanas();
   inicializarFlatpickrsGlobales();

@@ -193,6 +193,7 @@ function sincronizarAjustesUsuarioCloud() {
           categoriaIconosMap,
           presupuestos,
           metasAhorro,
+          nombrePerfil: nombrePerfilUsuario,
         },
       });
     } catch (err) {
@@ -207,6 +208,9 @@ function cargarAjustesDeUserMetadata(user) {
 
   cargandoAjustesCloud = true;
   try {
+    if (meta.nombrePerfil && typeof meta.nombrePerfil === "string") {
+      nombrePerfilUsuario = meta.nombrePerfil.trim();
+    }
     if (meta.categoriasMap && typeof meta.categoriasMap === "object") {
       if (
         Array.isArray(meta.categoriasMap.ingreso) &&

@@ -21,6 +21,8 @@ let tipoConfigCategoriaActual = "gasto";
 
 let usuarioActualId = null;
 let sesionInicializada = false;
+let esRecuperandoClave = false;
+let nombrePerfilUsuario = "";
 let transaccionesPendientesEliminar = new Set();
 let canalRealtime = null;
 

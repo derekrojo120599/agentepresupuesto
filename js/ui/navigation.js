@@ -74,6 +74,9 @@ function cambiarPestana(tabName) {
     if (typeof renderizarConfiguracionCategorias === "function") {
       renderizarConfiguracionCategorias();
     }
+    if (typeof actualizarUIPerfilUsuario === "function") {
+      actualizarUIPerfilUsuario();
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   } else if (tabName === "comparar") {
     if (typeof renderizarComparacion === "function") {

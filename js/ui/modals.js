@@ -77,10 +77,10 @@ function ocultarModalIncremento() {
 function abrirModalCrearCategoria() {
   document.getElementById("catEditNombreOriginal").value = "";
   document.getElementById("catNombre").value = "";
-  document.getElementById("catIcono").value = "�Y?���?";
+  document.getElementById("catIcono").value = "🏷️";
   document.getElementById("catTipo").value = tipoConfigCategoriaActual;
   document.getElementById("tituloModalCategoria").innerHTML =
-    "<span>�Y?���?</span> Nueva Categor��a";
+    "<span>🏷️</span> Nueva Categoría";
   const el = document.getElementById("modalCategoria");
   if (el) el.classList.remove("hidden");
 }

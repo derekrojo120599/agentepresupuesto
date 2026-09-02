@@ -90,7 +90,10 @@ self.addEventListener('fetch', (event) => {
         const clonada = respuesta.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(request, clonada));
         return respuesta;
-      }).catch(() => cacheado);
+      }).catch((err) => {
+        console.warn('Fetch fallido y sin caché para:', request.url, err);
+        return new Response('', { status: 503, statusText: 'Service Unavailable' });
+      });
     })
   );
 });

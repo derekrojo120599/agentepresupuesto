@@ -94,7 +94,7 @@ function renderizarHistorialFiltrado() {
 
   const filtradas = transacciones
     .filter((t) => {
-      if (alcance === "mes" && !t.fecha.startsWith(mesSeleccionado))
+      if (alcance === "mes" && !(t.fecha || "").startsWith(mesSeleccionado))
         return false;
       if (
         alcance === "dia" &&
@@ -177,9 +177,15 @@ function renderizarHistorialFiltrado() {
         signo = "+";
         colorMonto = "text-emerald-600 dark:text-emerald-400";
       } else if (t.tipo === "ahorro") {
+        const catAhorro = (t.categoria || "").toLowerCase();
+        const esRetiroAhorro =
+          catAhorro.includes("retirar") ||
+          catAhorro.includes("usar") ||
+          catAhorro.includes("retiro") ||
+          catAhorro.includes("gasto");
         badgeStyle =
           "bg-azulcielo/15 text-azulcielo-dark dark:text-azulcielo border-azulcielo/30";
-        signo = t.categoria === "Depositar a Ahorro" ? "+" : "-";
+        signo = esRetiroAhorro ? "-" : "+";
         colorMonto = "text-azulcielo-dark dark:text-azulcielo";
       }
 
@@ -224,7 +230,13 @@ function renderizarHistorialFiltrado() {
         colorMonto = "text-emerald-600 dark:text-emerald-400";
         iconTipo = "🟢";
       } else if (t.tipo === "ahorro") {
-        signo = t.categoria === "Depositar a Ahorro" ? "+" : "-";
+        const catAhorroM = (t.categoria || "").toLowerCase();
+        const esRetiroM =
+          catAhorroM.includes("retirar") ||
+          catAhorroM.includes("usar") ||
+          catAhorroM.includes("retiro") ||
+          catAhorroM.includes("gasto");
+        signo = esRetiroM ? "-" : "+";
         colorMonto = "text-azulcielo-dark dark:text-azulcielo";
         iconTipo = "🟡";
       }
@@ -273,7 +285,7 @@ function renderizarHistorialFiltrado() {
         <div class="flex flex-col gap-0.5 text-xs font-bold">
           <span class="text-emerald-600 dark:text-emerald-400">+$${totalIngresosHistorial.toFixed(2)} Ingresos</span>
           <span class="text-coral">-$${totalGastosHistorial.toFixed(2)} Gastos</span>
-          <span class="text-azulcielo-dark dark:text-azulcielo">+$${totalAhorrosHistorial.toFixed(2)} Ahorro</span>
+          <span class="text-azulcielo-dark dark:text-azulcielo">${totalAhorrosHistorial >= 0 ? "+" : ""}$${totalAhorrosHistorial.toFixed(2)} Ahorro</span>
         </div>
       </td>
       <td></td>
@@ -286,7 +298,7 @@ function renderizarHistorialFiltrado() {
       <span class="text-[10px] font-black text-slate-500 dark:text-azulcielo/80 uppercase tracking-wider w-full text-right border-b border-slate-200 dark:border-azulcielo/20 pb-1 mb-1">Totales del Filtro</span>
       <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">+$${totalIngresosHistorial.toFixed(2)} Ingresos</span>
       <span class="text-xs font-bold text-coral">-$${totalGastosHistorial.toFixed(2)} Gastos</span>
-      <span class="text-xs font-bold text-azulcielo-dark dark:text-azulcielo">+$${totalAhorrosHistorial.toFixed(2)} Ahorro</span>
+      <span class="text-xs font-bold text-azulcielo-dark dark:text-azulcielo">${totalAhorrosHistorial >= 0 ? "+" : ""}$${totalAhorrosHistorial.toFixed(2)} Ahorro</span>
     </div>
   `;
   listaMobile.innerHTML += divTotalesMobile;
@@ -299,7 +311,7 @@ function exportarHistorialCSV() {
   const diaFiltro = document.getElementById("filtroDia").value;
 
   const filtradas = transacciones.filter((t) => {
-    if (alcance === "mes" && !t.fecha.startsWith(mesSeleccionado))
+    if (alcance === "mes" && !(t.fecha || "").startsWith(mesSeleccionado))
       return false;
     if (
       alcance === "dia" &&

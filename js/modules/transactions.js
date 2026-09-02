@@ -569,8 +569,13 @@ function eliminarTransaccion(id) {
   // Mostrar Toast interactivo con opción de Deshacer durante 5 segundos
   mostrarToastDeshacer("Transacción eliminada", async () => {
     deshecho = true;
-    // Restaurar localmente
-    transacciones.splice(idx, 0, tEliminada);
+    // Restaurar localmente — recalcular la posición correcta
+    const idxActual = transacciones.findIndex((t) => t.id === tEliminada.id);
+    if (idxActual === -1) {
+      // No existe aún (fue eliminada), insertar al inicio como era la posición relativa
+      transacciones.splice(Math.min(idx, transacciones.length), 0, tEliminada);
+    }
+    // Si por alguna razón ya fue re-insertada (p. ej. Realtime), no duplicar
     guardarCacheLocal();
     actualizarInterfaz();
 

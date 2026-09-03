@@ -608,6 +608,48 @@
           </div>
         </div>
 
+        <!-- Banner Inteligente de Impacto Cambiario / Devaluación -->
+        <div
+          id="bannerAjusteCambiario"
+          class="hidden bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 border border-amber-500/30 dark:border-amber-500/25 p-4 rounded-2xl sm:rounded-3xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 relative overflow-hidden"
+        >
+          <div class="flex items-start sm:items-center gap-3 relative z-10 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0 shadow-inner">
+              📉
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-crema">
+                  Impacto por Devaluación Cambiaria
+                </h4>
+                <span id="badgePerdidaCambiariaMonto" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/15 text-coral border border-coral/30">
+                  -$0.00 USD
+                </span>
+              </div>
+              <p id="textoDetalleCambiario" class="text-[11px] text-slate-600 dark:text-azulcielo/80 mt-0.5 leading-snug">
+                El aumento de la tasa del dólar ha reducido el valor en USD de tus fondos en Bolívares.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto shrink-0 relative z-10">
+            <button
+              type="button"
+              onclick="abrirModalAjusteCambiario()"
+              class="flex-1 sm:flex-initial px-3 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-crema hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+            >
+              Detalles
+            </button>
+            <button
+              type="button"
+              id="btnAplicarAjusteRapido"
+              onclick="aplicarAjusteCambiarioSugerido()"
+              class="flex-1 sm:flex-initial px-3.5 py-2 text-xs font-black rounded-xl bg-coral text-white shadow-md shadow-coral/30 hover:brightness-110 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>⚡</span> Aplicar Ajuste
+            </button>
+          </div>
+        </div>
+
         <!-- Alertas Inteligentes Globales -->
         <div
           id="contenedorAlertasGlobales"
@@ -2203,6 +2245,104 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal Calculadora y Ajuste Cambiario -->
+    <div
+      id="modalAjusteCambiario"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Ajuste por Devaluación Cambiaria"
+      class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 fade-in"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-azulcielo/30 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl slide-up sm:slide-none max-h-[90vh] overflow-y-auto"
+      >
+        <div
+          class="flex justify-between items-center border-b border-slate-100 dark:border-azulcielo/20 pb-3"
+        >
+          <h3
+            class="text-base sm:text-lg font-bold text-coral flex items-center gap-2"
+          >
+            <span>📉</span> Ajuste por Devaluación Cambiaria
+          </h3>
+          <button
+            type="button"
+            onclick="ocultarModalAjusteCambiario()"
+            aria-label="Cerrar modal"
+            class="p-2 text-slate-500 hover:text-coral transition font-bold text-base cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral rounded-xl"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <p class="text-xs text-slate-600 dark:text-azulcielo leading-relaxed">
+            Si mantienes dinero en Bolívares en tu banco y la tasa del dólar aumenta, tu poder de compra en USD disminuye. Aplica este ajuste para que tu <strong>Balance Neto</strong> coincida exactamente con tu dinero real.
+          </p>
+
+          <!-- Resumen de Tasas y Saldo en Bs -->
+          <div
+            class="bg-slate-50 dark:bg-slate-950/70 p-3.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 space-y-2 text-xs"
+          >
+            <div class="flex justify-between items-center text-slate-500 dark:text-azulcielo/70">
+              <span>Tasa actual del mercado:</span>
+              <span id="modalAjusteTasaActual" class="font-bold text-slate-900 dark:text-crema font-mono-num">—</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500 dark:text-azulcielo/70">
+              <span>Saldo activo en Bolívares:</span>
+              <span id="modalAjusteSaldoBs" class="font-bold text-slate-900 dark:text-crema font-mono-num">— Bs.</span>
+            </div>
+            <div class="border-t border-slate-200/60 dark:border-azulcielo/15 pt-2 flex justify-between items-center">
+              <span class="font-bold text-slate-700 dark:text-slate-300">Pérdida cambiaria calculada:</span>
+              <span id="modalAjustePerdidaUSD" class="font-black text-coral font-mono-num text-sm">-$0.00 USD</span>
+            </div>
+          </div>
+
+          <!-- Formulario de Monto de Ajuste -->
+          <form id="formAjusteCambiario" onsubmit="confirmarAjusteCambiarioPersonalizado(event)" class="space-y-3">
+            <div>
+              <label
+                for="inputMontoAjusteCambiario"
+                class="block text-xs font-bold text-slate-600 dark:text-azulcielo mb-1"
+              >
+                Monto del Ajuste a Registrar en USD ($)
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none font-bold text-slate-400 font-mono-num">$</span>
+                <input
+                  type="number"
+                  id="inputMontoAjusteCambiario"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-azulcielo/30 pl-8 pr-3.5 py-2.5 rounded-xl text-slate-900 dark:text-crema font-black text-base focus:border-coral focus:ring-2 focus:ring-coral/40 focus:outline-none transition font-mono-num"
+                />
+              </div>
+              <p class="text-[10px] text-slate-400 dark:text-azulcielo/70 mt-1">
+                Se registrará como un gasto de categoría <em>Ajuste Cambiario</em> con fecha de hoy.
+              </p>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+              <button
+                type="button"
+                onclick="ocultarModalAjusteCambiario()"
+                class="flex-1 py-3 text-xs font-bold text-slate-600 dark:text-azulcielo bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                id="btnConfirmarAjusteModal"
+                class="flex-1 py-3 text-xs font-black text-white bg-coral hover:brightness-110 shadow-md shadow-coral/30 rounded-xl transition cursor-pointer"
+              >
+                Registrar Ajuste
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 

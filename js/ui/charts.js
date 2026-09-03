@@ -413,6 +413,9 @@ function actualizarInterfaz() {
     }
   }
 
+  // Actualizar banner inteligente de impacto por devaluación cambiaria
+  actualizarBannerImpactoCambiario(mesSeleccionado);
+
   if (typeof renderizarSeccionPresupuestos === "function") {
     renderizarSeccionPresupuestos(gastosPorCat);
   }
@@ -422,6 +425,131 @@ function actualizarInterfaz() {
   renderizarEstadisticasFinancieras(filtradasMes, fondosAhorroMapa);
   if (typeof renderizarHistorialFiltrado === "function") {
     renderizarHistorialFiltrado();
+  }
+}
+
+function calcularImpactoDevaluacion(mes) {
+  if (!tasaBinanceCompra || tasaBinanceCompra <= 0) {
+    return {
+      saldoBsActivo: 0,
+      valorHistoricoUSD: 0,
+      valorActualUSD: 0,
+      perdidaBruta: 0,
+      ajustesAplicados: 0,
+      perdidaPendiente: 0,
+    };
+  }
+
+  let totalIngresosBs = 0;
+  let totalGastosBs = 0;
+  let totalAhorrosBs = 0;
+  let totalIngresosUSD_Bs = 0;
+  let totalGastosUSD_Bs = 0;
+  let totalAhorrosUSD_Bs = 0;
+
+  transacciones.forEach((t) => {
+    if (
+      typeof transaccionesPendientesEliminar !== "undefined" &&
+      transaccionesPendientesEliminar.has(t.id)
+    )
+      return;
+
+    if (mes && t.fecha && t.fecha.substring(0, 7) > mes) return;
+
+    if (t.moneda === "BS" || (t.monto_original && t.tasa_registro)) {
+      const bs = parseFloat(t.monto_original) || 0;
+      const usd = parseFloat(t.monto) || 0;
+
+      if (t.tipo === "ingreso") {
+        totalIngresosBs += bs;
+        totalIngresosUSD_Bs += usd;
+      } else if (t.tipo === "gasto") {
+        if (t.categoria !== "Ajuste Cambiario") {
+          totalGastosBs += bs;
+          totalGastosUSD_Bs += usd;
+        }
+      } else if (t.tipo === "ahorro" && t.origen_ahorro !== "externo") {
+        const cat = (t.categoria || "").toLowerCase();
+        const esRetiro =
+          cat.includes("retirar") ||
+          cat.includes("usar") ||
+          cat.includes("retiro") ||
+          cat.includes("gasto");
+        if (esRetiro) {
+          totalIngresosBs += bs;
+          totalIngresosUSD_Bs += usd;
+        } else {
+          totalAhorrosBs += bs;
+          totalAhorrosUSD_Bs += usd;
+        }
+      }
+    }
+  });
+
+  const saldoBsActivo = Math.max(
+    0,
+    totalIngresosBs - totalGastosBs - totalAhorrosBs,
+  );
+  const valorHistoricoUSD = Math.max(
+    0,
+    totalIngresosUSD_Bs - totalGastosUSD_Bs - totalAhorrosUSD_Bs,
+  );
+  const valorActualUSD =
+    saldoBsActivo > 0 && tasaBinanceCompra > 0
+      ? saldoBsActivo / tasaBinanceCompra
+      : 0;
+  const perdidaBruta = Math.max(0, valorHistoricoUSD - valorActualUSD);
+
+  // Sumar ajustes cambiarios ya aplicados en este periodo
+  let ajustesAplicados = 0;
+  transacciones.forEach((t) => {
+    if (
+      typeof transaccionesPendientesEliminar !== "undefined" &&
+      transaccionesPendientesEliminar.has(t.id)
+    )
+      return;
+    if (
+      t.tipo === "gasto" &&
+      t.categoria === "Ajuste Cambiario" &&
+      (!mes || (t.fecha || "").substring(0, 7) <= mes)
+    ) {
+      ajustesAplicados += parseFloat(t.monto) || 0;
+    }
+  });
+
+  const perdidaPendiente = Math.max(
+    0,
+    Math.round((perdidaBruta - ajustesAplicados) * 100) / 100,
+  );
+
+  return {
+    saldoBsActivo,
+    valorHistoricoUSD,
+    valorActualUSD,
+    perdidaBruta,
+    ajustesAplicados,
+    perdidaPendiente,
+  };
+}
+
+function actualizarBannerImpactoCambiario(mes) {
+  const banner = document.getElementById("bannerAjusteCambiario");
+  const badgeMonto = document.getElementById("badgePerdidaCambiariaMonto");
+  const textoDetalle = document.getElementById("textoDetalleCambiario");
+  if (!banner) return;
+
+  const impacto = calcularImpactoDevaluacion(mes);
+
+  if (impacto.perdidaPendiente >= 0.1) {
+    if (badgeMonto) {
+      badgeMonto.textContent = `-$${impacto.perdidaPendiente.toFixed(2)} USD`;
+    }
+    if (textoDetalle) {
+      textoDetalle.innerHTML = `Tus <strong>${impacto.saldoBsActivo.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.</strong> han perdido poder de compra por aumento de la tasa a <strong>${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2 })} Bs.</strong>`;
+    }
+    banner.classList.remove("hidden");
+  } else {
+    banner.classList.add("hidden");
   }
 }
 

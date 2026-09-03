@@ -179,10 +179,50 @@ function ocultarModalNuevaClave() {
   if (el) el.classList.add("hidden");
 }
 
+function abrirModalAjusteCambiario() {
+  const el = document.getElementById("modalAjusteCambiario");
+  if (!el) return;
+
+  const mesFiltroEl = document.getElementById("mesFiltro");
+  const mesSeleccionado = mesFiltroEl ? mesFiltroEl.value : "";
+  const impacto = typeof calcularImpactoDevaluacion === "function"
+    ? calcularImpactoDevaluacion(mesSeleccionado)
+    : { saldoBsActivo: 0, perdidaPendiente: 0 };
+
+  const tasaEl = document.getElementById("modalAjusteTasaActual");
+  const saldoBsEl = document.getElementById("modalAjusteSaldoBs");
+  const perdidaEl = document.getElementById("modalAjustePerdidaUSD");
+  const inputMonto = document.getElementById("inputMontoAjusteCambiario");
+
+  if (tasaEl) {
+    tasaEl.textContent = tasaBinanceCompra
+      ? `${fuenteTasaActual}: ${tasaBinanceCompra.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.`
+      : "No disponible";
+  }
+  if (saldoBsEl) {
+    saldoBsEl.textContent = `${impacto.saldoBsActivo.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.`;
+  }
+  if (perdidaEl) {
+    perdidaEl.textContent = `-$${impacto.perdidaPendiente.toFixed(2)} USD`;
+  }
+  if (inputMonto) {
+    inputMonto.value = impacto.perdidaPendiente > 0 ? impacto.perdidaPendiente.toFixed(2) : "";
+  }
+
+  el.classList.remove("hidden");
+}
+
+function ocultarModalAjusteCambiario() {
+  const el = document.getElementById("modalAjusteCambiario");
+  if (el) el.classList.add("hidden");
+}
+
 window.mostrarModalRecuperarClave = mostrarModalRecuperarClave;
 window.ocultarModalRecuperarClave = ocultarModalRecuperarClave;
 window.mostrarModalNuevaClave = mostrarModalNuevaClave;
 window.ocultarModalNuevaClave = ocultarModalNuevaClave;
+window.abrirModalAjusteCambiario = abrirModalAjusteCambiario;
+window.ocultarModalAjusteCambiario = ocultarModalAjusteCambiario;
 
 // Cierre global de modales con Escape
 document.addEventListener("keydown", (e) => {
@@ -197,5 +237,6 @@ document.addEventListener("keydown", (e) => {
     ocultarModalAlertaInteligente();
     ocultarModalRecuperarClave();
     ocultarModalNuevaClave();
+    ocultarModalAjusteCambiario();
   }
 });

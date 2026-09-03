@@ -382,6 +382,10 @@ async function agregarTransaccion(e) {
     }
 
     let monto = montoIngresado;
+    let moneda = monedaIngresoActual || "USD";
+    let montoOriginal = montoIngresado;
+    let tasaRegistro = null;
+
     if (monedaIngresoActual === "BS") {
       if (!tasaBinanceCompra || tasaBinanceCompra <= 0) {
         mostrarToast(
@@ -390,6 +394,7 @@ async function agregarTransaccion(e) {
         );
         return;
       }
+      tasaRegistro = tasaBinanceCompra;
       monto = Math.round((montoIngresado / tasaBinanceCompra) * 100) / 100;
     } else {
       monto = Math.round(montoIngresado * 100) / 100;
@@ -443,6 +448,9 @@ async function agregarTransaccion(e) {
     const nueva = {
       tipo: tipoSelect.value,
       monto: monto,
+      moneda: moneda,
+      monto_original: montoOriginal,
+      tasa_registro: tasaRegistro,
       categoria: categoriaSelect.value,
       deuda_id: esPagoDeuda ? parseInt(deudaObjetivoSelect.value, 10) : null,
       origen_ahorro:
@@ -937,3 +945,125 @@ function verificarLimitesDespuesDeTransaccion(nueva) {
     }
   }
 }
+
+// ---------- Módulo de Ajuste y Compensación por Devaluación Cambiaria ----------
+
+async function ejecutarRegistroAjusteCambiario(montoAjuste, desc = "") {
+  const monto = Math.round(montoAjuste * 100) / 100;
+  if (isNaN(monto) || monto <= 0) {
+    mostrarToast("Ingresa un monto válido mayor a 0", "error");
+    return;
+  }
+
+  const descripcion =
+    desc ||
+    `Ajuste por devaluación cambiaria (${tasaBinanceCompra ? tasaBinanceCompra.toFixed(2) : ""} Bs/$)`;
+  const fecha = obtenerFechaLocalISO();
+
+  const nueva = {
+    tipo: "gasto",
+    monto: monto,
+    moneda: "USD",
+    categoria: "Ajuste Cambiario",
+    deuda_id: null,
+    origen_ahorro: null,
+    descripcion: descripcion,
+    fecha: fecha,
+  };
+
+  if (!navigator.onLine) {
+    const tempId = -Date.now();
+    transacciones.unshift({ ...nueva, id: tempId });
+    encolarOperacion("insert", "transacciones", nueva);
+    guardarCacheLocal();
+    actualizarInterfaz();
+    mostrarToast(
+      `Ajuste de -$${monto.toFixed(2)} USD guardado localmente`,
+      "success",
+    );
+    return;
+  }
+
+  const datosSupabase = prepararTransaccionParaSupabase(nueva);
+  const { data, error } = await supabaseClient
+    .from("transacciones")
+    .insert([datosSupabase])
+    .select();
+
+  if (error) {
+    console.warn(
+      "Fallo Supabase al registrar ajuste, guardando offline:",
+      error,
+    );
+    const tempId = -Date.now();
+    transacciones.unshift({ ...nueva, id: tempId });
+    encolarOperacion("insert", "transacciones", nueva);
+    guardarCacheLocal();
+    actualizarInterfaz();
+    mostrarToast(
+      `Ajuste de -$${monto.toFixed(2)} USD guardado localmente`,
+      "warning",
+    );
+    return;
+  }
+
+  if (data && data[0]) {
+    transacciones.unshift({ ...nueva, id: data[0].id });
+  }
+  guardarCacheLocal();
+  await cargarDatosCloud();
+  mostrarToast(
+    `Ajuste de -$${monto.toFixed(2)} USD registrado con éxito`,
+    "success",
+  );
+}
+
+async function aplicarAjusteCambiarioSugerido() {
+  const mesFiltroEl = document.getElementById("mesFiltro");
+  const mesSeleccionado = mesFiltroEl ? mesFiltroEl.value : "";
+  const impacto =
+    typeof calcularImpactoDevaluacion === "function"
+      ? calcularImpactoDevaluacion(mesSeleccionado)
+      : { perdidaPendiente: 0 };
+
+  if (impacto.perdidaPendiente <= 0) {
+    mostrarToast("No hay pérdida cambiaria pendiente de ajustar", "info");
+    return;
+  }
+
+  const btn = document.getElementById("btnAplicarAjusteRapido");
+  if (btn) btn.disabled = true;
+
+  try {
+    await ejecutarRegistroAjusteCambiario(impacto.perdidaPendiente);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function confirmarAjusteCambiarioPersonalizado(e) {
+  if (e) e.preventDefault();
+  const inputMonto = document.getElementById("inputMontoAjusteCambiario");
+  const monto = parseFloat((inputMonto?.value || "").replace(",", "."));
+
+  if (isNaN(monto) || monto <= 0) {
+    mostrarToast("Ingresa un monto válido mayor a 0", "error");
+    return;
+  }
+
+  const btn = document.getElementById("btnConfirmarAjusteModal");
+  if (btn) btn.disabled = true;
+
+  try {
+    await ejecutarRegistroAjusteCambiario(monto);
+    if (typeof ocultarModalAjusteCambiario === "function") {
+      ocultarModalAjusteCambiario();
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+window.aplicarAjusteCambiarioSugerido = aplicarAjusteCambiarioSugerido;
+window.confirmarAjusteCambiarioPersonalizado =
+  confirmarAjusteCambiarioPersonalizado;

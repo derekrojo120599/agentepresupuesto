@@ -19,7 +19,7 @@ function obtenerFondosAhorroMapaActual() {
     )
       return;
 
-    const montoNum = parseFloat(t.monto) || 0;
+    const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
     if (t.tipo === "ahorro") {
       const fondoNombre = (t.descripcion || "Ahorro General").trim();
       if (fondosAhorroMapa[fondoNombre] === undefined)

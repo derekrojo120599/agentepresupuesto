@@ -123,7 +123,7 @@ function renderizarHistorialFiltrado() {
   let totalAhorrosHistorial = 0;
 
   filtradas.forEach((t) => {
-    const m = parseFloat(t.monto);
+    const m = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
     if (t.tipo === "ingreso") {
       totalFlujo += m;
       totalIngresosHistorial += m;
@@ -169,7 +169,7 @@ function renderizarHistorialFiltrado() {
       let badgeStyle = "bg-coral/15 text-coral border-coral/30";
       let signo = "-";
       let colorMonto = "text-coral";
-      const montoNum = parseFloat(t.monto);
+      const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
 
       if (t.tipo === "ingreso") {
         badgeStyle =
@@ -198,13 +198,22 @@ function renderizarHistorialFiltrado() {
         }
       }
 
+      let detalleMonedaHTML = "";
+      if (t.moneda === "BS" && t.monto_original) {
+        const bsNum = parseFloat(t.monto_original);
+        detalleMonedaHTML = `<span class="block text-[10px] font-semibold text-slate-400 dark:text-azulcielo/70 font-mono-num">≈ ${bsNum.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.</span>`;
+      }
+
       return `
     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
       <td class="p-3 font-medium text-slate-700 dark:text-crema text-xs">${escapeHTML(t.fecha)}</td>
       <td class="p-3"><span class="px-2 py-0.5 text-xs rounded-lg font-bold border ${badgeStyle}">${escapeHTML(t.tipo.toUpperCase())}</span></td>
       <td class="p-3 text-slate-600 dark:text-azulcielo font-semibold text-xs">${escapeHTML(t.categoria)}${tagOrigenHTML}</td>
       <td class="p-3 text-slate-900 dark:text-crema font-medium text-xs">${escapeHTML(t.descripcion)}</td>
-      <td class="p-3 text-right font-extrabold text-sm ${colorMonto}">${signo}$${montoNum.toFixed(2)}</td>
+      <td class="p-3 text-right font-extrabold text-sm ${colorMonto}">
+        <div>${signo}$${montoNum.toFixed(2)}</div>
+        ${detalleMonedaHTML}
+      </td>
       <td class="p-3 text-center">
         <div class="flex items-center justify-center gap-1">
           <button onclick="duplicarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1 cursor-pointer" title="Duplicar">📋</button>
@@ -223,7 +232,7 @@ function renderizarHistorialFiltrado() {
       let signo = "-";
       let colorMonto = "text-coral";
       let iconTipo = "🔴";
-      const montoNum = parseFloat(t.monto);
+      const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
 
       if (t.tipo === "ingreso") {
         signo = "+";
@@ -250,6 +259,12 @@ function renderizarHistorialFiltrado() {
         }
       }
 
+      let detalleMonedaMobile = "";
+      if (t.moneda === "BS" && t.monto_original) {
+        const bsNum = parseFloat(t.monto_original);
+        detalleMonedaMobile = `<span class="block text-[9.5px] font-semibold text-slate-400 dark:text-azulcielo/70 font-mono-num text-right">≈ ${bsNum.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs.</span>`;
+      }
+
       return `
     <div class="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-azulcielo/20 flex items-center justify-between gap-2.5 active:scale-[0.99] transition">
       <div class="flex items-center gap-3 min-w-0">
@@ -266,7 +281,10 @@ function renderizarHistorialFiltrado() {
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <span class="text-sm font-black ${colorMonto}">${signo}$${montoNum.toFixed(2)}</span>
+        <div class="text-right">
+          <span class="text-sm font-black ${colorMonto}">${signo}$${montoNum.toFixed(2)}</span>
+          ${detalleMonedaMobile}
+        </div>
         <button onclick="duplicarTransaccion(${t.id})" class="text-slate-400 hover:text-azulelectrico p-1.5 cursor-pointer" title="Duplicar">📋</button>
         <button onclick="editarTransaccion(${t.id})" class="text-slate-500 focus:outline-none focus:ring-2 focus:ring-azulelectrico rounded-xl hover:text-azulelectrico p-1.5 cursor-pointer" title="Editar" aria-label="Editar transacción">✏️</button>
         <button onclick="eliminarTransaccion(${t.id})" class="text-slate-500 focus:outline-none focus:ring-2 focus:ring-coral rounded-xl hover:text-coral p-1.5 cursor-pointer" title="Eliminar" aria-label="Eliminar transacción">🗑️</button>

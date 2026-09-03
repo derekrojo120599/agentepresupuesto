@@ -382,6 +382,10 @@ async function agregarTransaccion(e) {
     }
 
     let monto = montoIngresado;
+    let moneda = monedaIngresoActual || "USD";
+    let montoOriginal = montoIngresado;
+    let tasaRegistro = null;
+
     if (monedaIngresoActual === "BS") {
       if (!tasaBinanceCompra || tasaBinanceCompra <= 0) {
         mostrarToast(
@@ -390,6 +394,7 @@ async function agregarTransaccion(e) {
         );
         return;
       }
+      tasaRegistro = tasaBinanceCompra;
       monto = Math.round((montoIngresado / tasaBinanceCompra) * 100) / 100;
     } else {
       monto = Math.round(montoIngresado * 100) / 100;
@@ -443,6 +448,9 @@ async function agregarTransaccion(e) {
     const nueva = {
       tipo: tipoSelect.value,
       monto: monto,
+      moneda: moneda,
+      monto_original: montoOriginal,
+      tasa_registro: tasaRegistro,
       categoria: categoriaSelect.value,
       deuda_id: esPagoDeuda ? parseInt(deudaObjetivoSelect.value, 10) : null,
       origen_ahorro:
@@ -802,9 +810,16 @@ async function confirmarEditarMovimiento(e) {
       return;
     }
 
+    const tOriginal = transacciones.find((x) => x.id === id);
     const cambios = {
       tipo: editTipoSelect.value,
       monto,
+      moneda: tOriginal?.moneda || "USD",
+      monto_original:
+        tOriginal?.moneda === "BS" && tOriginal?.monto_original !== undefined
+          ? tOriginal.monto_original
+          : monto,
+      tasa_registro: tOriginal?.tasa_registro || null,
       categoria: editCategoriaSelect.value,
       deuda_id: esPagoDeuda
         ? parseInt(editDeudaObjetivoSelect.value, 10)
@@ -881,11 +896,11 @@ function verificarLimitesDespuesDeTransaccion(nueva) {
           (typeof transaccionesPendientesEliminar === "undefined" ||
             !transaccionesPendientesEliminar.has(t.id))
         ) {
-          gastado += parseFloat(t.monto) || 0;
+          gastado += typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
         }
       });
 
-      const gastadoPrevio = gastado - parseFloat(nueva.monto);
+      const gastadoPrevio = gastado - (typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(nueva) : parseFloat(nueva.monto));
 
       if (gastado > limite && gastadoPrevio <= limite) {
         mostrarModalAlertaInteligente(
@@ -917,7 +932,7 @@ function verificarLimitesDespuesDeTransaccion(nueva) {
           (typeof transaccionesPendientesEliminar === "undefined" ||
             !transaccionesPendientesEliminar.has(t.id))
         ) {
-          const m = parseFloat(t.monto) || 0;
+          const m = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
           if ((t.categoria || "").toLowerCase().includes("retir")) {
             acumulado -= m;
           } else {
@@ -926,7 +941,7 @@ function verificarLimitesDespuesDeTransaccion(nueva) {
         }
       });
 
-      const acumuladoPrevio = acumulado - parseFloat(nueva.monto);
+      const acumuladoPrevio = acumulado - (typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(nueva) : parseFloat(nueva.monto));
       if (acumulado >= metaObj.objetivo && acumuladoPrevio < metaObj.objetivo) {
         mostrarModalAlertaInteligente(
           "meta_superada",

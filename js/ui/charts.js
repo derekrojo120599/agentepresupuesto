@@ -16,7 +16,7 @@ function actualizarInterfaz() {
   const gastosPorCat = {};
 
   filtradasMes.forEach((t) => {
-    const montoNum = parseFloat(t.monto) || 0;
+    const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
     if (t.tipo === "ingreso") {
       ingresosMes += montoNum;
       countIngresos++;
@@ -48,7 +48,7 @@ function actualizarInterfaz() {
     )
       return;
 
-    const montoNum = parseFloat(t.monto) || 0;
+    const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
     if (t.tipo === "ahorro") {
       const fondoNombre = (t.descripcion || "Ahorro General").trim();
       if (fondosAhorroMapa[fondoNombre] === undefined)
@@ -72,7 +72,7 @@ function actualizarInterfaz() {
 
   const pagosMap = {};
   transacciones.forEach((t) => {
-    const montoNum = parseFloat(t.monto) || 0;
+    const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
     if (
       t.tipo === "gasto" &&
       t.categoria === "Pago de Deuda" &&
@@ -172,11 +172,11 @@ function actualizarInterfaz() {
       (t.fecha || "").startsWith(mesAnteriorStr),
     );
 
-    filtradasMesAnt.forEach((t) => {
-      const m = parseFloat(t.monto) || 0;
-      if (t.tipo === "ingreso") ingresosMesAnt += m;
-      else if (t.tipo === "gasto") gastosMesAnt += m;
-    });
+          filtradasMesAnt.forEach((t) => {
+            const m = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
+            if (t.tipo === "ingreso") ingresosMesAnt += m;
+            else if (t.tipo === "gasto") gastosMesAnt += m;
+          });
 
     if (ingresosMesAnt > 0) {
       const diffIng =
@@ -224,7 +224,7 @@ function actualizarInterfaz() {
         transaccionesPendientesEliminar.has(t.id)
       )
         return;
-      const m = parseFloat(t.monto) || 0;
+      const m = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
       if (t.tipo === "ingreso") {
         balance += m;
       } else if (t.tipo === "gasto") {
@@ -504,7 +504,7 @@ function renderizarEstadisticasFinancieras(filtradasMes, fondosMapa) {
   const ahorrosMap = {};
 
   ultimasFiltradasMes.forEach((t) => {
-    const montoNum = parseFloat(t.monto) || 0;
+    const montoNum = typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
     const diaIndex = parseInt((t.fecha || "").split("-")[2], 10) - 1;
 
     if (t.tipo === "ingreso") {

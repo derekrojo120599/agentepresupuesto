@@ -38,7 +38,7 @@ function totalOperacionesPorMes(tipo, mes) {
   transacciones.forEach((t) => {
     if (t.tipo !== tipo) return;
     if (!(t.fecha || "").startsWith(mes)) return;
-    total += parseFloat(t.monto) || 0;
+    total += typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0);
   });
   return total;
 }
@@ -49,7 +49,7 @@ function montosPorCategoriaComparacion(tipo, mes) {
     if (t.tipo !== tipo) return;
     if (!(t.fecha || "").startsWith(mes)) return;
     const cat = t.categoria || "Sin categoría";
-    mapa[cat] = (mapa[cat] || 0) + (parseFloat(t.monto) || 0);
+    mapa[cat] = (mapa[cat] || 0) + (typeof obtenerMontoUSD === "function" ? obtenerMontoUSD(t) : (parseFloat(t.monto) || 0));
   });
   return mapa;
 }

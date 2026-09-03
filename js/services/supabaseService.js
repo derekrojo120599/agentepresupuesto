@@ -8,7 +8,7 @@ let promesaCargaInicial = null;
 
 function prepararTransaccionParaSupabase(t) {
   if (!t) return t;
-  return {
+  const obj = {
     tipo: t.tipo,
     monto: t.monto,
     categoria: t.categoria,
@@ -17,6 +17,10 @@ function prepararTransaccionParaSupabase(t) {
     descripcion: t.descripcion || "",
     fecha: t.fecha,
   };
+  if (t.moneda !== undefined) obj.moneda = t.moneda;
+  if (t.monto_original !== undefined) obj.monto_original = t.monto_original;
+  if (t.tasa_registro !== undefined) obj.tasa_registro = t.tasa_registro;
+  return obj;
 }
 
 async function sincronizarPendientes() {
@@ -128,11 +132,38 @@ async function cargarDatosCloud() {
 
       ocultarAviso();
       const fetchedTransacciones = transData || [];
-      transacciones = fetchedTransacciones.filter(
-        (t) =>
-          typeof transaccionesPendientesEliminar === "undefined" ||
-          !transaccionesPendientesEliminar.has(t.id),
-      );
+      const transLocalMap = new Map();
+      (transacciones || []).forEach((t) => {
+        if (t && t.id) transLocalMap.set(t.id, t);
+      });
+
+      transacciones = fetchedTransacciones
+        .filter(
+          (t) =>
+            typeof transaccionesPendientesEliminar === "undefined" ||
+            !transaccionesPendientesEliminar.has(t.id),
+        )
+        .map((t) => {
+          const loc = transLocalMap.get(t.id);
+          return {
+            ...t,
+            moneda: t.moneda || loc?.moneda || "USD",
+            monto_original:
+              t.monto_original !== undefined && t.monto_original !== null
+                ? parseFloat(t.monto_original)
+                : loc?.monto_original !== undefined && loc?.monto_original !== null
+                  ? parseFloat(loc.monto_original)
+                  : parseFloat(t.monto),
+            tasa_registro:
+              t.tasa_registro !== undefined && t.tasa_registro !== null
+                ? parseFloat(t.tasa_registro)
+                : loc?.tasa_registro || null,
+            origen_ahorro:
+              t.origen_ahorro !== undefined && t.origen_ahorro !== null
+                ? t.origen_ahorro
+                : loc?.origen_ahorro || null,
+          };
+        });
 
       deudas = (deudasData || []).map((d) => ({
         id: d.id,

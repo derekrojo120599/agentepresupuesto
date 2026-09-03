@@ -229,8 +229,18 @@ function actualizarInterfaz() {
         balance += m;
       } else if (t.tipo === "gasto") {
         balance -= m;
-      } else if (t.tipo === "ahorro" && t.origen_ahorro === "balance") {
-        balance -= m;
+      } else if (t.tipo === "ahorro") {
+        const cat = (t.categoria || "").toLowerCase();
+        const esRetiro =
+          cat.includes("retirar") ||
+          cat.includes("usar") ||
+          cat.includes("retiro") ||
+          cat.includes("gasto");
+        if (esRetiro) {
+          balance += m;
+        } else if (t.origen_ahorro !== "externo") {
+          balance -= m;
+        }
       }
     }
   });

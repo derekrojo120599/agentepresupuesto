@@ -238,7 +238,7 @@ function actualizarInterfaz() {
           cat.includes("gasto");
         if (esRetiro) {
           balance += m;
-        } else if (t.origen_ahorro !== "externo") {
+        } else if (t.origen_ahorro === "balance") {
           balance -= m;
         }
       }
@@ -468,7 +468,7 @@ function calcularImpactoDevaluacion(mes) {
           totalGastosBs += bs;
           totalGastosUSD_Bs += usd;
         }
-      } else if (t.tipo === "ahorro" && t.origen_ahorro !== "externo") {
+      } else if (t.tipo === "ahorro" && t.origen_ahorro === "balance") {
         const cat = (t.categoria || "").toLowerCase();
         const esRetiro =
           cat.includes("retirar") ||

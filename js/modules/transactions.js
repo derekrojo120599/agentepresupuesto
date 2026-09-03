@@ -269,7 +269,7 @@ function verificarMontoEnTiempoReal() {
             catT.includes("gasto");
           if (esRetiroT) {
             balance += m;
-          } else if (t.origen_ahorro !== "externo") {
+          } else if (t.origen_ahorro === "balance") {
             balance -= m;
           }
         }

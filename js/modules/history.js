@@ -191,10 +191,10 @@ function renderizarHistorialFiltrado() {
 
       let tagOrigenHTML = "";
       if (t.tipo === "ahorro" && !esRetiroAhorro) {
-        if (t.origen_ahorro === "externo") {
-          tagOrigenHTML = ` <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Dinero externo / pre-existente">Externo</span>`;
-        } else {
+        if (t.origen_ahorro === "balance") {
           tagOrigenHTML = ` <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Descontado del Balance">De Balance</span>`;
+        } else {
+          tagOrigenHTML = ` <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Dinero externo / pre-existente">Externo</span>`;
         }
       }
 
@@ -243,10 +243,10 @@ function renderizarHistorialFiltrado() {
 
       let tagOrigenMobile = "";
       if (t.tipo === "ahorro" && !esRetiroM) {
-        if (t.origen_ahorro === "externo") {
-          tagOrigenMobile = ` <span>•</span> <span class="font-bold text-amber-600 dark:text-amber-400">Externo</span>`;
-        } else {
+        if (t.origen_ahorro === "balance") {
           tagOrigenMobile = ` <span>•</span> <span class="font-bold text-emerald-600 dark:text-emerald-400">De Balance</span>`;
+        } else {
+          tagOrigenMobile = ` <span>•</span> <span class="font-bold text-amber-600 dark:text-amber-400">Externo</span>`;
         }
       }
 

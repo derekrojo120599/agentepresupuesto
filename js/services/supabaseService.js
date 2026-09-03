@@ -13,8 +13,12 @@ function prepararTransaccionParaSupabase(t) {
     monto: t.monto,
     categoria: t.categoria,
     deuda_id: t.deuda_id !== undefined ? t.deuda_id : null,
+    origen_ahorro: t.origen_ahorro !== undefined ? t.origen_ahorro : null,
     descripcion: t.descripcion || "",
     fecha: t.fecha,
+    moneda: t.moneda || "USD",
+    monto_original: t.monto_original !== undefined ? t.monto_original : null,
+    tasa_registro: t.tasa_registro !== undefined ? t.tasa_registro : null,
   };
 }
 

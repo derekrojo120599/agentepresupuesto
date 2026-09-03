@@ -243,6 +243,7 @@ function vincularEventosDOM() {
     const hoy = new Date();
     mesFiltro.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
     mesFiltro.addEventListener("change", () => {
+      poblarSelectDias(); // actualizar días válidos para el nuevo mes
       actualizarInterfaz();
       if (typeof window.inicializarTodosLosCustomSelects === "function") {
         setTimeout(() => window.inicializarTodosLosCustomSelects(), 50);

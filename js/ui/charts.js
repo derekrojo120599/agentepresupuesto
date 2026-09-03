@@ -229,8 +229,18 @@ function actualizarInterfaz() {
         balance += m;
       } else if (t.tipo === "gasto") {
         balance -= m;
-      } else if (t.tipo === "ahorro" && t.origen_ahorro === "balance") {
-        balance -= m;
+      } else if (t.tipo === "ahorro") {
+        const catBal = (t.categoria || "").toLowerCase();
+        const esRetiroBal =
+          catBal.includes("retirar") ||
+          catBal.includes("usar") ||
+          catBal.includes("retiro") ||
+          catBal.includes("gasto");
+        if (esRetiroBal) {
+          balance += m; // retiro de ahorro devuelve dinero al balance
+        } else if (t.origen_ahorro !== "externo") {
+          balance -= m; // depósito desde el balance lo descuenta
+        }
       }
     }
   });

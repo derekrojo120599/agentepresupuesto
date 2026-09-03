@@ -2,7 +2,7 @@
 // para que abra instantáneamente y funcione sin internet.
 // Los DATOS (transacciones, deudas) se manejan aparte con localStorage y Supabase.
 
-const CACHE_NAME = 'presupuesto-shell-v35';
+const CACHE_NAME = 'presupuesto-shell-v36';
 
 const ARCHIVOS_CASCARON = [
   './',

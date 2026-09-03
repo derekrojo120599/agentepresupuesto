@@ -224,7 +224,7 @@ function obtenerPagadoDeuda(id) {
       t.categoria === "Pago de Deuda" &&
       t.deuda_id === id
     ) {
-      pagado += parseFloat(t.monto) || 0;
+      pagado += typeof obtenerMontoEnUSD === "function" ? obtenerMontoEnUSD(t, tasaBinanceCompra) : (parseFloat(t.monto) || 0);
     }
   });
   return pagado;

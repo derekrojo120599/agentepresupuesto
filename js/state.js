@@ -29,3 +29,14 @@ let canalRealtime = null;
 // Categorías activas mapeadas (combinación de default + personalizadas)
 let categoriasMap = { ...CATEGORIAS_DEFAULT };
 let categoriaIconosMap = { ...CATEGORIA_ICONOS_DEFAULT };
+
+// ---------- Conversión Dinámica Multimoneda con Tasa Viva ----------
+
+function obtenerMontoEnUSD(t, tasaViva = null) {
+  if (!t) return 0;
+  const tasa = tasaViva || tasaBinanceCompra;
+  if (t.moneda === "BS" && t.monto_original && tasa && tasa > 0) {
+    return Math.round((parseFloat(t.monto_original) / tasa) * 100) / 100;
+  }
+  return parseFloat(t.monto) || 0;
+}

@@ -8,7 +8,7 @@ let promesaCargaInicial = null;
 
 function prepararTransaccionParaSupabase(t) {
   if (!t) return t;
-  return {
+  const obj = {
     tipo: t.tipo,
     monto: t.monto,
     categoria: t.categoria,
@@ -17,6 +17,10 @@ function prepararTransaccionParaSupabase(t) {
     descripcion: t.descripcion || "",
     fecha: t.fecha,
   };
+  if (t.moneda !== undefined) obj.moneda = t.moneda;
+  if (t.monto_original !== undefined) obj.monto_original = t.monto_original;
+  if (t.tasa_registro !== undefined) obj.tasa_registro = t.tasa_registro;
+  return obj;
 }
 
 async function sincronizarPendientes() {

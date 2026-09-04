@@ -408,11 +408,11 @@ function renderizarDeudas(deudasConCalculo) {
           <span class="text-[11px] font-bold text-slate-400 dark:text-azulcielo/80">Inicial: $${total.toFixed(2)}</span>
         </div>
         <div class="flex items-center gap-1">
-          <button onclick="abonarDeuda(${d.id})" class="text-[11px] font-bold px-2 py-1 rounded-lg bg-coral/10 text-coral hover:bg-coral hover:text-white transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral" title="Abonar a la deuda">💸 Abonar</button>
-          <button onclick="incrementarDeudaDirecta(${d.id})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-azulelectrico rounded-lg text-xs font-bold transition cursor-pointer" title="Modificar monto inicial o nombre">
+          <button onclick="abonarDeuda('${d.id}')" class="text-[11px] font-bold px-2 py-1 rounded-lg bg-coral/10 text-coral hover:bg-coral hover:text-white transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral" title="Abonar a la deuda">💸 Abonar</button>
+          <button onclick="incrementarDeudaDirecta('${d.id}')" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-azulelectrico rounded-lg text-xs font-bold transition cursor-pointer" title="Modificar monto inicial o nombre">
             ✏️
           </button>
-          <button onclick="eliminarDeuda(${d.id})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-coral rounded-lg text-xs font-bold transition cursor-pointer" title="Eliminar Deuda">
+          <button onclick="eliminarDeuda('${d.id}')" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-coral rounded-lg text-xs font-bold transition cursor-pointer" title="Eliminar Deuda">
             🗑️
           </button>
         </div>

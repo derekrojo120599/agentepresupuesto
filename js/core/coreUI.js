@@ -14,6 +14,90 @@ const getTasaBinance = () => {
     return window.tasaBinanceCompra || AppState.tasaBinanceVigente || 1;
 };
 
+// Helper simple para evitar XSS
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+
+// Función de renderizado de tarjetas de cuentas
+export function renderizarTarjetasDeCuentas(estadoCuentas, perdidaCambiaria) {
+    const contenedor = document.getElementById('contenedor-cuentas');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = ''; // Limpiar contenedor
+    
+    // Contenedor principal de tarjetas usando Grid
+    let htmlCuentas = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">';
+
+    Object.values(estadoCuentas).forEach(cuenta => {
+        const nombreSeguro = escapeHTML(cuenta.nombre || 'Cuenta Desconocida');
+        const simbolo = cuenta.moneda === 'USD' ? '$' : 'Bs.';
+        
+        // Formateo del monto local (en miles y decimales)
+        const parts = cuenta.saldoOriginal.toFixed(2).split(".");
+        const enteros = parseInt(parts[0], 10).toLocaleString('en-US');
+        const centavos = parts[1];
+        
+        // Asignación de estilos dinámicos basado en la moneda
+        const isUSD = cuenta.moneda === 'USD';
+        const gradiente = isUSD
+            ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/30' 
+            : 'from-azulelectrico/10 to-azulelectrico/5 border-azulelectrico/30';
+        const colorTexto = isUSD ? 'text-emerald-600 dark:text-emerald-400' : 'text-azulelectrico';
+        const textSymbol = isUSD ? '$' : 'Bs';
+
+        htmlCuentas += `
+            <div class="bg-gradient-to-br ${gradiente} border p-5 rounded-3xl shadow-sm flex flex-col justify-between space-y-3 relative overflow-hidden group hover:shadow-md transition duration-300">
+                <div class="flex items-center justify-between z-10">
+                    <span class="text-xs sm:text-sm font-bold text-slate-700 dark:text-crema">${nombreSeguro}</span>
+                    <span class="text-[10px] font-black px-2 py-1 rounded-lg bg-white/60 dark:bg-slate-900/60 ${colorTexto}">
+                        ${cuenta.moneda}
+                    </span>
+                </div>
+                <div class="z-10 mt-2">
+                    <p class="text-2xl sm:text-3xl font-black ${colorTexto} tabular-nums font-mono-num tracking-tight">
+                        ${isUSD ? textSymbol : ''}${enteros}<span class="text-base sm:text-lg font-bold opacity-75">.${centavos}</span> ${!isUSD ? textSymbol : ''}
+                    </p>
+                </div>
+            </div>
+        `;
+    });
+    
+    htmlCuentas += '</div>';
+
+    // Agregar banner de pérdida cambiaria si aplica
+    if (perdidaCambiaria > 0) {
+        const parts = perdidaCambiaria.toFixed(2).split(".");
+        const enteros = parseInt(parts[0], 10).toLocaleString('en-US');
+        
+        htmlCuentas += `
+            <div class="mt-4 w-full bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center font-bold shrink-0 text-lg">📉</div>
+                    <div>
+                        <p class="text-xs font-bold text-rose-600 dark:text-rose-400">Pérdida por Devaluación</p>
+                        <p class="text-[10px] text-slate-500 dark:text-rose-400/70 mt-0.5">Dinero disuelto por inflación en cuentas Bs</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-base sm:text-lg font-black text-rose-500 tabular-nums">-$${enteros}.${parts[1]}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    contenedor.innerHTML = htmlCuentas;
+}
+
 // ==========================================
 // 1. Dashboard Principal (Renderizado)
 // ==========================================
@@ -23,22 +107,10 @@ export function renderizarDashboard() {
     // Aquí evaluamos la situación usando el nuevo módulo financiero
     const evaluacion = evaluarSituacionFinanciera(AppState.transacciones, AppState.cuentas, tasa);
     
-    // Actualizar elementos nativos del DOM
-    const balanceEl = document.getElementById("balanceNeto");
-    const balanceBsEl = document.getElementById("balanceNetoBs"); // Si quieres mostrar el equivalente
-    const perdidaEl = document.getElementById("totalPerdidaCambiaria");
-    
-    if (balanceEl) {
-        // Formatear: ej. $1,500.00 -> $1,500.<span class="...">00</span>
-        const parts = evaluacion.balanceRealActualUSD.toFixed(2).split(".");
-        balanceEl.innerHTML = `$${parseInt(parts[0]).toLocaleString('en-US')}<span class="text-base sm:text-lg font-bold opacity-75">.${parts[1]}</span>`;
-    }
+    // Renderizamos las tarjetas modulares (reemplazando el Balance Neto Global)
+    renderizarTarjetasDeCuentas(evaluacion.estadoCuentas, evaluacion.perdidaCambiaria);
 
-    if (perdidaEl) {
-        perdidaEl.textContent = `$${evaluacion.perdidaCambiaria.toFixed(2)}`;
-    }
-
-    // Calcular ingresos y gastos del mes en curso (solo para display, no afecta balance neto total)
+    // Calcular ingresos y gastos del mes en curso (solo para display)
     const mesActualStr = new Date().toISOString().substring(0, 7);
     let ingresosMes = 0;
     let gastosMes = 0;

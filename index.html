@@ -437,47 +437,7 @@
         <!-- 1. Resumen de Métricas Financieras (Layout adaptable 2 columnas en mobile) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           <!-- Balance Neto (Hero Card con iluminacin y status pill) -->
-          <div
-            class="col-span-2 lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-azulelectrico/15 via-white/80 to-azulcielo/15 dark:from-azulelectrico/25 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-azulelectrico/35 shadow-lg shadow-azulelectrico/10 flex flex-col justify-between space-y-3 group hover:border-azulelectrico/60 transition duration-300"
-          >
-            <div
-              class="absolute -top-10 -left-10 w-28 h-28 bg-azulelectrico/20 dark:bg-azulelectrico/30 rounded-full blur-2xl pointer-events-none"
-            ></div>
-
-            <div class="flex items-center justify-between relative z-10">
-              <span
-                class="text-[11px] sm:text-xs font-black text-azulelectrico uppercase tracking-wider flex items-center gap-1.5"
-              >
-                <span>⚖️</span> Balance Neto
-              </span>
-              <span
-                id="badgeSaludFinanciera"
-                class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-              >
-                🟢 Saludable
-              </span>
-            </div>
-
-            <div class="relative z-10">
-              <div
-                id="balanceNeto"
-                class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono-num"
-              >
-                $0<span class="text-base sm:text-lg font-bold opacity-75"
-                  >.00</span
-                >
-              </div>
-              <div id="balanceNetoBs" class="text-xs sm:text-sm font-semibold opacity-75 hidden mt-0.5">
-                ≈ 0,00 Bs.
-              </div>
-              <p
-                id="tasaAhorro"
-                class="text-[10px] sm:text-[11px] font-bold text-azulcielo-dark dark:text-azulcielo mt-1"
-              >
-                Tasa de Ahorro: 0%
-              </p>
-            </div>
-          </div>
+          <div id="contenedor-cuentas" class="col-span-2 lg:col-span-4 flex flex-col justify-center"></div>
 
           <!-- Ingresos -->
           <div
@@ -822,34 +782,7 @@
                   </button>
           </div>
 
-          <!-- Perdida Cambiaria -->
-          <div
-            class="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-azulcielo/20 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 flex flex-col justify-between space-y-2"
-          >
-            <div class="flex items-center justify-between">
-              <span
-                class="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-azulcielo flex items-center gap-1.5"
-              >
-                <span>📉</span> Pérdida Cambiaria
-              </span>
-              <span
-                class="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-[11px]"
-                >💸</span
-              >
-            </div>
-            <div>
-              <p
-                id="totalPerdidaCambiaria"
-                class="text-xl sm:text-2xl font-black text-rose-500 tracking-tight tabular-nums font-mono-num"
-              >
-                $0.00
-              </p>
-              <p class="text-[10px] text-slate-500 dark:text-azulcielo/70 mt-0.5">
-                Devaluación por inflación
-              </p>
-            </div>
           </div>
-        </div>
 
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -2618,3 +2551,5 @@
     <script src="./js/app.js"></script>
   </body>
 </html>
+
+

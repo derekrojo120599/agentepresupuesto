@@ -133,28 +133,6 @@ export function renderizarDashboard() {
 }
 
 // ==========================================
-// 2. Progreso de Metas y Deudas
-// ==========================================
-export function calcularProgresoMetasYDeudas() {
-    // Para las metas (sumar transacciones de tipo 'ahorro' que apunten a ese meta_id)
-    const progresoMetas = {};
-    const progresoDeudas = {};
-
-    AppState.transacciones.filter(t => !t.legacy && !t._deleted).forEach(t => {
-        const mUSD = parseFloat(t.monto_usd_calculado);
-        
-        if (t.tipo === 'ahorro' && t.meta_id) {
-            progresoMetas[t.meta_id] = (progresoMetas[t.meta_id] || 0) + mUSD;
-        }
-        if (t.tipo === 'abono_deuda' && t.deuda_id) {
-            progresoDeudas[t.deuda_id] = (progresoDeudas[t.deuda_id] || 0) + mUSD;
-        }
-    });
-
-    return { progresoMetas, progresoDeudas };
-}
-
-// ==========================================
 // 3. Modal de Migración (Corte de Cuenta)
 // ==========================================
 export function verificarMigracionLegacy() {

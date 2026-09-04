@@ -218,7 +218,7 @@ function actualizarInterfaz() {
 
   let balance = 0;
   transacciones.forEach((t) => {
-    if (t.fecha && t.fecha.substring(0, 7) <= mesSeleccionado) {
+    if (t.fecha && t.fecha.substring(0, 7) === mesSeleccionado) {
       if (
         typeof transaccionesPendientesEliminar !== "undefined" &&
         transaccionesPendientesEliminar.has(t.id)

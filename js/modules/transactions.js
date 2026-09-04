@@ -250,10 +250,14 @@ function verificarMontoEnTiempoReal() {
 
   if (requiereValidacionBalance) {
     let balance = 0;
+    const fechaInput = document.getElementById("fecha").value || "";
+    const mesTransaccion = fechaInput ? fechaInput.substring(0, 7) : obtenerFechaLocalISO().substring(0, 7);
+
     transacciones.forEach((t) => {
       if (
-        typeof transaccionesPendientesEliminar === "undefined" ||
-        !transaccionesPendientesEliminar.has(t.id)
+        t.fecha && t.fecha.substring(0, 7) === mesTransaccion &&
+        (typeof transaccionesPendientesEliminar === "undefined" ||
+        !transaccionesPendientesEliminar.has(t.id))
       ) {
         const m = parseFloat(t.monto) || 0;
         if (t.tipo === "ingreso") {

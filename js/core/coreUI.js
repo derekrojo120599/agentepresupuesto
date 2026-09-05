@@ -16,7 +16,7 @@ const getTasaBinance = () => {
 };
 
 // Helper simple para evitar XSS
-function escapeHTML(str) {
+export function escapeHTML(str) {
     if (!str) return '';
     return String(str).replace(/[&<>'"]/g, 
         tag => ({
@@ -240,4 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderizarHistorial();
     });
 });
+
+
 

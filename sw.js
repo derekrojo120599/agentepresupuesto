@@ -2,7 +2,7 @@
 // para que abra instantáneamente y funcione sin internet.
 // Los DATOS (transacciones, deudas) se manejan aparte con localStorage y Supabase.
 
-const CACHE_NAME = 'presupuesto-shell-v71';
+const CACHE_NAME = 'presupuesto-shell-v72';
 
 const ARCHIVOS_CASCARON = [
   './',
@@ -32,15 +32,12 @@ const ARCHIVOS_CASCARON = [
   './js/core/progresoUI.js',
   './js/core/formularioMovimiento.js',
   './js/core/historialUI.js',
-  'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
   'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
-  'https://npmcdn.com/flatpickr/dist/themes/dark.css',
   'https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css',
   'https://cdn.jsdelivr.net/npm/flatpickr',
-  'https://npmcdn.com/flatpickr/dist/l10n/es.js',
   'https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js'
 ];
 

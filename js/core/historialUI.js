@@ -150,3 +150,66 @@ export function renderizarHistorial(transacciones = AppState.transacciones) {
     tablaDesktop.innerHTML = htmlDesktop;
     listaMobile.innerHTML = htmlMobile;
 }
+
+// ==========================================
+// 2. Lógica de Edición y Eliminación (Acciones de Fila)
+// ==========================================
+
+import { inicializarTogglesFormulario } from './formularioMovimiento.js';
+import { guardarOperacion } from './sync.js';
+
+// Exponer al scope global para que puedan ser llamadas desde los onClick del HTML
+window.editarTransaccionUUID = function(id) {
+    const t = AppState.transacciones.find(x => x.id === id);
+    if (!t) return;
+
+    // 1. Marcar que estamos editando
+    const editIdInput = document.getElementById("transaccionEditandoId");
+    if (editIdInput) editIdInput.value = id;
+
+    // 2. Llenar campos base
+    document.getElementById("tipo").value = t.tipo;
+    document.getElementById("monto").value = parseFloat(t.monto_original || t.monto || 0);
+    document.getElementById("descripcion").value = t.descripcion || "";
+    document.getElementById("fecha").value = t.fecha;
+    document.getElementById("categoria").value = t.categoria_id || "";
+
+    // 3. Forzar disparo del toggle de vista para habilitar contenedores correctos
+    inicializarTogglesFormulario();
+
+    // 4. Llenar campos relacionales después de que sus contenedores son visibles
+    if (t.cuenta_origen_id) {
+        const oSelect = document.getElementById("cuentaOrigenSelect");
+        if (oSelect) oSelect.value = t.cuenta_origen_id;
+    }
+    if (t.cuenta_destino_id) {
+        const dSelect = document.getElementById("cuentaDestinoSelect");
+        if (dSelect) dSelect.value = t.cuenta_destino_id;
+    }
+    if (t.meta_id) {
+        const mSelect = document.getElementById("metaAhorroSelect");
+        if (mSelect) mSelect.value = t.meta_id;
+    }
+    if (t.deuda_id) {
+        const deuSelect = document.getElementById("deudaObjetivo");
+        if (deuSelect) deuSelect.value = t.deuda_id;
+    }
+
+    // 5. Ir al inicio para ver el formulario y cambiar a la pestaña de Registrar
+    if (window.cambiarPestana) window.cambiarPestana('registrar');
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (window.mostrarToast) window.mostrarToast("Modo edición activado", "info");
+};
+
+window.eliminarTransaccionUUID = async function(id) {
+    const confirmacion = confirm("¿Estás seguro de que deseas eliminar este movimiento del historial? Esta acción ajustará tus balances.");
+    if (!confirmacion) return;
+
+    try {
+        await guardarOperacion('transacciones', 'DELETE', { id: id });
+        if (window.mostrarToast) window.mostrarToast("Transacción eliminada con éxito", "success");
+    } catch (error) {
+        console.error("Error al eliminar la transacción:", error);
+        if (window.mostrarToast) window.mostrarToast("Ocurrió un error al eliminar", "error");
+    }
+};

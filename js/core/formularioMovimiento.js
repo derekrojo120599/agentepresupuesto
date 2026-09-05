@@ -114,8 +114,16 @@ export async function procesarSubmitMovimiento(event) {
             fecha: fecha
         }, tasaActualBinance);
 
-        // 5. EnvÃ­o al sistema Offline-First/Sync
-        await guardarOperacion('transacciones', 'INSERT', payload);
+        const editIdInput = document.getElementById("transaccionEditandoId");
+        if (editIdInput && editIdInput.value) {
+            payload.id = editIdInput.value;
+            await guardarOperacion('transacciones', 'UPDATE', payload);
+            editIdInput.value = "";
+            if (window.mostrarToast) window.mostrarToast("Movimiento actualizado con éxito", "success");
+        } else {
+            await guardarOperacion('transacciones', 'INSERT', payload);
+            if (window.mostrarToast) window.mostrarToast("Movimiento registrado con éxito", "success");
+        }
 
         // 6. Limpiar UI
         form.reset();
@@ -213,3 +221,4 @@ document.addEventListener('DOMContentLoaded', () => {
         formMovimiento.addEventListener('submit', procesarSubmitMovimiento);
     }
 });
+

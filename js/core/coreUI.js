@@ -6,6 +6,7 @@
 import { AppState, guardarCacheLocal, notificarCambioEstado } from './state.js';
 import { generarTransaccionInmutable, evaluarSituacionFinanciera } from './multimoneda.js';
 import { guardarOperacion } from './sync.js';
+import { renderizarHistorial } from './historialUI.js';
 
 // Reemplazar o integrar con las variables existentes de tu index
 // Asumimos que RateService.js provee la tasa de Binance
@@ -127,9 +128,6 @@ export function renderizarDashboard() {
     const gasEl = document.getElementById("totalGastos");
     if (ingEl) ingEl.textContent = `$${ingresosMes.toFixed(2)}`;
     if (gasEl) gasEl.textContent = `$${gastosMes.toFixed(2)}`;
-
-    // Renderizar historial
-    renderizarHistorial();
 }
 
 // ==========================================
@@ -229,46 +227,6 @@ export async function procesarMigracionCorte(event) {
     }
 }
 
-// ==========================================
-// 4. Historial (Renderizado Legacy vs Nuevo)
-// ==========================================
-export function renderizarHistorial() {
-    const contenedor = document.getElementById("listaTransaccionesMobile"); // o tbody de tabla
-    if (!contenedor) return;
-
-    // Solo un ejemplo rápido de separación visual
-    let htmlContent = "";
-    
-    // Sort transactions by date descending
-    const txSorted = [...AppState.transacciones].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-    txSorted.forEach(t => {
-        const isLegacy = t.legacy;
-        const colorClass = isLegacy ? 'opacity-50 grayscale bg-slate-100 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900';
-        const badgeTag = isLegacy ? '<span class="text-[9px] bg-slate-200 text-slate-500 px-1 rounded ml-2">ANTIGUO</span>' : '';
-        
-        // El monto a mostrar:
-        const showVal = `$${parseFloat(t.monto_usd_calculado || t.monto || 0).toFixed(2)}`;
-
-        htmlContent += `
-        <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center ${colorClass}">
-            <div>
-                <p class="text-xs font-bold text-slate-800 dark:text-slate-200">${t.descripcion || 'Sin descripción'} ${badgeTag}</p>
-                <p class="text-[10px] text-slate-500">${t.fecha}</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-sm text-slate-900 dark:text-white">${showVal}</span>
-                ${!isLegacy ? `
-                    <button class="text-xs text-azulelectrico" onclick="alert('Editar ${t.id}')">✏️</button>
-                ` : ''}
-            </div>
-        </div>
-        `;
-    });
-
-    contenedor.innerHTML = htmlContent;
-}
-
 // Listeners Base
 document.addEventListener('DOMContentLoaded', () => {
     const formMigracion = document.getElementById('formCorteMigracion');
@@ -279,5 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reaccionar cuando el estado global cambia
     document.addEventListener('appStateChanged', () => {
         renderizarDashboard();
+        renderizarHistorial();
     });
 });
+

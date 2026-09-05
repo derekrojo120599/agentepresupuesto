@@ -133,51 +133,83 @@ export async function procesarSubmitMovimiento(event) {
     }
 }
 
-// Vinculación al DOM y Lógica de UI Interactiva (Mostrar/Ocultar Cuentas)
+export function inicializarTogglesFormulario() {
+    const tipoSelectDOM = document.getElementById("tipo");
+    
+    // Contenedores a mostrar/ocultar
+    const contOrigen = document.getElementById("contenedorCuentaOrigen");
+    const contDestino = document.getElementById("contenedorCuentaDestino");
+    const contMetas = document.getElementById("contenedorMetaAhorroSelect");
+    const contDeudas = document.getElementById("contenedorDeudaSelect");
+
+    // Selects individuales (para required y reset)
+    const origenSelect = document.getElementById("cuentaOrigenSelect");
+    const destinoSelect = document.getElementById("cuentaDestinoSelect");
+    const metaSelect = document.getElementById("metaAhorroSelect");
+    const deudaSelect = document.getElementById("deudaObjetivo");
+
+    if (!tipoSelectDOM) return;
+
+    const actualizarVista = () => {
+        const tipo = tipoSelectDOM.value;
+
+        // 1. Reseteo Inicial (Ocultar y limpiar todo por defecto)
+        contOrigen?.classList.add("hidden");
+        contDestino?.classList.add("hidden");
+        contMetas?.classList.add("hidden");
+        contDeudas?.classList.add("hidden");
+
+        if (origenSelect) { origenSelect.removeAttribute("required"); origenSelect.value = ""; }
+        if (destinoSelect) { destinoSelect.removeAttribute("required"); destinoSelect.value = ""; }
+        if (metaSelect) metaSelect.value = "";
+        if (deudaSelect) { deudaSelect.removeAttribute("required"); deudaSelect.value = ""; }
+
+        // 2. Aplicar Reglas de Visibilidad Estrictas
+        if (tipo === "gasto") {
+            contOrigen?.classList.remove("hidden");
+            if (origenSelect) origenSelect.setAttribute("required", "true");
+        } 
+        else if (tipo === "ingreso") {
+            contDestino?.classList.remove("hidden");
+            if (destinoSelect) destinoSelect.setAttribute("required", "true");
+        } 
+        else if (tipo === "ahorro") {
+            contDestino?.classList.remove("hidden");
+            contMetas?.classList.remove("hidden");
+            if (destinoSelect) destinoSelect.setAttribute("required", "true");
+        } 
+        else if (tipo === "abono_deuda") {
+            contOrigen?.classList.remove("hidden");
+            contDeudas?.classList.remove("hidden");
+            if (origenSelect) origenSelect.setAttribute("required", "true");
+            if (deudaSelect) deudaSelect.setAttribute("required", "true");
+        }
+    };
+
+    // 3. Enlazar Listeners
+    // Listener nativo al select
+    tipoSelectDOM.addEventListener("change", actualizarVista);
+
+    // Compatibilidad: Si existen "chips" de UI que cambian el select oculto
+    const chipsUI = document.querySelectorAll('.chip-tipo');
+    chipsUI.forEach(chip => {
+        chip.addEventListener('click', () => {
+            // Un micro-delay para permitir que la librería o script previo actualice el .value del <select>
+            setTimeout(actualizarVista, 20); 
+        });
+    });
+
+    // 4. Ejecución inicial para arrancar en el estado correcto
+    actualizarVista();
+}
+
+// Vinculación al DOM
 document.addEventListener('DOMContentLoaded', () => {
     inicializarSelectsFormulario();
+    inicializarTogglesFormulario();
 
     const formMovimiento = document.getElementById("formMovimiento");
     if (formMovimiento) {
-        // Enlazar Evento de Submit interceptando la forma tradicional
         formMovimiento.addEventListener('submit', procesarSubmitMovimiento);
-    }
-
-    // Escuchar el cambio de tipo de movimiento para alternar cuentas Origen/Destino
-    const tipoSelectDOM = document.getElementById("tipo");
-    if (tipoSelectDOM) {
-        const toggleCuentas = () => {
-            const tipo = tipoSelectDOM.value;
-            const contOrigen = document.getElementById("contenedorCuentaOrigen");
-            const contDestino = document.getElementById("contenedorCuentaDestino");
-            const origenSelect = document.getElementById("cuentaOrigenSelect");
-            const destinoSelect = document.getElementById("cuentaDestinoSelect");
-
-            if (tipo === "ingreso") {
-                contOrigen.classList.add("hidden");
-                contDestino.classList.remove("hidden");
-                origenSelect.removeAttribute("required");
-                destinoSelect.setAttribute("required", "true");
-            } else if (tipo === "gasto" || tipo === "abono_deuda") {
-                contOrigen.classList.remove("hidden");
-                contDestino.classList.add("hidden");
-                origenSelect.setAttribute("required", "true");
-                destinoSelect.removeAttribute("required");
-            } else if (tipo === "ahorro" || tipo === "transferencia") {
-                // Ahorro ahora es conceptualmente un movimiento entre cuentas (o desde cuenta a Meta)
-                // Se asume que sale de una cuenta para irse a la bolsa de ahorro.
-                contOrigen.classList.remove("hidden");
-                contDestino.classList.add("hidden"); // En tu diseño el ahorro no suma a otra billetera bancaria, se queda flotando en metas
-                origenSelect.setAttribute("required", "true");
-                destinoSelect.removeAttribute("required");
-            }
-        };
-
-        // Enlazar mutaciones a los botones (chips) que controlan el select oculto
-        document.querySelectorAll('.chip-tipo').forEach(btn => {
-            btn.addEventListener('click', () => setTimeout(toggleCuentas, 50)); // Pequeño delay para que el select cambie
-        });
-        tipoSelectDOM.addEventListener('change', toggleCuentas);
-        toggleCuentas(); // Call inicial
     }
 });

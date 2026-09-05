@@ -232,13 +232,10 @@ function vincularEventosDOM() {
   const categoriaSelect = document.getElementById("categoria");
   const origenAhorroSelect = document.getElementById("origenAhorro");
 
-  if (montoInput) montoInput.addEventListener("input", verificarMontoEnTiempoReal);
-  if (tipoSelect) {
-    tipoSelect.addEventListener("change", verificarMontoEnTiempoReal);
-    tipoSelect.addEventListener("change", actualizarOpcionesCategoria);
+    if (tipoSelect) {
+        tipoSelect.addEventListener("change", actualizarOpcionesCategoria);
   }
-  if (origenAhorroSelect) origenAhorroSelect.addEventListener("change", verificarMontoEnTiempoReal);
-  if (categoriaSelect) categoriaSelect.addEventListener("change", evaluarSeleccionesEspeciales);
+    if (categoriaSelect) categoriaSelect.addEventListener("change", evaluarSeleccionesEspeciales);
 
   const formMovimiento = document.getElementById("formMovimiento");
   if (formMovimiento) {
@@ -250,7 +247,6 @@ function vincularEventosDOM() {
         const fechaEl = document.getElementById("fecha");
         if (fechaEl) fechaEl.value = obtenerFechaLocalISO();
         actualizarConversionUI();
-        verificarMontoEnTiempoReal();
       }, 10);
     });
   }
@@ -379,9 +375,9 @@ function vincularEventosDOM() {
 
 // ---------- Eventos Globales de Conectividad y Visibilidad ----------
 
-window.addEventListener("online", () => {
+window.addEventListener("online", async () => {
   actualizarIndicadorConexion();
-  sincronizarPendientes();
+  await procesarColaOffline();
   obtenerTasaBinance();
 });
 
@@ -390,13 +386,13 @@ window.addEventListener("offline", () => {
   mostrarToast("Modo offline activo", "info");
 });
 
-document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", async () => {
   if (
     document.visibilityState === "visible" &&
     usuarioActualId &&
     navigator.onLine
   ) {
-    cargarDatosCloud();
+    await procesarColaOffline();
   }
 });
 
@@ -451,17 +447,29 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
       usuarioActualId = session.user.id;
 
-      cargarCategoriasGuardadas();
-      cargarPresupuestosYMetasLocales();
-      if (session.user) {
-        cargarAjustesDeUserMetadata(session.user);
-      }
-
       if (!sesionInicializada) {
         sesionInicializada = true;
+        
+        // 1. Hidratar memoria local
+        hidratarEstadoLocal();
+
+        // 2. Proteger y cargar formularios (Sustituye a 'actualizarOpcionesCategoria()')
+        inicializarSelectsFormulario();
+        inicializarTogglesFormulario();
+
         inicializarPestanas();
 
         const onDataReady = () => {
+          // 3. Renderizar todo el DOM relacional
+          renderizarDashboard();
+          renderizarMetasAhorro();
+          renderizarDeudas();
+          renderizarHistorial();
+          renderizarPresupuestos();
+
+          // 4. Bloqueo obligatorio por migración multimoneda
+          verificarMigracionLegacy();
+
           if (overlay) {
             overlay.classList.add("opacity-0");
             setTimeout(() => {
@@ -476,17 +484,14 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
           }
         };
 
-        if (navigator.onLine) {
-          cargarDatosCloud().then(() => {
-            suscribirRealtime();
-            onDataReady();
-          });
+        if (typeof cargarDatosRelacionales === 'function') {
+            cargarDatosRelacionales().then(() => {
+              onDataReady();
+            });
         } else {
-          cargarCacheLocal();
-          onDataReady();
+            onDataReady();
         }
         actualizarIndicadorConexion();
-        sincronizarPendientes();
       } else {
         if (appContainer) appContainer.classList.remove("hidden");
         if (mobileNav) {
@@ -542,5 +547,10 @@ if ("serviceWorker" in navigator) {
       .catch((err) => console.warn("SW err:", err));
   });
 }
+
+
+
+
+
 
 

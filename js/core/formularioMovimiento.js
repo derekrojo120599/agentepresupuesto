@@ -84,22 +84,38 @@ export async function procesarSubmitMovimiento(event) {
         
         // Obtener tasa actual inyectada por rateService
         const tasaActualBinance = window.tasaBinanceCompra || 1;
+        
+        let tasaAplicar = tasaActualBinance;
 
-        // 3. Validaciones estrcitas
+        // Detectar si es un UPDATE
+        const editIdInput = document.getElementById("transaccionEditandoId");
+        const esUpdate = editIdInput && editIdInput.value;
+
+        if (esUpdate) {
+            const txOriginal = AppState.transacciones.find(t => t.id === editIdInput.value);
+            if (txOriginal) {
+                // Si mantiene la misma moneda, respetamos la tasa histórica
+                if (txOriginal.moneda === moneda) {
+                    tasaAplicar = txOriginal.tasa_cambio || tasaActualBinance;
+                }
+            }
+        }
+
+        // 3. Validaciones estrictas
         if (!montoIngresado || parseFloat(montoIngresado) <= 0) {
             throw new Error("El monto debe ser mayor a 0.");
         }
-        if (moneda === 'VES' && (!tasaActualBinance || tasaActualBinance <= 0)) {
-            throw new Error("Tasa de Binance invÃ¡lida para procesar BolÃ­vares. Verifica tu conexiÃ³n.");
+        if (moneda === 'VES' && (!tasaAplicar || tasaAplicar <= 0)) {
+            throw new Error("Tasa de Binance inválida para procesar Bolívares. Verifica tu conexión.");
         }
         if (tipoSelect === 'gasto' && !cuenta_origen_id) {
-            throw new Error("Debes indicar de quÃ© cuenta saliÃ³ el dinero.");
+            throw new Error("Debes indicar de qué cuenta salió el dinero.");
         }
         if (tipoSelect === 'ingreso' && !cuenta_destino_id) {
-            throw new Error("Debes indicar a quÃ© cuenta entrÃ³ el dinero.");
+            throw new Error("Debes indicar a qué cuenta entró el dinero.");
         }
 
-        // 4. ConstrucciÃ³n del Payload usando el cerebro Multimoneda
+        // 4. Construcción del Payload usando el cerebro Multimoneda
         // Delega la responsabilidad de congelar la tasa y los ID relacionales.
         const payload = generarTransaccionInmutable({
             tipo: tipoSelect,
@@ -112,10 +128,9 @@ export async function procesarSubmitMovimiento(event) {
             deuda_id: (tipoSelect === 'gasto' || tipoSelect === 'abono_deuda') ? deuda_id : null,
             descripcion: descripcion,
             fecha: fecha
-        }, tasaActualBinance);
+        }, tasaAplicar);
 
-        const editIdInput = document.getElementById("transaccionEditandoId");
-        if (editIdInput && editIdInput.value) {
+        if (esUpdate) {
             payload.id = editIdInput.value;
             await guardarOperacion('transacciones', 'UPDATE', payload);
             editIdInput.value = "";
@@ -221,4 +236,5 @@ document.addEventListener('DOMContentLoaded', () => {
         formMovimiento.addEventListener('submit', procesarSubmitMovimiento);
     }
 });
+
 

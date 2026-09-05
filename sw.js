@@ -2,7 +2,7 @@
 // para que abra instantáneamente y funcione sin internet.
 // Los DATOS (transacciones, deudas) se manejan aparte con localStorage y Supabase.
 
-const CACHE_NAME = 'presupuesto-shell-v28';
+const CACHE_NAME = 'presupuesto-shell-v71';
 
 const ARCHIVOS_CASCARON = [
   './',
@@ -15,20 +15,23 @@ const ARCHIVOS_CASCARON = [
   './js/state.js',
   './js/services/storageService.js',
   './js/services/rateService.js',
-  './js/services/supabaseService.js',
   './js/ui/theme.js',
   './js/ui/toast.js',
   './js/ui/navigation.js',
   './js/ui/customSelect.js',
   './js/ui/modals.js',
-  './js/modules/debts.js',
-  './js/modules/goals.js',
   './js/modules/budgets.js',
   './js/modules/history.js',
   './js/modules/comparison.js',
   './js/ui/charts.js',
-  './js/modules/transactions.js',
   './js/app.js',
+  './js/core/state.js',
+  './js/core/multimoneda.js',
+  './js/core/sync.js',
+  './js/core/coreUI.js',
+  './js/core/progresoUI.js',
+  './js/core/formularioMovimiento.js',
+  './js/core/historialUI.js',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
